@@ -85,9 +85,11 @@ if "horario" not in st.session_state:
         ]
     }
 
-# Estados para o fluxo do Registo Diário interativo
+# Estados para os fluxos interativos
 if "step_registo" not in st.session_state:
     st.session_state.step_registo = "formulario"
+if "step_estudar" not in st.session_state:
+    st.session_state.step_estudar = "escolher_materia"
 if "materia_escolhida_estudo" not in st.session_state:
     st.session_state.materia_escolhida_estudo = ""
 if "materiais_carregados" not in st.session_state:
@@ -119,7 +121,8 @@ menu = st.sidebar.radio(
     [
         "🏠 Início & Escola",
         "📅 Agenda & Horário",
-        "📝 Registo Diário"
+        "📝 Registo Diário",
+        "📖 Estudar"
     ]
 )
 
@@ -266,16 +269,16 @@ elif menu == "📝 Registo Diário":
             st.radio(f"Escolhe uma opção para a questão {i+1}:", q['opcoes'], key=f"q_pos_{i}")
             st.markdown("---")
             
-        if st.button("Avançar para o Estudo"):
-            st.session_state.step_registo = "escolher_materia"
+        if st.button("Ir para o Estudo"):
+            st.session_state.step_estudar = "escolher_materia"
+            st.session_state.step_registo = "formulario"  # reseta para a proxima vez
             st.rerun()
 
-    # PASSO 3: Seleção de Matéria de Estudo com Sugestão Inteligente
-    elif st.session_state.step_registo == "escolher_materia":
-        if st.button("⬅️ Voltar"):
-            st.session_state.step_registo = "flashcards_pos"
-            st.rerun()
-            
+# 4. Nova Alínea: Estudar (Menu Independente)
+elif menu == "📖 Estudar":
+    
+    # PASSO A: Seleção de Matéria de Estudo com Sugestão Inteligente
+    if st.session_state.step_estudar == "escolher_materia":
         st.title("📚 Estudo")
         st.subheader("O que queres estudar hoje?")
         
@@ -288,17 +291,17 @@ elif menu == "📝 Registo Diário":
                 
         st.info(f"💡 **Sugestão:** {sugestao} (com base no teu registo anterior)")
         
-        materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS)
+        materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS, key="sb_estudar_mat")
         
-        if st.button("Avançar"):
+        if st.button("Avançar", key="btn_avancar_mat"):
             st.session_state.materia_escolhida_estudo = materia_escolhida
-            st.session_state.step_registo = "upload_materiais"
+            st.session_state.step_estudar = "upload_materiais"
             st.rerun()
 
-    # PASSO 4: Materiais de Estudo para a Matéria Escolhida
-    elif st.session_state.step_registo == "upload_materiais":
-        if st.button("⬅️ Voltar"):
-            st.session_state.step_registo = "escolher_materia"
+    # PASSO B: Materiais de Estudo para a Matéria Escolhida
+    elif st.session_state.step_estudar == "upload_materiais":
+        if st.button("⬅️ Voltar", key="btn_voltar_up"):
+            st.session_state.step_estudar = "escolher_materia"
             st.rerun()
             
         st.title("📚 Estudo")
@@ -308,7 +311,8 @@ elif menu == "📝 Registo Diário":
         ficheiros = st.file_uploader(
             "Carrega os teus documentos (PDF, Imagens PNG/JPG, Documentos, Áudios e Vídeos):",
             type=["pdf", "png", "jpg", "jpeg", "docx", "txt", "mp3", "mp4", "wav"],
-            accept_multiple_files=True
+            accept_multiple_files=True,
+            key="up_materiais_estudar"
         )
         
         if ficheiros:
@@ -316,14 +320,14 @@ elif menu == "📝 Registo Diário":
             for f in ficheiros:
                 st.text(f"📄 Carregado: {f.name}")
                 
-        if st.button("Avançar"):
-            st.session_state.step_registo = "escolher_atividade"
+        if st.button("Avançar", key="btn_avancar_up"):
+            st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
 
-    # PASSO 5: Escolha da Atividade Principal Baseada nos Ficheiros
-    elif st.session_state.step_registo == "escolher_atividade":
-        if st.button("⬅️ Voltar"):
-            st.session_state.step_registo = "upload_materiais"
+    # PASSO C: Escolha da Atividade Principal Baseada nos Ficheiros
+    elif st.session_state.step_estudar == "escolher_atividade":
+        if st.button("⬅️ Voltar", key="btn_voltar_ativ"):
+            st.session_state.step_estudar = "upload_materiais"
             st.rerun()
             
         st.title("📚 Estudo")
@@ -336,11 +340,12 @@ elif menu == "📝 Registo Diário":
                 "Quizzes",
                 "Transcrição e Consolidação de Conteúdos",
                 "Flashcards"
-            ]
+            ],
+            key="radio_ativ_estudar"
         )
         
-        if st.button("Iniciar Atividade"):
+        if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
             st.success(f"A iniciar a atividade: **{atividade}** para a matéria **{st.session_state.materia_escolhida_estudo}** com base nos ficheiros enviados!")
-            if st.button("🔄 Recomeçar Novo Registo Diário"):
-                st.session_state.step_registo = "formulario"
+            if st.button("🔄 Recomeçar Estudo", key="btn_recomecar"):
+                st.session_state.step_estudar = "escolher_materia"
                 st.rerun()
