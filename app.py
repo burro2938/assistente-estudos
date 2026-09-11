@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Importar a fonte Comfortaa e ajustar hierarquia de tamanhos
+# Importar a fonte Comfortaa e ajustar o tamanho dos menus na sidebar
 st.markdown(
     """
     <style>
@@ -23,17 +23,13 @@ st.markdown(
         --font: 'Comfortaa', cursive, sans-serif !important;
     }
 
-    /* Tamanho intermédio para o título e opções da barra lateral */
-    section[data-testid="stSidebar"] h1 {
-        font-size: 22px !important;
-    }
-    
+    /* Aumentar o tamanho do texto nos menus da barra lateral em +4px */
     section[data-testid="stSidebar"] *, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] div {
-        font-size: 16px !important;
+        font-size: 18px !important;
     }
     
     section[data-testid="stSidebar"] .stRadio label p {
-        font-size: 16px !important;
+        font-size: 18px !important;
     }
     </style>
     """,
@@ -108,8 +104,8 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Barra Lateral de Navegação (Uso de markdown para evitar conflitos de parsing de ícones)
-st.sidebar.markdown("# 📚 Painel Principal")
+# Barra Lateral de Navegação (Sem o conflito do ícone)
+st.sidebar.title("Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
     [
