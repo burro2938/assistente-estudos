@@ -140,29 +140,20 @@ elif menu == "📅 Agenda & Horário":
 elif menu == "📝 Registo Diário":
     st.title("📝 Registo de Estudo Diário")
     
-    data_registo = st.date_input("Data", datetime.date.today())
-    
-    # Detetar o dia da semana atual em português (0=Segunda, ..., 6=Domingo)
+    # Descobre automaticamente o dia de hoje
+    hoje = datetime.date.today()
     dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-    dia_atual_idx = data_registo.weekday()
+    dia_atual_idx = hoje.weekday()
     
-    # Se for fim de semana (Sábado/Domingo), predefinimos para Segunda por defeito
+    # Se for fim de semana, assume Segunda-feira por defeito, senão assume o dia atual
     if dia_atual_idx >= 5:
-        dia_padrao = "Segunda-feira"
+        dia_automatico = "Segunda-feira"
     else:
-        dia_padrao = dias_portugal[dia_atual_idx]
+        dia_automatico = dias_portugal[dia_atual_idx]
         
-    dias_semana = list(st.session_state.horario.keys())
-    try:
-        idx_default = dias_semana.index(dia_padrao)
-    except ValueError:
-        idx_default = 0
-        
-    dia_selecionado = st.selectbox("Dia da Semana", dias_semana, index=idx_default)
+    st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
     
-    st.markdown(f"### Matérias do dia: **{dia_selecionado}**")
-    
-    aulas_do_dia = st.session_state.horario.get(dia_selecionado, [])
+    aulas_do_dia = st.session_state.horario.get(dia_automatico, [])
     disciplinas_dia = []
     for aula in aulas_do_dia:
         if isinstance(aula, dict):
@@ -174,15 +165,16 @@ elif menu == "📝 Registo Diário":
             
     resumos_por_materia = {}
     if disciplinas_dia:
+        st.write("O que estudaste hoje em cada disciplina?")
         for disc in disciplinas_dia:
-            resumos_por_materia[disc] = st.text_area(f"Matéria: {disc} — O que estudaste hoje?", key=f"res_{dia_selecionado}_{disc}")
+            resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
     else:
-        st.info("Não tens disciplinas configuradas para este dia.")
+        st.info("Não tens disciplinas configuradas para hoje.")
         
     if st.button("Registar Sessão"):
         registo_novo = {
-            "data": str(data_registo),
-            "dia": dia_selecionado,
+            "data": str(hoje),
+            "dia": dia_automatico,
             "resumos": resumos_por_materia
         }
         st.session_state.logs.append(registo_novo)
