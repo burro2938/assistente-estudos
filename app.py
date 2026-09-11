@@ -8,20 +8,28 @@ st.set_page_config(
     layout="wide"
 )
 
-# Importar e forçar a fonte Comfortaa em toda a aplicação via CSS global
+# Importar a fonte Comfortaa e ajustar o tamanho dos menus na sidebar
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
 
-    /* Forçar Comfortaa em todos os elementos da aplicação Streamlit */
+    /* Forçar Comfortaa em toda a aplicação */
     html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
         font-family: 'Comfortaa', cursive, sans-serif !important;
     }
     
-    /* Forçar especificamente nas variáveis globais de fonte do Streamlit */
     :root {
         --font: 'Comfortaa', cursive, sans-serif !important;
+    }
+
+    /* Aumentar o tamanho do texto nos menus da barra lateral em +4px */
+    section[data-testid="stSidebar"] *, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] div {
+        font-size: 18px !important;
+    }
+    
+    section[data-testid="stSidebar"] .stRadio label p {
+        font-size: 18px !important;
     }
     </style>
     """,
@@ -96,8 +104,8 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Barra Lateral de Navegação
-st.sidebar.title("📚 Menu Principal")
+# Barra Lateral de Navegação (Sem o conflito do ícone)
+st.sidebar.title("Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
     [
