@@ -8,14 +8,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# Importar a fonte Comfortaa e ajustar o tamanho dos menus na sidebar
+# Importar a fonte Comfortaa e corrigir o conflito com os ícones do Streamlit
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
 
-    /* Forçar Comfortaa em toda a aplicação */
-    html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
+    /* Aplicar Comfortaa aos textos gerais, excluindo os ícones para evitar o erro do keyboard_double */
+    .stApp p, .stApp span:not([class*="icon"]):not([data-testid*="icon"]), .stApp div:not([class*="icon"]), .stApp label, .stApp input, .stApp textarea, .stApp button, .stApp select, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {
         font-family: 'Comfortaa', cursive, sans-serif !important;
     }
     
@@ -23,13 +23,14 @@ st.markdown(
         --font: 'Comfortaa', cursive, sans-serif !important;
     }
 
-    /* Aumentar o tamanho do texto nos menus da barra lateral em +4px */
-    section[data-testid="stSidebar"] *, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] div {
-        font-size: 18px !important;
+    /* Título "Menu Principal" na barra lateral (maior que as opções, mas menor que os títulos principais) */
+    section[data-testid="stSidebar"] h1 {
+        font-size: 20px !important;
     }
     
+    /* Opções de navegação da barra lateral */
     section[data-testid="stSidebar"] .stRadio label p {
-        font-size: 18px !important;
+        font-size: 15px !important;
     }
     </style>
     """,
@@ -104,8 +105,8 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Barra Lateral de Navegação (Sem o conflito do ícone)
-st.sidebar.title("Menu Principal")
+# Barra Lateral de Navegação
+st.sidebar.markdown("# Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
     [
