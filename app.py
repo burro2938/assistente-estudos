@@ -8,12 +8,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estipular o tipo de letra Comic Sans MS em toda a aplicação via CSS global
+# Forçar Comic Sans MS em toda a aplicação com seletores globais do Streamlit
 st.markdown(
     """
     <style>
-    html, body, [class*="css"] {
-        font-family: 'Comic Sans MS', cursive, sans-serif;
+    /* Forçar em todos os elementos da aplicação Streamlit */
+    html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Comic Sans MS', cursive, sans-serif !important;
+    }
+    
+    /* Forçar especificamente nas variáveis de fonte do Streamlit */
+    :root {
+        --font: 'Comic Sans MS', cursive, sans-serif !important;
     }
     </style>
     """,
