@@ -104,6 +104,8 @@ if "num_aulas_extra" not in st.session_state:
     st.session_state.num_aulas_extra = {}
 if "exercicios_gerados" not in st.session_state:
     st.session_state.exercicios_gerados = []
+if "flashcards_gerados" not in st.session_state:
+    st.session_state.flashcards_gerados = []
 if "dificuldade_selecionada" not in st.session_state:
     st.session_state.dificuldade_selecionada = "Médio ⚖️"
 
@@ -128,7 +130,6 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
     exs = []
     random.seed(42)
     
-    # Ajustar complexidade com base na dificuldade e ano
     fator = 1
     if "Fácil" in dificuldade:
         fator = 1
@@ -154,6 +155,70 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
             "resposta_correta": float(sol)
         })
     return exs
+
+# Função para gerar 20 Flashcards normais de estudo
+def gerar_20_flashcards(materia, dificuldade, ano_aluno):
+    flashcards = []
+    random.seed(100)
+    
+    bancos_perguntas = {
+        "Matemática": [
+            ("O que é uma equação do 1.º grau?", "É uma igualdade com uma incógnita cujo expoente máximo é 1."),
+            ("Como se isola a incógnita x numa adição simples?", "Passando o termo numérico para o outro membro com o sinal trocado (subtração)."),
+            ("Qual é o valor neutro da multiplicação?", "O número 1."),
+            ("O que representa o declive numa função afim?", "A taxa de variação da função."),
+            ("Como se calcula a área de um retângulo?", "Multiplicando o comprimento pela largura ($A = c \\times l$)."),
+            ("O que é um número primo?", "Um número natural maior do que 1 que tem apenas dois divisores: 1 e ele próprio."),
+            ("Qual é a soma dos ângulos internos de um triângulo?", "$180^\\circ$."),
+            ("Como se converte uma fração em percentagem?", "Multiplicando o numerador pelo denominador por 100 ou achando a fração equivalente com denominador 100."),
+            ("O que significa simplificar uma fração?", "Dividir o numerador e o denominador pelo mesmo número diferente de zero até obter uma fração irredutível."),
+            ("Qual é a fórmula do perímetro de uma circunferência?", "$P = 2 \\pi r$."),
+            ("O que é uma proporção?", "Uma igualdade entre duas razões."),
+            ("Como se calcula a média aritmética?", "Somando todos os valores e dividindo pelo número total de valores."),
+            ("O que indica um expoente negativo num número?", "Indica o inverso da base elevado ao expoente positivo ($a^{-n} = \\frac{1}{a^n}$)."),
+            ("Qual é a raiz quadrada de 144?", "12."),
+            ("O que é um polígono regular?", "Um polígono com todos os lados e ângulos internos iguais."),
+            ("Como se calcula o volume de um paralelepípedo?", "Multiplicando o comprimento, a largura e a altura ($V = c \\times l \\times a$)."),
+            ("O que é uma simetria axial?", "Uma reflexão em relação a uma reta chamada eixo de simetria."),
+            ("Qual é o valor de qualquer número (diferente de zero) elevado a zero?", "1."),
+            ("O que são ângulos opostos pelo vértice?", "São ângulos que partilham o mesmo vértice e cujos lados são semirretas opostas; são iguais."),
+            (f"Qual é o objetivo principal do estudo no {ano_aluno}?", "Consolidar bases matemáticas e aplicar raciocínio lógico avançado.")
+        ],
+        "Português": [
+            ("O que é o sujeito numa frase?", "O ser ou objeto que pratica ou sofre a ação expressa pelo verbo."),
+            ("Diferencia predicado nominal de predicado verbal:", "O predicado verbal tem um verbo principal; o predicado nominal tem um verbo copulativo e um predicado."),
+            ("O que é uma palavra polissémica?", "Uma palavra que possui vários significados consoante o contexto."),
+            ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
+            ("O que é a regência verbal?", "A relação de dependência entre um verbo e o seu complemento."),
+            ("O que caracteriza uma crónica literária?", "Um texto curto baseado num facto do quotidiano com uma visão crítica ou irónica."),
+            ("O que são sinónimos?", "Palavras com significados iguais ou semelhantes."),
+            ("O que são antónimos?", "Palavras com significados opostos."),
+            ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente de outra (oração principal)."),
+            ("Qual é a função de um advérbio?", "Modificar o sentido de um verbo, de um adjetivo ou de outro advérbio."),
+            ("O que é a acentuação grave (palavras graves)?", "Palavras cuja tonicidade recai na penúltima sílaba."),
+            ("O que é uma metáfora?", "Uma figura de estilo baseada numa comparação implícita."),
+            ("O que é a aliteração?", "A repetição de sons consonânticos semelhantes num verso ou frase."),
+            ("O que é umneologismo?", "A criação de uma palavra nova numa língua."),
+            ("Qual é a estrutura típica de uma narrativa?", "Introdução, desenvolvimento (complicação e clímax) e conclusão."),
+            ("O que é um pronome pessoal?", "Um pronome que substitui o nome e indica as pessoas do discurso (eu, tu, ele...)."),
+            ("O que é o pretérito mais-que-perfeito?", "Um tempo verbal que indica uma ação passada anterior a outra também passada."),
+            ("O que é uma antítese?", "A aproximação de palavras com sentidos opostos na mesma frase."),
+            ("O que é um ditongo?", "A sequência de uma vogal e uma semivogal (ou vice-versa) na mesma sílaba."),
+            (f"Como aplicar a ortografia correta no {ano_aluno}?", "Através da leitura regular e prática de escrita formal.")
+        ]
+    }
+    
+    # Selecionar banco específico ou genérico
+    banco = bancos_perguntas.get(materia, bancos_perguntas["Matemática"])
+    
+    for i in range(1, 21):
+        pergunta, resposta = banco[(i - 1) % len(banco)]
+        flashcards.append({
+            "id": i,
+            "pergunta": f"{pergunta} (Nível: {dificuldade})",
+            "resposta": resposta
+        })
+    return flashcards
 
 # Barra Lateral de Navegação
 st.sidebar.markdown("# Menu Principal")
@@ -367,7 +432,6 @@ elif menu == "📖 Estudar":
         )
         
         st.markdown("---")
-        # Botão / Seletor de Dificuldade com Emojis pedido
         st.session_state.dificuldade_selecionada = st.radio(
             "⚡ Seleciona a Dificuldade:",
             [
@@ -385,10 +449,12 @@ elif menu == "📖 Estudar":
             st.session_state.atividade_selecionada = atividade
             if atividade == "Exercícios":
                 st.session_state.exercicios_gerados = gerar_30_exercicios(st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
+            elif atividade == "Flashcards":
+                st.session_state.flashcards_gerados = gerar_20_flashcards(st.session_state.materia_escolhida_estudo, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
             st.session_state.step_estudar = "executar_atividade"
             st.rerun()
 
-    # PASSO D: Execução da Atividade com os 30 Exercícios, Validação e Palavra-Chave "não"
+    # PASSO D: Execução da Atividade
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("⬅️ Voltar às Opções", key="btn_voltar_exec"):
             st.session_state.step_estudar = "escolher_atividade"
@@ -397,7 +463,7 @@ elif menu == "📖 Estudar":
         st.title(f"🎯 {st.session_state.atividade_selecionada}")
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
         
-        st.info("💡 **Aviso:** Se aparecer alguma pergunta sobre matéria que ainda não deste/aprendeste, basta escrever **'não'** na resposta.")
+        st.info("💡 **Aviso:** Se aparecer alguma pergunta sobre matéria que ainda não deste/aprendeste, basta escrever **'não'** na resposta (nos exercícios) ou assinalar.")
         
         st.markdown("---")
         
@@ -420,7 +486,7 @@ elif menu == "📖 Estudar":
                     val_str = respostas_utilizador.get(eid, "").strip().lower()
                     
                     if val_str == "não" or val_str == "nao":
-                        st.info(f"Exercício {eid}: Marcado como **não aprendido** ('não'). A matéria correspondente será reforçada nas próximas sessões.")
+                        st.info(f"Exercício {eid}: Marcado como **não aprendido** ('não').")
                         nao_aprendidos += 1
                     else:
                         try:
@@ -437,7 +503,7 @@ elif menu == "📖 Estudar":
                 
         elif st.session_state.atividade_selecionada == "Quizzes":
             st.subheader("❓ Quiz de Avaliação Teórica:")
-            q_resp = st.radio("1. Numa equação, se ainda não deste a matéria correspondente, o que deves responder?", ["não", "Sim", "Talvez", "Nenhuma"], key="q_quiz_mat")
+            q_resp = st.radio("1. Numa matéria, se ainda não deste o conteúdo correspondente, o que deves responder?", ["não", "Sim", "Talvez", "Nenhuma"], key="q_quiz_mat")
             if st.button("Submeter Quiz"):
                 if q_resp.lower() == "não" or q_resp.lower() == "nao":
                     st.success("Resposta Certa! 🎉 (Utilizaste a palavra-chave correta)")
@@ -449,10 +515,28 @@ elif menu == "📖 Estudar":
             st.code(st.session_state.texto_estudo_livre if st.session_state.texto_estudo_livre else f"Matéria base para o {st.session_state.ano_escolar} e nível {st.session_state.dificuldade_selecionada}.", language="text")
             
         elif st.session_state.atividade_selecionada == "Flashcards":
-            st.subheader("🃏 Flashcards de Memorização:")
-            st.info("Pergunta: O que deves escrever se te sair uma pergunta de uma matéria que ainda não deste na escola?\n\n(Clica em 'Ver Resposta')")
-            if st.button("Ver Resposta"):
-                st.success("Resposta: Deves escrever exatamente a palavra-chave **'não'**.")
+            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
+            st.write("Clica no botão respetivo de cada cartão para revelares a resposta e testares os teus conhecimentos:")
+            
+            for fc in st.session_state.flashcards_gerados:
+                fid = fc["id"]
+                st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
+                
+                # Estado individual para cada flashcard
+                if f"mostrar_fc_{fid}" not in st.session_state:
+                    st.session_state[f"mostrar_fc_{fid}"] = False
+                    
+                col_b1, col_b2 = st.columns([1, 4])
+                with col_b1:
+                    if st.button(f"Virar #{fid}", key=f"btn_virar_{fid}"):
+                        st.session_state[f"mostrar_fc_{fid}"] = not st.session_state[f"mostrar_fc_{fid}"]
+                        st.rerun()
+                with col_b2:
+                    if st.session_state[f"mostrar_fc_{fid}"]:
+                        st.success(f"**Resposta:** {fc['resposta']}")
+                    else:
+                        st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
+                st.markdown("---")
 
         st.markdown("---")
         if st.button("🔄 Recomeçar Estudo do Zero", key="btn_recomecar_total"):
