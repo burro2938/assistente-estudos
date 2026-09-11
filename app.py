@@ -24,14 +24,42 @@ if "ano_letivo" not in st.session_state:
     st.session_state.ano_letivo = "2026/2027"
 if "horario" not in st.session_state:
     st.session_state.horario = {
-        "Segunda-feira": ["Português", "Matemática", "Inglês", "História/Geografia"],
-        "Terça-feira": ["Matemática", "Ciências Naturais", "Francês", "Físico-Química"],
-        "Quarta-feira": ["Português", "Inglês", "Matemática", "Educação Física"],
-        "Quinta-feira": ["História/Geografia", "Ciências Naturais", "Francês", "Físico-Química"],
-        "Sexta-feira": ["Português", "Matemática", "Educação Visual", "Tecnologias"]
+        "Segunda-feira": [
+            {"hora": "08:30 - 09:15", "disc": "Educação Física"},
+            {"hora": "09:25 - 10:10", "disc": "Matemática"},
+            {"hora": "10:30 - 11:15", "disc": "Inglês"},
+            {"hora": "11:25 - 12:10", "disc": "Português"},
+            {"hora": "12:20 - 13:05", "disc": "Português"},
+            {"hora": "13:55 - 14:40", "disc": "Físico Química"},
+            {"hora": "14:50 - 15:35", "disc": "Francês"}
+        ],
+        "Terça-feira": [
+            {"hora": "08:30 - 09:15", "disc": "Matemática"},
+            {"hora": "09:25 - 10:10", "disc": "Ciências Naturais"},
+            {"hora": "10:30 - 11:15", "disc": "Francês"},
+            {"hora": "11:25 - 12:10", "disc": "Físico-Química"}
+        ],
+        "Quarta-feira": [
+            {"hora": "08:30 - 09:15", "disc": "Português"},
+            {"hora": "09:25 - 10:10", "disc": "Inglês"},
+            {"hora": "10:30 - 11:15", "disc": "Matemática"},
+            {"hora": "11:25 - 12:10", "disc": "Educação Física"}
+        ],
+        "Quinta-feira": [
+            {"hora": "08:30 - 09:15", "disc": "História/Geografia"},
+            {"hora": "09:25 - 10:10", "disc": "Ciências Naturais"},
+            {"hora": "10:30 - 11:15", "disc": "Francês"},
+            {"hora": "11:25 - 12:10", "disc": "Físico-Química"}
+        ],
+        "Sexta-feira": [
+            {"hora": "08:30 - 09:15", "disc": "Português"},
+            {"hora": "09:25 - 10:10", "disc": "Matemática"},
+            {"hora": "10:30 - 11:15", "disc": "Educação Visual"},
+            {"hora": "11:25 - 12:10", "disc": "Tecnologias"}
+        ]
     }
 
-# Barra Lateral de Navegação (na ordem pedida)
+# Barra Lateral de Navegação
 st.sidebar.title("📚 Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
@@ -58,7 +86,7 @@ if menu == "🏠 Início & Escola":
     with col2:
         st.session_state.ano_letivo = st.text_input("Ano Letivo", value=st.session_state.ano_letivo)
         
-    st.success(config_msg := f"A frequentar o ano letivo **{st.session_state.ano_letivo}** em **{st.session_state.escola}**.")
+    st.success(f"A frequentar o ano letivo **{st.session_state.ano_letivo}** em **{st.session_state.escola}**.")
 
 # 2. Agenda & Horário
 elif menu == "📅 Agenda & Horário":
@@ -67,18 +95,24 @@ elif menu == "📅 Agenda & Horário":
     st.subheader("Configurar Horário Semanal")
     dia_escolhido = st.selectbox("Dia da Semana", list(st.session_state.horario.keys()))
     
-    # Permitir editar as disciplinas do dia
-    aulas_atuais = ", ".join(st.session_state.horario[dia_escolhido])
-    novas_aulas_str = st.text_input(f"Disciplinas para {dia_escolhido} (separadas por vírgula):", value=aulas_atuais)
-    
-    if st.button("Atualizar Horário do Dia"):
-        st.session_state.horario[dia_escolhido] = [a.strip() for a in novas_aulas_str.split(",")]
+    st.write(f"Edita as horas e as disciplinas para {dia_escolhido}:")
+    novo_dia = []
+    for idx, item in enumerate(st.session_state.horario[dia_escolhido]):
+        col_h, col_d = st.columns(2)
+        with col_h:
+            nova_hora = st.text_input(f"Hora {idx+1}", value=item["hora"], key=f"hora_{dia_escolhido}_{idx}")
+        with col_d:
+            nova_disc = st.text_input(f"Disciplina {idx+1}", value=item["disc"], key=f"disc_{dia_escolhido}_{idx}")
+        novo_dia.append({"hora": nova_hora, "disc": nova_disc})
+        
+    if st.button("Guardar Alterações do Horário"):
+        st.session_state.horario[dia_escolhido] = novo_dia
         st.success(f"Horário de {dia_escolhido} atualizado com sucesso!")
         
     st.markdown("---")
     st.subheader(f"Visualizar Horário: {dia_escolhido}")
-    for i, disc in enumerate(st.session_state.horario[dia_escolhido], 1):
-        st.text(f"Módulo {i}: {disc}")
+    for item in st.session_state.horario[dia_escolhido]:
+        st.text(f"{item['hora']} ➔ {item['disc']}")
         
     st.markdown("---")
     st.subheader("⏳ Contagem Decrescente para Testes")
