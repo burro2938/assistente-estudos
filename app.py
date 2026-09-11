@@ -56,6 +56,10 @@ if "horario" not in st.session_state:
         ]
     }
 
+# Chave de controlo para o número de linhas por dia em tempo de execução
+if "num_aulas_extra" not in st.session_state:
+    st.session_state.num_aulas_extra = {}
+
 # Barra Lateral de Navegação
 st.sidebar.title("📚 Menu Principal")
 menu = st.sidebar.radio(
@@ -95,11 +99,17 @@ elif menu == "📅 Agenda & Horário":
     st.write(f"Edita as horas e as disciplinas para **{dia_escolhido}**:")
     
     current_aulas = st.session_state.horario[dia_escolhido]
+    
+    if dia_escolhido not in st.session_state.num_aulas_extra:
+        st.session_state.num_aulas_extra[dia_escolhido] = len(current_aulas)
+        
     novo_dia = []
     
-    for idx, item in enumerate(current_aulas):
+    # Renderizar campos para cada aula existente ou adicionada
+    for idx in range(st.session_state.num_aulas_extra[dia_escolhido]):
+        item = current_aulas[idx] if idx < len(current_aulas) else {"hora": "", "disc": ""}
         if not isinstance(item, dict):
-            item = {"hora": "08:30 - 09:15", "disc": str(item)}
+            item = {"hora": "", "disc": str(item)}
             
         col1, col2 = st.columns(2)
         with col1:
@@ -108,6 +118,10 @@ elif menu == "📅 Agenda & Horário":
             nova_disc = st.text_input(f"Disciplina {idx+1}", value=item.get("disc", ""), key=f"d_{dia_escolhido}_{idx}")
         novo_dia.append({"hora": nova_hora, "disc": nova_disc})
         
+    if st.button("➕ Adicionar Aula"):
+        st.session_state.num_aulas_extra[dia_escolhido] += 1
+        st.rerun()
+
     if st.button("Guardar Alterações do Horário"):
         st.session_state.horario[dia_escolhido] = novo_dia
         st.success(f"Horário de {dia_escolhido} guardado com sucesso!")
