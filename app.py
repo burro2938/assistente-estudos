@@ -8,20 +8,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# Importar a fonte Comfortaa e aplicar corretamente a todos os elementos de texto e seletores
+# Importar a fonte Comfortaa e aplicar corretamente (com exclusão segura para os ícones/keyboard)
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
 
-    /* Forçar a fonte Comfortaa em toda a aplicação, exceto nos ícones internos do sistema */
-    html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
+    /* Aplicar Comfortaa apenas aos elementos de texto e controlos padrão, evitando seletores genéricos de classes do Streamlit */
+    p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
         font-family: 'Comfortaa', cursive, sans-serif !important;
     }
 
-    /* Exceção estrita para manter os ícones do Streamlit intocados e evitar o erro do keyboard */
-    span[class*="icon"], div[class*="icon"], [data-testid*="icon"] {
-        font-family: 'Material Icons', 'Streamlit-Icons', sans-serif !important;
+    /* Exceção rigorosa para proteger ícones de sistema e o teclado virtual/indicadores */
+    span[class*="icon"], div[class*="icon"], [data-testid*="icon"], [class*="Keyboard"] {
+        font-family: inherit !important;
     }
 
     /* Título "Menu Principal" na barra lateral */
