@@ -45,13 +45,16 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Estado da Sessão para Dados
+# Estado da Sessão para Dados e Configurações do Aluno
 if "logs" not in st.session_state:
     st.session_state.logs = []
 if "escola" not in st.session_state:
     st.session_state.escola = "Escola Básica de Manhente"
 if "ano_letivo" not in st.session_state:
     st.session_state.ano_letivo = "2026/2027"
+if "ano_escolar" not in st.session_state:
+    st.session_state.ano_escolar = "7.º Ano"
+
 if "horario" not in st.session_state:
     st.session_state.horario = {
         "Segunda-feira": [
@@ -101,6 +104,8 @@ if "num_aulas_extra" not in st.session_state:
     st.session_state.num_aulas_extra = {}
 if "exercicios_gerados" not in st.session_state:
     st.session_state.exercicios_gerados = []
+if "dificuldade_selecionada" not in st.session_state:
+    st.session_state.dificuldade_selecionada = "Médio ⚖️"
 
 LISTA_MATERIAS = [
     "E.F. (Educação Física)",
@@ -118,17 +123,31 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Função para gerar 30 exercícios automáticos de Matemática (Equações)
-def gerar_30_exercicios():
+# Função para gerar 30 exercícios adaptados à dificuldade e ao ano escolar
+def gerar_30_exercicios(dificuldade, ano_aluno):
     exs = []
-    random.seed(42) # Para manter a consistência na sessão
+    random.seed(42)
+    
+    # Ajustar complexidade com base na dificuldade e ano
+    fator = 1
+    if "Fácil" in dificuldade:
+        fator = 1
+    elif "Médio" in dificuldade:
+        fator = 2
+    elif "Difícil" in dificuldade:
+        fator = 3
+    elif "Muito" in dificuldade:
+        fator = 4
+    elif "Extremamente" in dificuldade:
+        fator = 5
+
     for i in range(1, 31):
-        a = random.randint(2, 9)
-        b = random.randint(1, 20)
-        sol = random.randint(1, 15)
+        a = random.randint(1 * fator, 5 * fator)
+        b = random.randint(2 * fator, 15 * fator)
+        sol = random.randint(1, 10 * fator)
         c = a * sol + b
-        # Equação do tipo: a*x + b = c -> a*x = c - b -> x = sol
-        enunciado = f"{a}x + {b} = {c}"
+        
+        enunciado = f"{a}x + {b} = {c} (Ano base: {ano_aluno})"
         exs.append({
             "id": i,
             "enunciado": enunciado,
@@ -156,13 +175,15 @@ if menu == "🏠 Início & Escola":
     st.markdown("---")
     st.subheader("⚙️ Configurações do Aluno")
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.session_state.escola = st.text_input("Escola Atual", value=st.session_state.escola)
     with col2:
         st.session_state.ano_letivo = st.text_input("Ano Letivo", value=st.session_state.ano_letivo)
+    with col3:
+        st.session_state.ano_escolar = st.selectbox("Ano Escolar Atual", ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"], index=2)
         
-    st.success(f"A frequentar o ano letivo **{st.session_state.ano_letivo}** em **{st.session_state.escola}**.")
+    st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
 
 # 2. Agenda & Horário
 elif menu == "📅 Agenda & Horário":
@@ -299,7 +320,7 @@ elif menu == "📖 Estudar":
             
         st.title("📚 Estudo")
         st.subheader("Materiais de Estudo")
-        st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo}")
+        st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo} (Nível: {st.session_state.ano_escolar})")
         
         ficheiros = st.file_uploader(
             "Carrega os teus documentos (PDF, Imagens PNG/JPG, Documentos, Áudios e Vídeos):",
@@ -325,7 +346,7 @@ elif menu == "📖 Estudar":
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
 
-    # PASSO C: Escolha da Atividade
+    # PASSO C: Escolha da Atividade e Botão de Dificuldade
     elif st.session_state.step_estudar == "escolher_atividade":
         if st.button("⬅️ Voltar", key="btn_voltar_ativ"):
             st.session_state.step_estudar = "upload_materiais"
@@ -345,75 +366,93 @@ elif menu == "📖 Estudar":
             key="radio_ativ_estudar"
         )
         
+        st.markdown("---")
+        # Botão / Seletor de Dificuldade com Emojis pedido
+        st.session_state.dificuldade_selecionada = st.radio(
+            "⚡ Seleciona a Dificuldade:",
+            [
+                "Fácil 🟢",
+                "Médio ⚖️",
+                "Difícil 🟠",
+                "Muito difícil 🔴",
+                "Extremamente difícil 🔥"
+            ],
+            index=["Fácil 🟢", "Médio ⚖️", "Difícil 🟠", "Muito difícil 🔴", "Extremamente difícil 🔥"].index(st.session_state.dificuldade_selecionada) if st.session_state.dificuldade_selecionada in ["Fácil 🟢", "Médio ⚖️", "Difícil 🟠", "Muito difícil 🔴", "Extremamente difícil 🔥"] else 1,
+            key="radio_dificuldade_opcao"
+        )
+        
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
             st.session_state.atividade_selecionada = atividade
             if atividade == "Exercícios":
-                st.session_state.exercicios_gerados = gerar_30_exercicios()
+                st.session_state.exercicios_gerados = gerar_30_exercicios(st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
             st.session_state.step_estudar = "executar_atividade"
             st.rerun()
 
-    # PASSO D: Execução da Atividade com os 30 Exercícios e Validação Certo/Errado
+    # PASSO D: Execução da Atividade com os 30 Exercícios, Validação e Palavra-Chave "não"
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("⬅️ Voltar às Opções", key="btn_voltar_exec"):
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
             
         st.title(f"🎯 {st.session_state.atividade_selecionada}")
-        st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo}")
+        st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
         
-        if st.session_state.texto_estudo_livre:
-            st.info(f"**Notas inseridas:**\n\n{st.session_state.texto_estudo_livre}")
-        else:
-            st.info("Nenhum apontamento inserido: a gerar exercícios padrão automaticamente com base na matéria.")
+        st.info("💡 **Aviso:** Se aparecer alguma pergunta sobre matéria que ainda não deste/aprendeste, basta escrever **'não'** na resposta.")
         
         st.markdown("---")
         
         if st.session_state.atividade_selecionada == "Exercícios":
-            st.subheader("✏️ Conjunto de 30 Exercícios Práticos (Calcula o valor de x):")
+            st.subheader("✏️ Conjunto de 30 Exercícios Práticos:")
             
             respostas_utilizador = {}
             for ex in st.session_state.exercicios_gerados:
                 eid = ex["id"]
                 st.markdown(f"**Exercício {eid}:**  $${ex['enunciado']}$$")
-                respostas_utilizador[eid] = st.text_input(f"Valor de x para o exercício {eid}:", key=f"resp_ex_{eid}")
+                respostas_utilizador[eid] = st.text_input(f"Valor de x para o exercício {eid} (ou escreve 'não' se ainda não aprendeste):", key=f"resp_ex_{eid}")
                 st.markdown("---")
                 
             if st.button("Submeter e Corrigir Respostas", key="btn_submeter_30"):
                 acertos = 0
+                nao_aprendidos = 0
                 st.subheader("📊 Resultados da Correção:")
                 for ex in st.session_state.exercicios_gerados:
                     eid = ex["id"]
-                    val_str = respostas_utilizador.get(eid, "").strip()
-                    try:
-                        val_num = float(val_str)
-                        if abs(val_num - ex["resposta_correta"]) < 1e-3:
-                            st.success(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Certa!** 🎉")
-                            acertos += 1
-                        else:
-                            st.error(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Errada.** (A correta era {int(ex['resposta_correta']) if ex['resposta_correta'].is_integer() else ex['resposta_correta']})")
-                    except ValueError:
-                        st.warning(f"Exercício {eid}: Não introduziste um número válido (Resposta: '{val_str}').")
+                    val_str = respostas_utilizador.get(eid, "").strip().lower()
+                    
+                    if val_str == "não" or val_str == "nao":
+                        st.info(f"Exercício {eid}: Marcado como **não aprendido** ('não'). A matéria correspondente será reforçada nas próximas sessões.")
+                        nao_aprendidos += 1
+                    else:
+                        try:
+                            val_num = float(val_str)
+                            if abs(val_num - ex["resposta_correta"]) < 1e-3:
+                                st.success(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Certa!** 🎉")
+                                acertos += 1
+                            else:
+                                st.error(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Errada.** (A correta era {int(ex['resposta_correta']) if ex['resposta_correta'].is_integer() else ex['resposta_correta']})")
+                        except ValueError:
+                            st.warning(f"Exercício {eid}: Valor inválido introduzido ('{val_str}').")
                 
-                st.markdown(f"### Pontuação Final: **{acertos} / 30**")
+                st.markdown(f"### Pontuação Final: **{acertos} / 30 corretas** ({nao_aprendidos} assinaladas com 'não')")
                 
         elif st.session_state.atividade_selecionada == "Quizzes":
             st.subheader("❓ Quiz de Avaliação Teórica:")
-            q_resp = st.radio("1. Numa equação do 1.º grau, qual é o objetivo principal?", ["Isolar a incógnita x", "Somar todos os números", "Eliminar o sinal de igual", "Nenhuma"], key="q_quiz_mat")
+            q_resp = st.radio("1. Numa equação, se ainda não deste a matéria correspondente, o que deves responder?", ["não", "Sim", "Talvez", "Nenhuma"], key="q_quiz_mat")
             if st.button("Submeter Quiz"):
-                if q_resp == "Isolar a incógnita x":
-                    st.success("Resposta Certa! 🎉")
+                if q_resp.lower() == "não" or q_resp.lower() == "nao":
+                    st.success("Resposta Certa! 🎉 (Utilizaste a palavra-chave correta)")
                 else:
-                    st.error("Resposta Errada. O objetivo é isolar a incógnita x.")
+                    st.error("Resposta Errada. A palavra-chave correta é 'não'.")
                 
         elif st.session_state.atividade_selecionada == "Transcrição e Consolidação de Conteúdos":
             st.subheader("📖 Resumo e Consolidação:")
-            st.code(st.session_state.texto_estudo_livre if st.session_state.texto_estudo_livre else "Matéria base: Resolução de equações e propriedades algébricas fundamentais.", language="text")
+            st.code(st.session_state.texto_estudo_livre if st.session_state.texto_estudo_livre else f"Matéria base para o {st.session_state.ano_escolar} e nível {st.session_state.dificuldade_selecionada}.", language="text")
             
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("🃏 Flashcards de Memorização:")
-            st.info("Pergunta: O que deves fazer quando passas um termo com sinal positivo para o outro lado da equação?\n\n(Clica em 'Ver Resposta')")
+            st.info("Pergunta: O que deves escrever se te sair uma pergunta de uma matéria que ainda não deste na escola?\n\n(Clica em 'Ver Resposta')")
             if st.button("Ver Resposta"):
-                st.success("Resposta: Passa com o sinal trocado (negativo / subtração).")
+                st.success("Resposta: Deves escrever exatamente a palavra-chave **'não'**.")
 
         st.markdown("---")
         if st.button("🔄 Recomeçar Estudo do Zero", key="btn_recomecar_total"):
