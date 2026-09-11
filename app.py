@@ -1,5 +1,6 @@
 import streamlit as st
 import datetime
+import random
 
 # Configuração da Página
 st.set_page_config(
@@ -98,6 +99,8 @@ if "texto_estudo_livre" not in st.session_state:
     st.session_state.texto_estudo_livre = ""
 if "num_aulas_extra" not in st.session_state:
     st.session_state.num_aulas_extra = {}
+if "exercicios_gerados" not in st.session_state:
+    st.session_state.exercicios_gerados = []
 
 LISTA_MATERIAS = [
     "E.F. (Educação Física)",
@@ -114,6 +117,24 @@ LISTA_MATERIAS = [
     "E.V. (Educação Visual)",
     "Cidadania e Desenvolvimento"
 ]
+
+# Função para gerar 30 exercícios automáticos de Matemática (Equações)
+def gerar_30_exercicios():
+    exs = []
+    random.seed(42) # Para manter a consistência na sessão
+    for i in range(1, 31):
+        a = random.randint(2, 9)
+        b = random.randint(1, 20)
+        sol = random.randint(1, 15)
+        c = a * sol + b
+        # Equação do tipo: a*x + b = c -> a*x = c - b -> x = sol
+        enunciado = f"{a}x + {b} = {c}"
+        exs.append({
+            "id": i,
+            "enunciado": enunciado,
+            "resposta_correta": float(sol)
+        })
+    return exs
 
 # Barra Lateral de Navegação
 st.sidebar.markdown("# Menu Principal")
@@ -190,16 +211,14 @@ elif menu == "📅 Agenda & Horário":
     if st.button("Guardar Teste"):
         st.success(f"Teste de {materia_teste} agendado para {data_teste} com sucesso!")
 
-# 3. Registo Diário & Fluxo Interativo
+# 3. Registo Diário
 elif menu == "📝 Registo Diário":
-    
     if st.session_state.step_registo == "formulario":
         st.title("📝 Registo de Estudo Diário")
         
         hoje = datetime.date.today()
         dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
         dia_atual_idx = hoje.weekday()
-        
         dia_automatico = "Segunda-feira" if dia_atual_idx >= 5 else dias_portugal[dia_atual_idx]
             
         st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
@@ -229,15 +248,6 @@ elif menu == "📝 Registo Diário":
             st.success("Sessão registada com sucesso!")
             st.session_state.step_registo = "flashcards_pos"
             st.rerun()
-            
-        if st.session_state.logs:
-            st.markdown("---")
-            st.subheader("📊 Histórico Recente")
-            for log in reversed(st.session_state.logs):
-                st.info(f"**{log.get('data', '')}** ({log.get('dia', '')})")
-                for d, r in log.get("resumos", {}).items():
-                    if r:
-                        st.write(f"- **{d}:** {r}")
 
     elif st.session_state.step_registo == "flashcards_pos":
         if st.button("⬅️ Voltar"):
@@ -245,19 +255,11 @@ elif menu == "📝 Registo Diário":
             st.rerun()
             
         st.title("🧠 Revisão Rápida (Flashcards)")
-        st.write("Responde a estas perguntas de escolha múltipla geradas com base no que estudaste hoje para fixar a matéria:")
+        st.write("Responde a estas perguntas geradas com base no que estudaste hoje:")
         
-        perguntas_exemplo = [
-            {"p": "Qual dos seguintes conceitos esteve mais em destaque na matéria de hoje?", "opcoes": ["Opção A", "Opção B", "Opção C", "Nenhuma das anteriores"], "correta": 0},
-            {"p": "Identifica a principal regra ou propriedade abordada na aula:", "opcoes": ["Propriedade Distributiva", "Lei Geral de Ocorrência", "Estrutura Base", "Nenhum dos anteriores"], "correta": 0},
-            {"p": "Assinala a afirmação correta sobre o tema estudado:", "opcoes": ["Aplica-se apenas em casos isolados", "É uma norma universal do tema", "Não tem aplicação prática", "Depende do contexto temporal"], "correta": 1},
-            {"p": "De acordo com os apontamentos, qual é o elemento principal?", "opcoes": ["Fator X", "Fator Y", "Fator Z", "Nenhum"], "correta": 0},
-            {"p": "Qual é o objetivo principal do exercício prático analisado?", "opcoes": ["Memorização", "Compreensão estrutural", "Cálculo direto", "Análise crítica"], "correta": 1}
-        ]
-        
-        for i, q in enumerate(perguntas_exemplo):
-            st.markdown(f"**Questão {i+1}:** {q['p']}")
-            st.radio(f"Escolhe uma opção para a questão {i+1}:", q['opcoes'], key=f"q_pos_{i}")
+        for i in range(5):
+            st.markdown(f"**Questão {i+1}:** Qual é a propriedade principal aplicada no cálculo de hoje?")
+            st.radio(f"Opções Q{i+1}:", ["Propriedade Distributiva", "Isolamento da Incógnita", "Regra Geral", "Nenhuma"], key=f"q_pos_{i}")
             st.markdown("---")
             
         if st.button("Ir para o Estudo"):
@@ -265,7 +267,7 @@ elif menu == "📝 Registo Diário":
             st.session_state.step_registo = "formulario"
             st.rerun()
 
-# 4. Alínea: Estudar (Menu Independente)
+# 4. Alínea: Estudar
 elif menu == "📖 Estudar":
     
     # PASSO A: Escolha de Matéria
@@ -289,7 +291,7 @@ elif menu == "📖 Estudar":
             st.session_state.step_estudar = "upload_materiais"
             st.rerun()
 
-    # PASSO B: Upload de Ficheiros ou Texto Direto
+    # PASSO B: Upload ou Texto Direto (Opcional)
     elif st.session_state.step_estudar == "upload_materiais":
         if st.button("⬅️ Voltar", key="btn_voltar_up"):
             st.session_state.step_estudar = "escolher_materia"
@@ -312,7 +314,7 @@ elif menu == "📖 Estudar":
                 st.text(f"📄 Carregado: {f.name}")
                 
         st.markdown("---")
-        st.write("Caso não queira carregar ficheiros, escreva a matéria ou os apontamentos abaixo:")
+        st.write("Caso não queira carregar ficheiros, escreva a matéria ou os apontamentos abaixo (ou avance diretamente):")
         st.session_state.texto_estudo_livre = st.text_area(
             "Apontamentos / Tópicos da Matéria:", 
             value=st.session_state.texto_estudo_livre, 
@@ -345,10 +347,12 @@ elif menu == "📖 Estudar":
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
             st.session_state.atividade_selecionada = atividade
+            if atividade == "Exercícios":
+                st.session_state.exercicios_gerados = gerar_30_exercicios()
             st.session_state.step_estudar = "executar_atividade"
             st.rerun()
 
-    # PASSO D: Execução da Atividade (Mostra o conteúdo real gerado)
+    # PASSO D: Execução da Atividade com os 30 Exercícios e Validação Certo/Errado
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("⬅️ Voltar às Opções", key="btn_voltar_exec"):
             st.session_state.step_estudar = "escolher_atividade"
@@ -358,40 +362,58 @@ elif menu == "📖 Estudar":
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo}")
         
         if st.session_state.texto_estudo_livre:
-            st.info(f"**Baseado nos teus apontamentos/equações:**\n\n{st.session_state.texto_estudo_livre}")
+            st.info(f"**Notas inseridas:**\n\n{st.session_state.texto_estudo_livre}")
+        else:
+            st.info("Nenhum apontamento inserido: a gerar exercícios padrão automaticamente com base na matéria.")
         
         st.markdown("---")
         
-        # Conteúdo dinâmico com base na atividade escolhida
         if st.session_state.atividade_selecionada == "Exercícios":
-            st.subheader("✏️ Exercícios Práticos Criados para ti:")
-            st.write("Com base no que introduziste, resolve os seguintes exercícios:")
+            st.subheader("✏️ Conjunto de 30 Exercícios Práticos (Calcula o valor de x):")
             
-            st.markdown("1. **Exercício 1:** Resolve a equação apresentada nos teus apontamentos isolando a incógnita.")
-            st.text_input("A tua resposta para o Exercício 1:", key="resp_ex_1")
-            
-            st.markdown("2. **Exercício 2:** Aplica o método inverso para verificar se o resultado obtido está correto.")
-            st.text_input("A tua resposta para o Exercício 2:", key="resp_ex_2")
-            
-            if st.button("Submeter Respostas"):
-                st.success("Respostas guardadas com sucesso! Excelente trabalho de prática.")
+            respostas_utilizador = {}
+            for ex in st.session_state.exercicios_gerados:
+                eid = ex["id"]
+                st.markdown(f"**Exercício {eid}:**  $${ex['enunciado']}$$")
+                respostas_utilizador[eid] = st.text_input(f"Valor de x para o exercício {eid}:", key=f"resp_ex_{eid}")
+                st.markdown("---")
+                
+            if st.button("Submeter e Corrigir Respostas", key="btn_submeter_30"):
+                acertos = 0
+                st.subheader("📊 Resultados da Correção:")
+                for ex in st.session_state.exercicios_gerados:
+                    eid = ex["id"]
+                    val_str = respostas_utilizador.get(eid, "").strip()
+                    try:
+                        val_num = float(val_str)
+                        if abs(val_num - ex["resposta_correta"]) < 1e-3:
+                            st.success(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Certa!** 🎉")
+                            acertos += 1
+                        else:
+                            st.error(f"Exercício {eid} ({ex['enunciado']}): A tua resposta ({val_str}) está **Errada.** (A correta era {int(ex['resposta_correta']) if ex['resposta_correta'].is_integer() else ex['resposta_correta']})")
+                    except ValueError:
+                        st.warning(f"Exercício {eid}: Não introduziste um número válido (Resposta: '{val_str}').")
+                
+                st.markdown(f"### Pontuação Final: **{acertos} / 30**")
                 
         elif st.session_state.atividade_selecionada == "Quizzes":
-            st.subheader("❓ Quiz de Avaliação:")
-            st.radio("1. Qual é o primeiro passo para resolver a estrutura principal da matéria?", ["Isolar a incógnita", "Somar todos os termos", "Eliminar parênteses se existirem", "Nenhuma das anteriores"], key="q_quiz_1")
+            st.subheader("❓ Quiz de Avaliação Teórica:")
+            q_resp = st.radio("1. Numa equação do 1.º grau, qual é o objetivo principal?", ["Isolar a incógnita x", "Somar todos os números", "Eliminar o sinal de igual", "Nenhuma"], key="q_quiz_mat")
             if st.button("Submeter Quiz"):
-                st.success("Quiz submetido com sucesso!")
+                if q_resp == "Isolar a incógnita x":
+                    st.success("Resposta Certa! 🎉")
+                else:
+                    st.error("Resposta Errada. O objetivo é isolar a incógnita x.")
                 
         elif st.session_state.atividade_selecionada == "Transcrição e Consolidação de Conteúdos":
             st.subheader("📖 Resumo e Consolidação:")
-            st.write("Aqui tens a transcrição organizada e limpa dos teus apontamentos:")
-            st.code(st.session_state.texto_estudo_livre if st.session_state.texto_estudo_livre else "Nenhum texto inserido. Mostrando estrutura padrão.", language="text")
+            st.code(st.session_state.texto_estudo_livre if st.session_state.texto_estudo_livre else "Matéria base: Resolução de equações e propriedades algébricas fundamentais.", language="text")
             
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("🃏 Flashcards de Memorização:")
-            st.info("Pergunta: Qual é o conceito central desta matéria?\n\n(Clica em 'Virar' para ver a resposta)")
-            if st.button("Virar Cartão"):
-                st.success("Resposta: É a aplicação prática das equações e regras fundamentais estudadas.")
+            st.info("Pergunta: O que deves fazer quando passas um termo com sinal positivo para o outro lado da equação?\n\n(Clica em 'Ver Resposta')")
+            if st.button("Ver Resposta"):
+                st.success("Resposta: Passa com o sinal trocado (negativo / subtração).")
 
         st.markdown("---")
         if st.button("🔄 Recomeçar Estudo do Zero", key="btn_recomecar_total"):
