@@ -191,7 +191,6 @@ elif menu == "📝 Registo Diário":
             }
             st.session_state.logs.append(registo_novo)
             st.success("Sessão registada com sucesso!")
-            # Avançar para o passo seguinte dos flashcards gerados
             st.session_state.step_registo = "flashcards_pos"
             st.rerun()
             
@@ -204,12 +203,15 @@ elif menu == "📝 Registo Diário":
                     if r:
                         st.write(f"- **{d}:** {r}")
 
-    # PASSO 2: Flashcards de Revisão Pós-Registo (~10 a 15 perguntas de escolha múltipla baseadas na matéria)
+    # PASSO 2: Flashcards de Revisão Pós-Registo
     elif st.session_state.step_registo == "flashcards_pos":
+        if st.button("💉 Voltar"):
+            st.session_state.step_registo = "formulario"
+            st.rerun()
+
         st.title("🧠 Revisão Rápida (Flashcards)")
         st.write("Responde a estas perguntas de escolha múltipla geradas com base no que estudaste hoje para fixar a matéria:")
         
-        # Simulação de perguntas dinâmicas geradas pela IA baseadas na sessão
         perguntas_exemplo = [
             {"p": "Qual dos seguintes conceitos esteve mais em destaque na matéria de hoje?", "opcoes": ["Opção A", "Opção B", "Opção C", "Nenhuma das anteriores"], "correta": 0},
             {"p": "Identifica a principal regra ou propriedade abordada na aula:", "opcoes": ["Propriedade Distributiva", "Lei Geral de Ocorrência", "Estrutura Base", "Nenhum dos anteriores"], "correta": 0},
@@ -234,10 +236,13 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 3: Seleção de Matéria de Estudo com Sugestão Inteligente
     elif st.session_state.step_registo == "escolher_materia":
+        if st.button("💉 Voltar"):
+            st.session_state.step_registo = "flashcards_pos"
+            st.rerun()
+
         st.title("📚 Estudo")
         st.subheader("O que queres estudar hoje?")
         
-        # Sugestão baseada nos logs anteriores (exemplo dinâmico simples ou último registado)
         sugestao = "Matemática"
         if st.session_state.logs:
             ultimo_log = st.session_state.logs[-1]
@@ -245,9 +250,8 @@ elif menu == "📝 Registo Diário":
             if resumos_ult:
                 sugestao = list(resumos_ult.keys())[0]
                 
-        st.info(f"💡 **Sugestão:** ex: {sugestao} (com base no teu registo anterior)")
+        st.info(f"💡 **Sugestão:** {sugestao} (com base no teu registo anterior)")
         
-        # Seleção com a lista exata pedida pelo utilizador
         materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS)
         
         if st.button("Avançar"):
@@ -257,6 +261,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 4: Materiais de Estudo para a Matéria Escolhida
     elif st.session_state.step_registo == "upload_materiais":
+        if st.button("💉 Voltar"):
+            st.session_state.step_registo = "escolher_materia"
+            st.rerun()
+
         st.title("📚 Estudo")
         st.subheader("Materiais de Estudo")
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo}")
@@ -278,6 +286,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 5: Escolha da Atividade Principal Baseada nos Ficheiros
     elif st.session_state.step_registo == "escolher_atividade":
+        if st.button("💉 Voltar"):
+            st.session_state.step_registo = "upload_materiais"
+            st.rerun()
+
         st.title("📚 Estudo")
         st.subheader("O que queres fazer primeiro?")
         
