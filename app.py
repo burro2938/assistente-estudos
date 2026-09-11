@@ -94,6 +94,8 @@ if "materia_escolhida_estudo" not in st.session_state:
     st.session_state.materia_escolhida_estudo = ""
 if "materiais_carregados" not in st.session_state:
     st.session_state.materiais_carregados = []
+if "texto_estudo_livre" not in st.session_state:
+    st.session_state.texto_estudo_livre = ""
 if "num_aulas_extra" not in st.session_state:
     st.session_state.num_aulas_extra = {}
 
@@ -271,10 +273,10 @@ elif menu == "📝 Registo Diário":
             
         if st.button("Ir para o Estudo"):
             st.session_state.step_estudar = "escolher_materia"
-            st.session_state.step_registo = "formulario"  # reseta para a proxima vez
+            st.session_state.step_registo = "formulario"
             st.rerun()
 
-# 4. Nova Alínea: Estudar (Menu Independente)
+# 4. Alínea: Estudar (Menu Independente)
 elif menu == "📖 Estudar":
     
     # PASSO A: Seleção de Matéria de Estudo com Sugestão Inteligente
@@ -298,7 +300,7 @@ elif menu == "📖 Estudar":
             st.session_state.step_estudar = "upload_materiais"
             st.rerun()
 
-    # PASSO B: Materiais de Estudo para a Matéria Escolhida
+    # PASSO B: Materiais de Estudo ou Texto Direto
     elif st.session_state.step_estudar == "upload_materiais":
         if st.button("⬅️ Voltar", key="btn_voltar_up"):
             st.session_state.step_estudar = "escolher_materia"
@@ -320,11 +322,19 @@ elif menu == "📖 Estudar":
             for f in ficheiros:
                 st.text(f"📄 Carregado: {f.name}")
                 
+        st.markdown("---")
+        st.write("Caso não queira carregar ficheiros, escreva a matéria ou os apontamentos abaixo:")
+        st.session_state.texto_estudo_livre = st.text_area(
+            "Apontamentos / Tópicos da Matéria:", 
+            value=st.session_state.texto_estudo_livre, 
+            key="txt_livre_estudo"
+        )
+                
         if st.button("Avançar", key="btn_avancar_up"):
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
 
-    # PASSO C: Escolha da Atividade Principal Baseada nos Ficheiros
+    # PASSO C: Escolha da Atividade Principal Baseada nos Ficheiros ou Texto
     elif st.session_state.step_estudar == "escolher_atividade":
         if st.button("⬅️ Voltar", key="btn_voltar_ativ"):
             st.session_state.step_estudar = "upload_materiais"
@@ -345,7 +355,7 @@ elif menu == "📖 Estudar":
         )
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
-            st.success(f"A iniciar a atividade: **{atividade}** para a matéria **{st.session_state.materia_escolhida_estudo}** com base nos ficheiros enviados!")
+            st.success(f"A iniciar a atividade: **{atividade}** para a matéria **{st.session_state.materia_escolhida_estudo}** com sucesso!")
             if st.button("🔄 Recomeçar Estudo", key="btn_recomecar"):
                 st.session_state.step_estudar = "escolher_materia"
                 st.rerun()
