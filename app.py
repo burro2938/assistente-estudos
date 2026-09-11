@@ -11,13 +11,6 @@ st.set_page_config(
 # Estado da Sessão para Dados
 if "logs" not in st.session_state:
     st.session_state.logs = []
-if "flashcards" not in st.session_state:
-    st.session_state.flashcards = [
-        {"pergunta": "Qual é a capital de Portugal?", "resposta": "Lisboa"},
-        {"pergunta": "Quanto é 7 x 8?", "resposta": "56"}
-    ]
-if "materiais" not in st.session_state:
-    st.session_state.materiais = {}
 if "escola" not in st.session_state:
     st.session_state.escola = "Escola Básica de Manhente"
 if "ano_letivo" not in st.session_state:
@@ -56,20 +49,41 @@ if "horario" not in st.session_state:
         ]
     }
 
-# Chave de controlo para o número de linhas por dia em tempo de execução
+# Estados para o fluxo do Registo Diário interativo
+if "step_registo" not in st.session_state:
+    st.session_state.step_registo = "formulario"
+if "materia_escolhida_estudo" not in st.session_state:
+    st.session_state.materia_escolhida_estudo = ""
+if "materiais_carregados" not in st.session_state:
+    st.session_state.materiais_carregados = []
 if "num_aulas_extra" not in st.session_state:
     st.session_state.num_aulas_extra = {}
 
-# Barra Lateral de Navegação
+# Lista oficial de matérias solicitada
+LISTA_MATERIAS = [
+    "E.F. (Educação Física)",
+    "Matemática",
+    "Inglês",
+    "Português",
+    "Físico-Química",
+    "Francês",
+    "TIC (Tecnologias de Informação e Comunicação)",
+    "Geografia",
+    "Ciências Naturais",
+    "História",
+    "E.T. (Educação Tecnológica)",
+    "E.V. (Educação Visual)",
+    "Cidadania e Desenvolvimento"
+]
+
+# Barra Lateral de Navegação (Apenas 3 opções pedidas)
 st.sidebar.title("📚 Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
     [
         "🏠 Início & Escola",
         "📅 Agenda & Horário",
-        "📝 Registo Diário",
-        "🧠 Flashcards",
-        "📁 Materiais de Estudo"
+        "📝 Registo Diário"
     ]
 )
 
@@ -136,108 +150,149 @@ elif menu == "📅 Agenda & Horário":
     if st.button("Guardar Teste"):
         st.success(f"Teste de {materia_teste} agendado para {data_teste} com sucesso!")
 
-# 3. Registo Diário
+# 3. Registo Diário & Fluxo Interativo
 elif menu == "📝 Registo Diário":
-    st.title("📝 Registo de Estudo Diário")
     
-    # Descobre automaticamente o dia de hoje
-    hoje = datetime.date.today()
-    dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-    dia_atual_idx = hoje.weekday()
-    
-    # Se for fim de semana, assume Segunda-feira por defeito, senão assume o dia atual
-    if dia_atual_idx >= 5:
-        dia_automatico = "Segunda-feira"
-    else:
-        dia_automatico = dias_portugal[dia_atual_idx]
+    # PASSO 1: Formulário de Registo Diário
+    if st.session_state.step_registo == "formulario":
+        st.title("📝 Registo de Estudo Diário")
         
-    st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
-    
-    aulas_do_dia = st.session_state.horario.get(dia_automatico, [])
-    disciplinas_dia = []
-    for aula in aulas_do_dia:
-        if isinstance(aula, dict):
-            disc = aula.get("disc", "")
+        hoje = datetime.date.today()
+        dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+        dia_atual_idx = hoje.weekday()
+        
+        if dia_atual_idx >= 5:
+            dia_automatico = "Segunda-feira"
         else:
-            disc = str(aula)
-        if disc and disc not in disciplinas_dia:
-            disciplinas_dia.append(disc)
+            dia_automatico = dias_portugal[dia_atual_idx]
             
-    resumos_por_materia = {}
-    if disciplinas_dia:
-        st.write("O que estudaste hoje em cada disciplina?")
-        for disc in disciplinas_dia:
-            resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
-    else:
-        st.info("Não tens disciplinas configuradas para hoje.")
+        st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
         
-    if st.button("Registar Sessão"):
-        registo_novo = {
-            "data": str(hoje),
-            "dia": dia_automatico,
-            "resumos": resumos_por_materia
-        }
-        st.session_state.logs.append(registo_novo)
-        st.success("Sessão registada com sucesso!")
-        
-    if st.session_state.logs:
-        st.markdown("---")
-        st.subheader("📊 Histórico Recente")
-        for log in reversed(st.session_state.logs):
-            data_l = log.get('data', '')
-            dia_l = log.get('dia', '')
-            st.info(f"**{data_l}** ({dia_l})")
-            resumos = log.get("resumos", {})
-            if isinstance(resumos, dict):
-                for d, r in resumos.items():
+        aulas_do_dia = st.session_state.horario.get(dia_automatico, [])
+        disciplinas_dia = []
+        for aula in aulas_do_dia:
+            disc = aula.get("disc", "") if isinstance(aula, dict) else str(aula)
+            if disc and disc not in disciplinas_dia:
+                disciplinas_dia.append(disc)
+                
+        resumos_por_materia = {}
+        if disciplinas_dia:
+            st.write("O que estudaste hoje em cada disciplina?")
+            for disc in disciplinas_dia:
+                resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
+        else:
+            st.info("Não tens disciplinas configuradas para hoje.")
+            
+        if st.button("Registar Sessão"):
+            registo_novo = {
+                "data": str(hoje),
+                "dia": dia_automatico,
+                "resumos": resumos_por_materia
+            }
+            st.session_state.logs.append(registo_novo)
+            st.success("Sessão registada com sucesso!")
+            # Avançar para o passo seguinte dos flashcards gerados
+            st.session_state.step_registo = "flashcards_pos"
+            st.rerun()
+            
+        if st.session_state.logs:
+            st.markdown("---")
+            st.subheader("📊 Histórico Recente")
+            for log in reversed(st.session_state.logs):
+                st.info(f"**{log.get('data', '')}** ({log.get('dia', '')})")
+                for d, r in log.get("resumos", {}).items():
                     if r:
                         st.write(f"- **{d}:** {r}")
-            else:
-                st.write(f"- {log.get('materia')}: {log.get('resumo')}")
 
-# 4. Flashcards
-elif menu == "🧠 Flashcards":
-    st.title("🧠 Flashcards Interativos")
-    
-    st.subheader("Criar Novo Flashcard")
-    p_nova = st.text_input("Pergunta:")
-    r_nova = st.text_input("Resposta:")
-    if st.button("Adicionar Flashcard"):
-        if p_nova and r_nova:
-            st.session_state.flashcards.append({"pergunta": p_nova, "resposta": r_nova})
-            st.success("Flashcard adicionado!")
-        else:
-            st.warning("Preenche ambos os campos.")
+    # PASSO 2: Flashcards de Revisão Pós-Registo (~10 a 15 perguntas de escolha múltipla baseadas na matéria)
+    elif st.session_state.step_registo == "flashcards_pos":
+        st.title("🧠 Revisão Rápida (Flashcards)")
+        st.write("Responde a estas perguntas de escolha múltipla geradas com base no que estudaste hoje para fixar a matéria:")
+        
+        # Simulação de perguntas dinâmicas geradas pela IA baseadas na sessão
+        perguntas_exemplo = [
+            {"p": "Qual dos seguintes conceitos esteve mais em destaque na matéria de hoje?", "opcoes": ["Opção A", "Opção B", "Opção C", "Nenhuma das anteriores"], "correta": 0},
+            {"p": "Identifica a principal regra ou propriedade abordada na aula:", "opcoes": ["Propriedade Distributiva", "Lei Geral de Ocorrência", "Estrutura Base", "Nenhum dos anteriores"], "correta": 0},
+            {"p": "Assinala a afirmação correta sobre o tema estudado:", "opcoes": ["Aplica-se apenas em casos isolados", "É uma norma universal do tema", "Não tem aplicação prática", "Depende do contexto temporal"], "correta": 1},
+            {"p": "De acordo com os apontamentos, qual é o elemento principal?", "opcoes": ["Fator X", "Fator Y", "Fator Z", "Nenhum"], "correta": 0},
+            {"p": "Qual é o objetivo principal do exercício prático analisado?", "opcoes": ["Memorização", "Compreensão estrutural", "Cálculo direto", "Análise crítica"], "correta": 1},
+            {"p": "Se surgisse uma exceção à regra estudada, qual seria?", "opcoes": ["Variação de ambiente", "Erro de cálculo", "Inexistência de exceção", "Condição externa"], "correta": 2},
+            {"p": "Como se categoriza o principal tópico da lição?", "opcoes": ["Teórico", "Prático-Experimental", "Híbrido", "Introdutório"], "correta": 1},
+            {"p": "Qual destas ferramentas ou métodos foi associada ao estudo?", "opcoes": ["Esquema de síntese", "Tabela periódica", "Linha temporal", "Nenhum"], "correta": 0},
+            {"p": "Seleciona o sinónimo ou termo equivalente abordado:", "opcoes": ["Conceito Base", "Termo Secundário", "Variável Livre", "Constante"], "correta": 0},
+            {"p": "Qual foi a conclusão principal retirada da matéria de hoje?", "opcoes": ["Consolidação da base teórica", "Avanço para novos módulos", "Revisão geral", "Avaliação pendente"], "correta": 0}
+        ]
+        
+        for i, q in enumerate(perguntas_exemplo):
+            st.markdown(f"**Questão {i+1}:** {q['p']}")
+            st.radio(f"Escolhe uma opção para a questão {i+1}:", q['opcoes'], key=f"q_pos_{i}")
+            st.markdown("---")
             
-    st.markdown("---")
-    st.subheader("Treinar Flashcards")
-    if st.session_state.flashcards:
-        idx = st.slider("Escolher número do flashcard", 0, len(st.session_state.flashcards)-1, 0)
-        card = st.session_state.flashcards[idx]
-        
-        st.markdown(f"### Pergunta: {card['pergunta']}")
-        if st.button("Mostrar Resposta"):
-            st.success(f"Resposta:")
-    else:
-        st.write("Ainda não tens flashcards criados.")
+        if st.button("Avançar para o Estudo"):
+            st.session_state.step_registo = "escolher_materia"
+            st.rerun()
 
-# 5. Materiais de Estudo
-elif menu == "📁 Materiais de Estudo":
-    st.title("📁 Repositório de Materiais")
-    
-    mat_escolhida = st.selectbox("Seleciona a Matéria", ["Português", "Matemática", "Inglês", "Francês", "História/Geografia", "Físico-Química", "Ciências Naturais"])
-    ficheiro = st.file_uploader("Carregar apontamento ou resumo (PDF/Imagem)", type=["pdf", "png", "jpg", "jpeg"])
-    
-    if ficheiro is not None:
-        if mat_escolhida not in st.session_state.materiais:
-            st.session_state.materiais[mat_escolhida] = []
-        st.session_state.materiais[mat_escolhida].append(ficheiro.name)
-        st.success(f"Ficheiro '{ficheiro.name}' guardado com sucesso em {mat_escolhida}!")
+    # PASSO 3: Seleção de Matéria de Estudo com Sugestão Inteligente
+    elif st.session_state.step_registo == "escolher_materia":
+        st.title("📚 Estudo")
+        st.subheader("O que queres estudar hoje?")
         
-    if st.session_state.materiais:
-        st.markdown("---")
-        st.subheader("Ficheiros Guardados por Matéria")
-        for m, f_list in st.session_state.materiais.items():
-            st.write(f"**{m}:**")
-            for f in f_list:
-                st.text(f" - 📄 {f}")
+        # Sugestão baseada nos logs anteriores (exemplo dinâmico simples ou último registado)
+        sugestao = "Matemática"
+        if st.session_state.logs:
+            ultimo_log = st.session_state.logs[-1]
+            resumos_ult = ultimo_log.get("resumos", {})
+            if resumos_ult:
+                sugestao = list(resumos_ult.keys())[0]
+                
+        st.info(f"💡 **Sugestão:** ex: {sugestao} (com base no teu registo anterior)")
+        
+        # Seleção com a lista exata pedida pelo utilizador
+        materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS)
+        
+        if st.button("Avançar"):
+            st.session_state.materia_escolhida_estudo = materia_escolhida
+            st.session_state.step_registo = "upload_materiais"
+            st.rerun()
+
+    # PASSO 4: Materiais de Estudo para a Matéria Escolhida
+    elif st.session_state.step_registo == "upload_materiais":
+        st.title("📚 Estudo")
+        st.subheader("Materiais de Estudo")
+        st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo}")
+        
+        ficheiros = st.file_uploader(
+            "Carrega os teus documentos (PDF, Imagens PNG/JPG, Documentos, Áudios e Vídeos):",
+            type=["pdf", "png", "jpg", "jpeg", "docx", "txt", "mp3", "mp4", "wav"],
+            accept_multiple_files=True
+        )
+        
+        if ficheiros:
+            st.session_state.materiais_carregados = ficheiros
+            for f in ficheiros:
+                st.text(f"📄 Carregado: {f.name}")
+                
+        if st.button("Avançar"):
+            st.session_state.step_registo = "escolher_atividade"
+            st.rerun()
+
+    # PASSO 5: Escolha da Atividade Principal Baseada nos Ficheiros
+    elif st.session_state.step_registo == "escolher_atividade":
+        st.title("📚 Estudo")
+        st.subheader("O que queres fazer primeiro?")
+        
+        atividade = st.radio(
+            "Seleciona a opção pretendida:",
+            [
+                "Exercícios",
+                "Quizzes",
+                "Transcrição e Consolidação de Conteúdos",
+                "Flashcards"
+            ]
+        )
+        
+        if st.button("Iniciar Atividade"):
+            st.success(f"A iniciar a atividade: **{atividade}** para a matéria **{st.session_state.materia_escolhida_estudo}** com base nos ficheiros enviados!")
+            if st.button("🔄 Recomeçar Novo Registo Diário"):
+                st.session_state.step_registo = "formulario"
+                st.rerun()
