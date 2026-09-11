@@ -18,6 +18,14 @@ if "flashcards" not in st.session_state:
     ]
 if "materiais" not in st.session_state:
     st.session_state.materiais = {}
+if "horario" not in st.session_state:
+    st.session_state.horario = {
+        "Segunda-feira": ["Português", "Matemática", "Inglês", "História/Geografia"],
+        "Terça-feira": ["Matemática", "Ciências Naturais", "Francês", "Físico-Química"],
+        "Quarta-feira": ["Português", "Inglês", "Matemática", "Educação Física"],
+        "Quinta-feira": ["História/Geografia", "Ciências Naturais", "Francês", "Físico-Química"],
+        "Sexta-feira": ["Português", "Matemática", "Educação Visual", "Tecnologias"]
+    }
 
 # Barra Lateral de Navegação
 st.sidebar.title("📚 Menu Principal")
@@ -31,8 +39,23 @@ if menu == "🏠 Início & Horário":
     st.title("🎯 Meu Assistente de Estudos")
     st.write("Bem-vindo ao teu espaço centralizado de organização escolar e revisão!")
     
+    col_ano1, col_ano2 = st.columns(2)
+    with col_ano1:
+        st.info("📌 **Ano Letivo:** 2026/2027")
+    with col_ano2:
+        st.success("🏫 **Escola:** Escola Básica de Manhente")
+
     st.markdown("---")
-    st.subheader("📅 Contagem Decrescente para Testes")
+    st.subheader("📅 O teu Horário Semanal")
+    
+    dia_selecionado = st.selectbox("Seleciona o Dia da Semana", list(st.session_state.horario.keys()))
+    
+    st.write(f"**Aulas para {dia_selecionado}:**")
+    for i, disciplina in enumerate(st.session_state.horario[dia_selecionado], 1):
+        st.text(f"Módulo {i}: {disciplina}")
+        
+    st.markdown("---")
+    st.subheader("⏳ Contagem Decrescente para Testes")
     
     col1, col2 = st.columns(2)
     with col1:
