@@ -94,7 +94,10 @@ elif menu == "📅 Agenda & Horário":
     
     st.write(f"Aulas para {dia_escolhido}:")
     for item in st.session_state.horario[dia_escolhido]:
-        st.text(f"🕒 {item['hora']} ➔ 📘 {item['disc']}")
+        if isinstance(item, dict):
+            st.text(f"🕒 {item.get('hora', '')} ➔ 📘 {item.get('disc', '')}")
+        else:
+            st.text(f"📘 {item}")
         
     st.markdown("---")
     st.subheader("⏳ Contagem Decrescente para Testes")
