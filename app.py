@@ -53,7 +53,7 @@ if "escola" not in st.session_state:
 if "ano_letivo" not in st.session_state:
     st.session_state.ano_letivo = "2026/2027"
 if "ano_escolar" not in st.session_state:
-    st.session_state.ano_escolar = "7.º Ano"
+    st.session_state.ano_escolar = "8.º Ano"
 
 if "horario" not in st.session_state:
     st.session_state.horario = {
@@ -196,7 +196,7 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
             ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente de outra (oração principal)."),
             ("Qual é a função de um advérbio?", "Modificar o sentido de um verbo, de um adjetivo ou de outro advérbio."),
             ("O que é a acentuação grave (palavras graves)?", "Palavras cuja tonicidade recai na penúltima sílaba."),
-            ("O que é uma metáfora?", "Uma figura de estilo baseada numa comparação implícita."),
+            ("O что é uma metáfora?", "Uma figura de estilo baseada numa comparação implícita."),
             ("O que é a aliteração?", "A repetição de sons consonânticos semelhantes num verso ou frase."),
             ("O que é um neologismo?", "A criação de uma palavra nova numa língua."),
             ("Qual é a estrutura típica de uma narrativa?", "Introdução, desenvolvimento (complicação e clímax) e conclusão."),
@@ -239,17 +239,19 @@ if menu == "🏠 Início & Escola":
     st.markdown("---")
     st.subheader("⚙️ Configurações do Aluno")
     
+    anos_disponiveis = ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"]
+    idx_ano_atual = anos_disponiveis.index(st.session_state.ano_escolar) if st.session_state.ano_escolar in anos_disponiveis else 3
+
     col1, col2, col3 = st.columns(3)
     with col1:
         st.session_state.escola = st.text_input("Escola Atual", value=st.session_state.escola)
     with col2:
         st.session_state.ano_letivo = st.text_input("Ano Letivo", value=st.session_state.ano_letivo)
     with col3:
-        st.session_state.ano_escolar = st.selectbox("Ano Escolar Atual", ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"], index=2)
+        st.session_state.ano_escolar = st.selectbox("Ano Escolar Atual", anos_disponiveis, index=idx_ano_atual)
         
     st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
     
-    # Botão para guardar as configurações do aluno logo abaixo da mensagem de sucesso
     if st.button("Guardar alterações das configurações do aluno"):
         st.success("Configurações do aluno guardadas com sucesso!")
 
