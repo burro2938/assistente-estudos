@@ -18,6 +18,10 @@ if "flashcards" not in st.session_state:
     ]
 if "materiais" not in st.session_state:
     st.session_state.materiais = {}
+if "escola" not in st.session_state:
+    st.session_state.escola = "Escola Básica de Manhente"
+if "ano_letivo" not in st.session_state:
+    st.session_state.ano_letivo = "2026/2027"
 if "horario" not in st.session_state:
     st.session_state.horario = {
         "Segunda-feira": ["Português", "Matemática", "Inglês", "História/Geografia"],
@@ -27,46 +31,67 @@ if "horario" not in st.session_state:
         "Sexta-feira": ["Português", "Matemática", "Educação Visual", "Tecnologias"]
     }
 
-# Barra Lateral de Navegação
+# Barra Lateral de Navegação (na ordem pedida)
 st.sidebar.title("📚 Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
-    ["🏠 Início & Horário", "📝 Registo Diário", "🧠 Flashcards", "📁 Materiais de Estudo"]
+    [
+        "🏠 Início & Escola",
+        "📅 Agenda & Horário",
+        "📝 Registo Diário",
+        "🧠 Flashcards",
+        "📁 Materiais de Estudo"
+    ]
 )
 
-# 1. Início & Horário
-if menu == "🏠 Início & Horário":
+# 1. Início & Escola
+if menu == "🏠 Início & Escola":
     st.title("🎯 Meu Assistente de Estudos")
     st.write("Bem-vindo ao teu espaço centralizado de organização escolar e revisão!")
     
-    col_ano1, col_ano2 = st.columns(2)
-    with col_ano1:
-        st.info("📌 **Ano Letivo:** 2026/2027")
-    with col_ano2:
-        st.success("🏫 **Escola:** Escola Básica de Manhente")
-
     st.markdown("---")
-    st.subheader("📅 O teu Horário Semanal")
-    
-    dia_selecionado = st.selectbox("Seleciona o Dia da Semana", list(st.session_state.horario.keys()))
-    
-    st.write(f"**Aulas para {dia_selecionado}:**")
-    for i, disciplina in enumerate(st.session_state.horario[dia_selecionado], 1):
-        st.text(f"Módulo {i}: {disciplina}")
-        
-    st.markdown("---")
-    st.subheader("⏳ Contagem Decrescente para Testes")
+    st.subheader("⚙️ Configurações do Aluno")
     
     col1, col2 = st.columns(2)
     with col1:
-        materia_teste = st.text_input("Matéria / Disciplina do Teste")
+        st.session_state.escola = st.text_input("Escola Atual", value=st.session_state.escola)
     with col2:
+        st.session_state.ano_letivo = st.text_input("Ano Letivo", value=st.session_state.ano_letivo)
+        
+    st.success(config_msg := f"A frequentar o ano letivo **{st.session_state.ano_letivo}** em **{st.session_state.escola}**.")
+
+# 2. Agenda & Horário
+elif menu == "📅 Agenda & Horário":
+    st.title("📅 Gestão de Horário e Agenda")
+    
+    st.subheader("Configurar Horário Semanal")
+    dia_escolhido = st.selectbox("Dia da Semana", list(st.session_state.horario.keys()))
+    
+    # Permitir editar as disciplinas do dia
+    aulas_atuais = ", ".join(st.session_state.horario[dia_escolhido])
+    novas_aulas_str = st.text_input(f"Disciplinas para {dia_escolhido} (separadas por vírgula):", value=aulas_atuais)
+    
+    if st.button("Atualizar Horário do Dia"):
+        st.session_state.horario[dia_escolhido] = [a.strip() for a in novas_aulas_str.split(",")]
+        st.success(f"Horário de {dia_escolhido} atualizado com sucesso!")
+        
+    st.markdown("---")
+    st.subheader(f"Visualizar Horário: {dia_escolhido}")
+    for i, disc in enumerate(st.session_state.horario[dia_escolhido], 1):
+        st.text(f"Módulo {i}: {disc}")
+        
+    st.markdown("---")
+    st.subheader("⏳ Contagem Decrescente para Testes")
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        materia_teste = st.text_input("Matéria / Disciplina do Teste")
+    with col_t2:
         data_teste = st.date_input("Data do Teste", datetime.date.today())
         
     if st.button("Guardar Teste"):
         st.success(f"Teste de {materia_teste} agendado para {data_teste} com sucesso!")
 
-# 2. Registo Diário
+# 3. Registo Diário
 elif menu == "📝 Registo Diário":
     st.title("📝 Registo de Estudo Diário")
     
@@ -85,8 +110,8 @@ elif menu == "📝 Registo Diário":
         for log in reversed(st.session_state.logs):
             st.info(f"**{log['data']}** - {log['materia']} ({log['tempo']} min): {log['resumo']}")
 
-# 3. Flashcards
-elif menu == "🧠 Flashcards de Revisão":
+# 4. Flashcards
+elif menu == "🧠 Flashcards":
     st.title("🧠 Flashcards Interativos")
     
     st.subheader("Criar Novo Flashcard")
@@ -111,7 +136,7 @@ elif menu == "🧠 Flashcards de Revisão":
     else:
         st.write("Ainda não tens flashcards criados.")
 
-# 4. Materiais de Estudo
+# 5. Materiais de Estudo
 elif menu == "📁 Materiais de Estudo":
     st.title("📁 Repositório de Materiais")
     
