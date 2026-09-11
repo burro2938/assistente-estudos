@@ -76,7 +76,7 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Barra Lateral de Navegação (Apenas 3 opções pedidas)
+# Barra Lateral de Navegação
 st.sidebar.title("📚 Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
@@ -205,10 +205,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 2: Flashcards de Revisão Pós-Registo
     elif st.session_state.step_registo == "flashcards_pos":
-        if st.button("💉 Voltar"):
+        if st.button("⬅️ Voltar"):
             st.session_state.step_registo = "formulario"
             st.rerun()
-
+            
         st.title("🧠 Revisão Rápida (Flashcards)")
         st.write("Responde a estas perguntas de escolha múltipla geradas com base no que estudaste hoje para fixar a matéria:")
         
@@ -236,10 +236,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 3: Seleção de Matéria de Estudo com Sugestão Inteligente
     elif st.session_state.step_registo == "escolher_materia":
-        if st.button("💉 Voltar"):
+        if st.button("⬅️ Voltar"):
             st.session_state.step_registo = "flashcards_pos"
             st.rerun()
-
+            
         st.title("📚 Estudo")
         st.subheader("O que queres estudar hoje?")
         
@@ -261,10 +261,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 4: Materiais de Estudo para a Matéria Escolhida
     elif st.session_state.step_registo == "upload_materiais":
-        if st.button("💉 Voltar"):
+        if st.button("⬅️ Voltar"):
             st.session_state.step_registo = "escolher_materia"
             st.rerun()
-
+            
         st.title("📚 Estudo")
         st.subheader("Materiais de Estudo")
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo}")
@@ -286,10 +286,10 @@ elif menu == "📝 Registo Diário":
 
     # PASSO 5: Escolha da Atividade Principal Baseada nos Ficheiros
     elif st.session_state.step_registo == "escolher_atividade":
-        if st.button("💉 Voltar"):
+        if st.button("⬅️ Voltar"):
             st.session_state.step_registo = "upload_materiais"
             st.rerun()
-
+            
         st.title("📚 Estudo")
         st.subheader("O que queres fazer primeiro?")
         
