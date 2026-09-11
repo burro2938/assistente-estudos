@@ -8,18 +8,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# Forçar Comic Sans MS em toda a aplicação com seletores globais do Streamlit
+# Importar e forçar a fonte Comfortaa em toda a aplicação via CSS global
 st.markdown(
     """
     <style>
-    /* Forçar em todos os elementos da aplicação Streamlit */
+    @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
+
+    /* Forçar Comfortaa em todos os elementos da aplicação Streamlit */
     html, body, [class*="css"], .stApp, p, span, div, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
-        font-family: 'Comic Sans MS', cursive, sans-serif !important;
+        font-family: 'Comfortaa', cursive, sans-serif !important;
     }
     
-    /* Forçar especificamente nas variáveis de fonte do Streamlit */
+    /* Forçar especificamente nas variáveis globais de fonte do Streamlit */
     :root {
-        --font: 'Comic Sans MS', cursive, sans-serif !important;
+        --font: 'Comfortaa', cursive, sans-serif !important;
     }
     </style>
     """,
