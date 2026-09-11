@@ -8,6 +8,18 @@ st.set_page_config(
     layout="wide"
 )
 
+# Estipular o tipo de letra Comic Sans MS em toda a aplicação via CSS global
+st.markdown(
+    """
+    <style>
+    html, body, [class*="css"] {
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Estado da Sessão para Dados
 if "logs" not in st.session_state:
     st.session_state.logs = []
