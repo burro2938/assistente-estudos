@@ -198,7 +198,7 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
             ("O que é a acentuação grave (palavras graves)?", "Palavras cuja tonicidade recai na penúltima sílaba."),
             ("O que é uma metáfora?", "Uma figura de estilo baseada numa comparação implícita."),
             ("O que é a aliteração?", "A repetição de sons consonânticos semelhantes num verso ou frase."),
-            ("O que é umneologismo?", "A criação de uma palavra nova numa língua."),
+            ("O que é um neologismo?", "A criação de uma palavra nova numa língua."),
             ("Qual é a estrutura típica de uma narrativa?", "Introdução, desenvolvimento (complicação e clímax) e conclusão."),
             ("O que é um pronome pessoal?", "Um pronome que substitui o nome e indica as pessoas do discurso (eu, tu, ele...)."),
             ("O que é o pretérito mais-que-perfeito?", "Um tempo verbal que indica uma ação passada anterior a outra também passada."),
@@ -208,7 +208,6 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
         ]
     }
     
-    # Selecionar banco específico ou genérico
     banco = bancos_perguntas.get(materia, bancos_perguntas["Matemática"])
     
     for i in range(1, 21):
@@ -249,6 +248,10 @@ if menu == "🏠 Início & Escola":
         st.session_state.ano_escolar = st.selectbox("Ano Escolar Atual", ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"], index=2)
         
     st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
+    
+    # Botão para guardar as configurações do aluno logo abaixo da mensagem de sucesso
+    if st.button("Guardar alterações das configurações do aluno"):
+        st.success("Configurações do aluno guardadas com sucesso!")
 
 # 2. Agenda & Horário
 elif menu == "📅 Agenda & Horário":
@@ -522,7 +525,6 @@ elif menu == "📖 Estudar":
                 fid = fc["id"]
                 st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
                 
-                # Estado individual para cada flashcard
                 if f"mostrar_fc_{fid}" not in st.session_state:
                     st.session_state[f"mostrar_fc_{fid}"] = False
                     
