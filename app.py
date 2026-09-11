@@ -8,22 +8,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# Importar a fonte Comfortaa e corrigir o conflito com os ícones do Streamlit
+# Importar a fonte Comfortaa e aplicar de forma limpa sem afetar os ícones do Streamlit
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
 
-    /* Aplicar Comfortaa aos textos gerais, excluindo os ícones para evitar o erro do keyboard_double */
-    .stApp p, .stApp span:not([class*="icon"]):not([data-testid*="icon"]), .stApp div:not([class*="icon"]), .stApp label, .stApp input, .stApp textarea, .stApp button, .stApp select, .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {
+    /* Aplicar a fonte apenas a elementos de texto textuais, garantindo que os ícones do sistema não são tocados */
+    html, body, [class*="css"] {
         font-family: 'Comfortaa', cursive, sans-serif !important;
     }
-    
-    :root {
-        --font: 'Comfortaa', cursive, sans-serif !important;
-    }
 
-    /* Título "Menu Principal" na barra lateral (maior que as opções, mas menor que os títulos principais) */
+    /* Título "Menu Principal" na barra lateral */
     section[data-testid="stSidebar"] h1 {
         font-size: 20px !important;
     }
