@@ -28,10 +28,7 @@ if "horario" not in st.session_state:
             {"hora": "08:30 - 09:15", "disc": "Educação Física"},
             {"hora": "09:25 - 10:10", "disc": "Matemática"},
             {"hora": "10:30 - 11:15", "disc": "Inglês"},
-            {"hora": "11:25 - 12:10", "disc": "Português"},
-            {"hora": "12:20 - 13:05", "disc": "Português"},
-            {"hora": "13:55 - 14:40", "disc": "Físico Química"},
-            {"hora": "14:50 - 15:35", "disc": "Francês"}
+            {"hora": "11:25 - 12:10", "disc": "Português"}
         ],
         "Terça-feira": [
             {"hora": "08:30 - 09:15", "disc": "Matemática"},
@@ -95,24 +92,9 @@ elif menu == "📅 Agenda & Horário":
     st.subheader("Configurar Horário Semanal")
     dia_escolhido = st.selectbox("Dia da Semana", list(st.session_state.horario.keys()))
     
-    st.write(f"Edita as horas e as disciplinas para {dia_escolhido}:")
-    novo_dia = []
-    for idx, item in enumerate(st.session_state.horario[dia_escolhido]):
-        col_h, col_d = st.columns(2)
-        with col_h:
-            nova_hora = st.text_input(f"Hora {idx+1}", value=item["hora"], key=f"hora_{dia_escolhido}_{idx}")
-        with col_d:
-            nova_disc = st.text_input(f"Disciplina {idx+1}", value=item["disc"], key=f"disc_{dia_escolhido}_{idx}")
-        novo_dia.append({"hora": nova_hora, "disc": nova_disc})
-        
-    if st.button("Guardar Alterações do Horário"):
-        st.session_state.horario[dia_escolhido] = novo_dia
-        st.success(f"Horário de {dia_escolhido} atualizado com sucesso!")
-        
-    st.markdown("---")
-    st.subheader(f"Visualizar Horário: {dia_escolhido}")
+    st.write(f"Aulas para {dia_escolhido}:")
     for item in st.session_state.horario[dia_escolhido]:
-        st.text(f"{item['hora']} ➔ {item['disc']}")
+        st.text(f"🕒 {item['hora']} ➔ 📘 {item['disc']}")
         
     st.markdown("---")
     st.subheader("⏳ Contagem Decrescente para Testes")
