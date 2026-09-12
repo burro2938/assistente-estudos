@@ -195,7 +195,7 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if any(m in materia.lower() for m in materias_sem_flashcards):
         return []
 
-    banco_ingles_verb_to_be = [
+    banco_ingles = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
         ("Quais são os pronomes que utilizam 'are' no presente do verbo to be?", "You, We, They."),
@@ -208,66 +208,67 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ("Como se formula uma pergunta no passado com o verbo to be, ex: 'She was tired'?", "Was she tired?")
     ]
 
-    banco_equacoes = [
+    banco_matematica = [
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
         ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
-        ("Como se resolve uma equação do tipo 6x - 4 + x = 4 - 8x + 5?", "Primeiro simplificam-se os termos semelhantes em cada membro da equação, isolando depois a incógnita $x$."),
-        ("Qual é o objetivo principal ao resolver uma equação?", "Determinar o valor exato da incógnita $x$ que torna a igualdade verdadeira."),
-        ("O que significa quando uma equação resulta numa identidade universal (ex: 0 = 0)?", "Significa que a equação é possível e indeterminada, tendo infinitas soluções."),
-        ("O que significa quando uma equação resulta num absurdo (ex: 0 = 5)?", "Significa que a equação é impossível, não tendo nenhuma solução no conjunto dos números reais."),
-        ("Como se eliminam denominadores numa equação?", "Multiplicando todos os termos de ambos os membros pelo denominador comum."),
-        ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada uma das parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
-        ("Como se trata um sinal de menos antecedido de parênteses, ex: -(2x - 3)?", "Inverte-se o sinal de todos os termos que estão dentro dos parênteses (-2x + 3).")
+        ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
+        ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
+        ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio.")
     ]
 
-    bancos_gerais = {
-        "Matemática": [
-            ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
-            ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
-            ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio."),
-            ("Como se converte uma fração em percentagem?", "Multiplicando a fração por 100 e adicionando o símbolo %."),
-            ("Qual é a fórmula do perímetro de uma circunferência?", "P = 2 \\pi r.")
-        ],
-        "Português": [
-            ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
-            ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
-            ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
-            ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
-            ("O que são sinónimos?", "Termos com significados equivalentes.")
-        ],
-        "Inglês": [
-            ("What is the present simple form of 'to be' for 'I'?", "I am."),
-            ("What is the past tense of 'is' and 'am'?", "Was."),
-            ("Translate to English: 'Nós somos amigos.'", "We are friends."),
-            ("What is the negative form of 'You are'?", "You are not (You aren't)."),
-            ("How do you form a question with the verb to be?", "By inverting the subject and the verb to be (Ex: Is he...?).")
-        ]
-    }
+    banco_portugues = [
+        ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
+        ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
+        ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
+        ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
+        ("O que são sinónimos?", "Termos com significados equivalentes.")
+    ]
 
-    texto_analisar = f"{materia} {texto_apontamentos}".lower()
-    
-    if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
-        banco_base = banco_ingles_verb_to_be
-    elif "matemática" in materia.lower() or "matematica" in materia.lower():
-        banco_base = banco_equacoes if ("equaç" in texto_analisar or "x" in texto_analisar) else bancos_gerais.get("Matemática", banco_equacoes)
-    elif "português" in materia.lower() or "portugues" in materia.lower():
-        banco_base = bancos_gerais.get("Português", [])
+    banco_historia = [
+        ("Quais foram os principais fatores que impulsionaram a Expansão Portuguesa nos séculos XV e XVI?", "A posição geográfica favorável, a estabilidade política, o desenvolvimento da ciência náutica (caravela, astrolábio) e o interesse comercial nas especiarias."),
+        ("O que marcou o início do Antigo Regime na Europa?", "O absolutismo régio, a sociedade de ordens (clero, nobreza e povo) e o mercantilismo económico."),
+        ("Qual foi a importância do Tratado de Tordesilhas (1494)?", "Dividiu as terras descobertas e por descobrir entre Portugal e Espanha através de um meridiano."),
+        ("O que foi a Revolução Francesa de 1789?", "Um marco histórico que acabou com o absolutismo em França, consagrando os direitos do homem e do cidadão."),
+        ("Qual foi o papel do Infante D. Henrique na expansão marítima?", "Foi o grande impulsionador e organizador das primeiras viagens de exploração da costa ocidental africana.")
+    ]
+
+    banco_ciencias = [
+        ("Qual é a unidade estrutural e funcional básica de todos os seres vivos?", "A célula."),
+        ("O que distingue uma célula procariótica de uma célula eucariótica?", "A célula eucariótica possui um núcleo organizado envolto por membrana, enquanto a procariótica não tem núcleo definido."),
+        ("Qual é o processo através do qual as plantas produzem a sua próprio matéria orgânica?", "A fotossíntese, utilizando luz solar, dióxido de carbono e água."),
+        ("O que compõe o sistema solar?", "O Sol e todos os corpos celestes que orbitam à sua volta, incluindo os planetas, asteroides e cometas."),
+        ("Qual é a função principal do sistema circulatório no corpo humano?", "Transportar oxigénio, nutrientes e hormonas para as células e recolher produtos de excreção.")
+    ]
+
+    banco_fisico_quimica = [
+        ("O que é a matéria?", "Tudo o que tem massa e ocupa espaço no universo."),
+        ("Qual é a diferença entre uma transformação física e uma transformação química?", "Na transformação física não se formam novas substâncias; na química formam-se novas substâncias com propriedades diferentes."),
+        ("O que indica o número atómico de um elemento químico?", "O número de protões presentes no núcleo do átomo desse elemento."),
+        ("Como se define a velocidade de um corpo?", "A distância percorrida por unidade de tempo ($v = d/t$).")
+    ]
+
+    materia_inf = materia.lower()
+
+    if "matemática" in materia_inf or "matematica" in materia_inf:
+        banco_base = banco_matematica
+    elif "português" in materia_inf or "portugues" in materia_inf:
+        banco_base = banco_portugues
+    elif "inglês" in materia_inf or "ingles" in materia_inf or "english" in materia_inf:
+        banco_base = banco_ingles
+    elif "história" in materia_inf or "historia" in materia_inf:
+        banco_base = banco_historia
+    elif "ciências" in materia_inf or "ciencias" in materia_inf:
+        banco_base = banco_ciencias
+    elif "físico-química" in materia_inf or "fisico-quimica" in materia_inf:
+        banco_base = banco_fisico_quimica
     else:
-        if texto_apontamentos.strip():
-            tema = texto_apontamentos.strip()
-            banco_base = [
-                (f"Quais são os conceitos e definições fundamentais estudados em {tema} no {ano_aluno}?", f"Envolve o rigor teórico, compreensão dos princípios e a aplicação correta de {tema}."),
-                (f"Como se estruturam os pontos principais e as regras abordadas em {tema}?", f"Através da análise lógica, estruturação de dados e memorização dos conceitos essenciais."),
-                (f"Quais são os erros mais comuns a evitar ao estudar {tema}?", f"Falta de rigor conceptual, desatenção aos detalhes teóricos e confusão entre propriedades."),
-                (f"De que forma o tópico {tema} se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos teóricos e práticos exigidos na disciplina de {materia}."),
-                (f"Quais são os aspetos teóricos cruciais para dominar {tema}?", f"Compreensão das definições, leis, propriedades e respetiva interpretação correta."),
-                (f"Como resumirias a importância de estudar {tema} em {materia}?", f"Permite obter excelentes resultados nas avaliações e assegurar um progresso consistente."),
-                (f"Identifica as características principais associadas a {tema}.", f"Envolve precisão analítica, estruturação de raciocínio e aplicação metódica."),
-                (f"Qual é o procedimento adequado para responder a questões sobre {tema}?", f"Ler atentamente, identificar os conceitos-chave e fundamentar rigorosamente a resposta.")
-            ]
-        else:
-            banco_base = bancos_gerais.get(materia, banco_equacoes)
+        banco_base = [
+            (f"Quais são os conceitos fundamentais estudados em {materia} no {ano_aluno}?", f"Envolve a compreensão teórica, princípios e aplicação correta da matéria de {materia}."),
+            (f"Como se estruturam as regras principais de {materia}?", f"Através da análise lógica e memorização dos conceitos essenciais abordados na escola."),
+            (f"Quais são os erros mais comuns a evitar nesta disciplina?", f"Falta de rigor conceptual e desatenção aos detalhes teóricos da matéria."),
+            (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos exigidos em {materia}.")
+        ]
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
     while len(amostra) < quantidade:
