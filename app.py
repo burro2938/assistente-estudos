@@ -357,7 +357,7 @@ if menu == "🏠 Início & Escola":
 elif menu == "📅 Calendário":
     st.title("📅 Calendário")
     
-    # Se um dia foi selecionado, exibe os detalhes desse dia
+    # Se um dia foi selecionado, exibe os detalhes desse dia (com fonte aumentada em 3 tamanhos)
     if st.session_state.selected_date is not None:
         d_str = st.session_state.selected_date.strftime("%d/%m/%Y")
         st.subheader(f"Detalhes do dia {d_str}")
@@ -373,14 +373,14 @@ elif menu == "📅 Calendário":
             st.markdown("### 📚 Matéria Estudada / Resumos:")
             for disc, res in registo_encontrado.get("resumos", {}).items():
                 if res:
-                    st.markdown(f"- **{disc}**: {res}")
+                    st.markdown(f"- <span style='font-size: 1.3em;'>**{disc}**: {res}</span>", unsafe_allow_html=True)
                 else:
-                    st.markdown(f"- **{disc}**: *(Sem apontamentos escritos)*")
+                    st.markdown(f"- <span style='font-size: 1.3em;'>**{disc}**: *(Sem apontamentos escritos)*</span>", unsafe_allow_html=True)
             
-            # Apresentar o método de estudo usado no dia
+            # Apresentar o método de estudo usado no dia (também com fonte aumentada em 3 tamanhos)
             metodo_registado = registo_encontrado.get("metodo", "Exercícios")
             st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
-            st.markdown(f"- **Método utilizado:** {metodo_registado}")
+            st.markdown(f"- <span style='font-size: 1.3em;'>**Método utilizado:** {metodo_registado}</span>", unsafe_allow_html=True)
         else:
             st.info("Não existem registos de estudo guardados para este dia.")
             st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
@@ -454,12 +454,12 @@ elif menu == "📅 Calendário":
                                 resumo_resumido = "Estudado"
                             metodo_resumido = logs_por_data[data_str].get("metodo", "Exercícios")
                         
-                        # Número a cinza, matéria com tamanho ligeiramente aumentado (13px) e método logo abaixo
+                        # Número a cinza, matéria com tamanho aumentado e método logo abaixo
                         st.markdown(f"<p style='text-align: center; color: gray; margin-bottom: 0px;'><b>{dia}</b></p>", unsafe_allow_html=True)
                         if resumo_resumido:
-                            st.markdown(f"<p style='text-align: center; font-size: 13px; color: #4b6584; margin-top: 0px; margin-bottom: 0px;'>{resumo_resumido}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='text-align: center; font-size: 15px; color: #4b6584; margin-top: 0px; margin-bottom: 0px;'><b>{resumo_resumido}</b></p>", unsafe_allow_html=True)
                             if metodo_resumido:
-                                st.markdown(f"<p style='text-align: center; font-size: 11px; color: #718093; margin-top: 0px;'><i>{metodo_resumido}</i></p>", unsafe_allow_html=True)
+                                st.markdown(f"<p style='text-align: center; font-size: 13px; color: #718093; margin-top: 0px;'><i>Método utilizado: {metodo_resumido}</i></p>", unsafe_allow_html=True)
                         else:
                             st.markdown("<p style='text-align: center; font-size: 13px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
                             
