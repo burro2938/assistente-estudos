@@ -191,7 +191,6 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    # Desativa explicitamente os flashcards para disciplinas práticas
     materias_sem_flashcards = ["educação física", "educação visual", "educação tecnológica", "tic"]
     if any(m in materia.lower() for m in materias_sem_flashcards):
         return []
@@ -250,22 +249,25 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     
     if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
         banco_base = banco_ingles_verb_to_be
-    elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar:
-        banco_base = banco_equacoes
+    elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "matemática" in materia.lower():
+        banco_base = banco_equacoes if "equaç" in texto_analisar or "x" in texto_analisar else bancos_gerais.get("Matemática", banco_equacoes)
+    elif "português" in materia.lower():
+        banco_base = bancos_gerais.get("Português", [])
     else:
         if texto_apontamentos.strip():
+            tema = texto_apontamentos.strip()
             banco_base = [
-                (f"Quais são os conceitos e definições fundamentais estudados em {materia} para o {ano_aluno}?", "Envolve o rigor teórico, compreensão dos princípios e a aplicação correta dos conteúdos."),
-                (f"Como se estruturam os pontos principais e as regras abordadas neste tópico?", "Através da análise lógica, estruturação de dados e memorização dos conceitos essenciais."),
-                (f"Quais são os erros mais comuns a evitar ao estudar este conteúdo?", "Falta de rigor conceptual, desatenção aos detalhes teóricos e confusão entre propriedades."),
-                (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", "Consolidando a base de conhecimentos teóricos e práticos exigidos na disciplina de " + materia + "."),
-                (f"Quais são os aspetos teóricos cruciais para dominar esta matéria?", "Compreensão das definições, leis, propriedades e respetiva interpretação correta."),
-                (f"Como resumirias a importância de estudar este tópico em {materia}?", "Permite obter excelentes resultados nas avaliações e assegurar um progresso consistente."),
-                (f"Identifica as características principais associadas a este conteúdo.", "Envolve precisão analítica, estruturação de raciocínio e aplicação metódica."),
-                (f"Qual é o procedimento adequado para responder a questões sobre este tema?", "Ler atentamente, identificar os conceitos-chave e fundamentar rigorosamente a resposta.")
+                (f"Quais são os conceitos e definições fundamentais estudados em {tema} no {ano_aluno}?", f"Envolve o rigor teórico, compreensão dos princípios e a aplicação correta de {tema}."),
+                (f"Como se estruturam os pontos principais e as regras abordadas em {tema}?", f"Através da análise lógica, estruturação de dados e memorização dos conceitos essenciais."),
+                (f"Quais são os erros mais comuns a evitar ao estudar {tema}?", f"Falta de rigor conceptual, desatenção aos detalhes teóricos e confusão entre propriedades."),
+                (f"De que forma o tópico {tema} se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos teóricos e práticos exigidos na disciplina de {materia}."),
+                (f"Quais são os aspetos teóricos cruciais para dominar {tema}?", f"Compreensão das definições, leis, propriedades e respetiva interpretação correta."),
+                (f"Como resumirias a importância de estudar {tema} em {materia}?", f"Permite obter excelentes resultados nas avaliações e assegurar um progresso consistente."),
+                (f"Identifica as características principais associadas a {tema}.", f"Envolve precisão analítica, estruturação de raciocínio e aplicação metódica."),
+                (f"Qual é o procedimento adequado para responder a questões sobre {tema}?", f"Ler atentamente, identificar os conceitos-chave e fundamentar rigorosamente a resposta.")
             ]
         else:
-            banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
+            banco_base = bancos_gerais.get(materia, banco_equacoes)
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
     while len(amostra) < quantidade:
@@ -417,7 +419,8 @@ elif menu == "📝 Registo Diário":
                 fcs_disc = gerar_flashcards_personalizados(
                     5, disc, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, texto_caixa
                 )
-                flashcards_combinados.extend(fcs_disc)
+                if fcs_disc:
+                    flashcards_combinados.extend(fcs_disc)
             
             st.session_state.flashcards_pos_gerados = flashcards_combinados
             
@@ -433,7 +436,7 @@ elif menu == "📝 Registo Diário":
         st.title("🧠 Revisão Rápida Pós-Registo")
         
         if not st.session_state.flashcards_pos_gerados:
-            st.info("As disciplinas registadas hoje não geram flashcards automáticos (ex: Educação Física, TIC, etc.). Podes avançar para o estudo normal!")
+            st.info("As disciplinas registadas hoje não geram flashcards teóricos. Podes avançar para o estudo normal!")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -531,7 +534,6 @@ elif menu == "📖 Estudar":
         )
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
-            # Validação: se escolher flashcards numa matéria prática, avisa o utilizador
             materias_sem_fc = ["educação física", "educação visual", "educação tecnológica", "tic"]
             if atividade == "Flashcards" and any(m in st.session_state.materia_escolhida_estudo.lower() for m in materias_sem_fc):
                 st.warning(f"⚠️ A matéria '{st.session_state.materia_escolhida_estudo}' é prática e não utiliza flashcards teóricos. Escolhe outra atividade (como Exercícios ou Quizzes).")
