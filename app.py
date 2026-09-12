@@ -379,7 +379,7 @@ elif menu == "📅 Calendário":
             
             # Apresentar o método de estudo usado no dia
             metodo_registado = registo_encontrado.get("metodo", "Exercícios")
-            st.markdown(f"### 📂 Ficheiros e Métodos de Estudo:")
+            st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
             st.markdown(f"- **Método utilizado:** {metodo_registado}")
         else:
             st.info("Não existem registos de estudo guardados para este dia.")
@@ -529,7 +529,7 @@ elif menu == "📝 Registo Diário":
                 "data": str(hoje),
                 "dia": dia_automatico,
                 "resumos": resumos_por_materia,
-                "metodo": st.session_state.get("atividade_selecionada", "Exercícios")
+                "metodo": "Registo Diário"
             }
             st.session_state.logs.append(registo_novo)
             
@@ -681,3 +681,159 @@ elif menu == "📖 Estudar":
             
         st.title(f"🎯 {st.session_state.atividade_selecionada}")
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
+        
+        if st.session_state.texto_estudo_livre:
+            st.info(f"💡 **Foco Personalizado:** Apontamentos considerados: *'{st.session_state.texto_estudo_livre}'*.")
+        
+        st.markdown("---")
+        
+        # Renderização dinâmica dos exercícios ou flashcards
+        if st.session_state.atividade_selecionada == "Exercícios":
+            st.subheader("✏️ Conjunto de 30 Exercícios Práticos:")
+            respostas_utilizador = {}
+            for ex in st.session_state.exercicios_gerados:
+                eid = ex["id"]
+                st.markdown(f"**Exercício {eid}:**  $${ex['enunciado']}$$")
+                respostas_utilizador[eid] = st.text_input(f"Resposta para o exercício {eid}:", key=f"resp_ex_{eid}")
+                st.markdown("---")
+                
+            if st.button("Submeter e Corrigir Respostas", key="btn_submeter_30"):
+                acertos = 0
+                for ex in st.session_state.exercicios_gerados:
+                    eid = ex["id"]
+                    val_str = str(respostas_utilizador.get(eid, "")).strip().lower()
+                    if val_str not in ["não", "nao", ""]:
+                        try:
+                            if abs(float(val_str) - ex["resposta_correta"]) < 1e-3:
+                                acertos += 1
+                        except ValueError:
+                            pass
+                st.markdown(f"### Pontuação Final: **{acertos} / 30 corretas**")
+                
+                # Registar automaticamente no calendário ao submeter com o método correto
+                hoje_str = str(datetime.date.today())
+                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                
+                registo_existente = None
+                for log in st.session_state.logs:
+                    if log.get("data") == hoje_str:
+                        registo_existente = log
+                        break
+                
+                materia_atual = st.session_state.materia_escolhida_estudo
+                texto_resumo_estudo = st.session_state.texto_estudo_livre or f"Pontuação: {acertos}/30"
+                
+                if registo_existente:
+                    if "resumos" not in registo_existente:
+                        registo_existente["resumos"] = {}
+                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
+                    registo_existente["metodo"] = st.session_state.atividade_selecionada
+                else:
+                    novo_registo = {
+                        "data": hoje_str,
+                        "dia": dia_atual_nome,
+                        "resumos": {
+                            materia_atual: texto_resumo_estudo
+                        },
+                        "metodo": st.session_state.atividade_selecionada
+                    }
+                    st.session_state.logs.append(novo_registo)
+                    
+                st.success("Respostas corrigidas e guardadas no calendário com sucesso!")
+
+        elif st.session_state.atividade_selecionada == "Flashcards":
+            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
+            if st.button("🔄 Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
+                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                    20, 
+                    st.session_state.materia_escolhida_estudo, 
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar,
+                    st.session_state.texto_estudo_livre
+                )
+                st.rerun()
+
+            for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
+                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+                chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
+                if chave_fc not in st.session_state:
+                    st.session_state[chave_fc] = False
+                    
+                col_b1, col_b2 = st.columns([1, 4])
+                with col_b1:
+                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
+                        st.session_state[chave_fc] = not st.session_state[chave_fc]
+                        st.rerun()
+                with col_b2:
+                    if st.session_state[chave_fc]:
+                        st.success(f"**Resposta:** {fc['resposta']}")
+                    else:
+                        st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
+                st.markdown("---")
+                
+            # Registar no calendário ao interagir/concluir flashcards
+            if st.button("Guardar Sessão de Flashcards no Calendário"):
+                hoje_str = str(datetime.date.today())
+                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                
+                registo_existente = None
+                for log in st.session_state.logs:
+                    if log.get("data") == hoje_str:
+                        registo_existente = log
+                        break
+                
+                materia_atual = st.session_state.materia_escolhida_estudo
+                texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
+                
+                if registo_existente:
+                    if "resumos" not in registo_existente:
+                        registo_existente["resumos"] = {}
+                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
+                    registo_existente["metodo"] = st.session_state.atividade_selecionada
+                else:
+                    novo_registo = {
+                        "data": hoje_str,
+                        "dia": dia_atual_nome,
+                        "resumos": {
+                            materia_atual: texto_resumo_estudo
+                        },
+                        "metodo": st.session_state.atividade_selecionada
+                    }
+                    st.session_state.logs.append(novo_registo)
+                    
+                st.success("Sessão de Flashcards guardada no calendário com sucesso!")
+        else:
+            st.info("Atividade interativa pronta a utilizar.")
+            if st.button("Concluir e Guardar no Calendário"):
+                hoje_str = str(datetime.date.today())
+                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                
+                registo_existente = None
+                for log in st.session_state.logs:
+                    if log.get("data") == hoje_str:
+                        registo_existente = log
+                        break
+                
+                materia_atual = st.session_state.materia_escolhida_estudo
+                texto_resumo_estudo = st.session_state.texto_estudo_livre or "Estudo concluído"
+                
+                if registo_existente:
+                    if "resumos" not in registo_existente:
+                        registo_existente["resumos"] = {}
+                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
+                    registo_existente["metodo"] = st.session_state.atividade_selecionada
+                else:
+                    novo_registo = {
+                        "data": hoje_str,
+                        "dia": dia_atual_nome,
+                        "resumos": {
+                            materia_atual: texto_resumo_estudo
+                        },
+                        "metodo": st.session_state.atividade_selecionada
+                    }
+                    st.session_state.logs.append(novo_registo)
+                    
+                st.success("Guardado no calendário com sucesso!")
