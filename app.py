@@ -191,6 +191,11 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    # Desativa explicitamente os flashcards para disciplinas práticas
+    materias_sem_flashcards = ["educação física", "educação visual", "educação tecnológica", "tic"]
+    if any(m in materia.lower() for m in materias_sem_flashcards):
+        return []
+
     banco_ingles_verb_to_be = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
@@ -250,14 +255,14 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     else:
         if texto_apontamentos.strip():
             banco_base = [
-                (f"Quais são os fundamentos técnicos essenciais estudados no programa do {ano_aluno}?", "Envolve a correta execução motora, postura corporal, regras oficiais e domínio técnico da modalidade."),
-                (f"Como se estruturam as regras e o regulamento principal aplicados a este conteúdo?", "Através do conhecimento das posições em campo, faltas, pontuação e organização geral."),
-                (f"Quais são os erros técnicos mais comuns a evitar durante a prática e estudo?", "Postura incorreta, falta de coordenação, mau posicionamento e desrespeito pelas normas básicas."),
-                (f"De que forma a matéria abordada contribui para o desenvolvimento prático no {ano_aluno}?", "Melhorando a agilidade, a capacidade de execução, o trabalho coletivo e a tomada de decisão rápida."),
-                (f"Quais são os exercícios práticos recomendados para consolidar o desempenho?", "Drills de repetição técnica, simulações reais e treino focado nos fundamentos específicos."),
-                (f"Qual é a importância da vertente teórica e prática ao estudar este tema?", "Permite uma melhor compreensão global, cooperação eficaz e execução rigorosa dos objetivos."),
-                (f"Descreve a importância do estudo e prática deste conteúdo no programa de {materia}.", "Consolida as competências exigidas para o respetivo nível de ensino e fomenta o progresso contínuo."),
-                (f"Quais são os aspetos de segurança e rigor fundamentais a aplicar?", "Respeito pelas normas estabelecidas, integridade e aplicação correta dos procedimentos.")
+                (f"Quais são os conceitos e definições fundamentais estudados em {materia} para o {ano_aluno}?", "Envolve o rigor teórico, compreensão dos princípios e a aplicação correta dos conteúdos."),
+                (f"Como se estruturam os pontos principais e as regras abordadas neste tópico?", "Através da análise lógica, estruturação de dados e memorização dos conceitos essenciais."),
+                (f"Quais são os erros mais comuns a evitar ao estudar este conteúdo?", "Falta de rigor conceptual, desatenção aos detalhes teóricos e confusão entre propriedades."),
+                (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", "Consolidando a base de conhecimentos teóricos e práticos exigidos na disciplina de " + materia + "."),
+                (f"Quais são os aspetos teóricos cruciais para dominar esta matéria?", "Compreensão das definições, leis, propriedades e respetiva interpretação correta."),
+                (f"Como resumirias a importância de estudar este tópico em {materia}?", "Permite obter excelentes resultados nas avaliações e assegurar um progresso consistente."),
+                (f"Identifica as características principais associadas a este conteúdo.", "Envolve precisão analítica, estruturação de raciocínio e aplicação metódica."),
+                (f"Qual é o procedimento adequado para responder a questões sobre este tema?", "Ler atentamente, identificar os conceitos-chave e fundamentar rigorosamente a resposta.")
             ]
         else:
             banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
@@ -425,25 +430,28 @@ elif menu == "📝 Registo Diário":
             st.session_state.step_registo = "formulario"
             st.rerun()
             
-        st.title("🧠 Revisão Rápida Pós-Registo (5 Flashcards por Disciplina)")
+        st.title("🧠 Revisão Rápida Pós-Registo")
         
-        for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
-            st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-            chave_estado = f"mostrar_pos_{st.session_state.chave_geracao}_{i}"
-            if chave_estado not in st.session_state:
-                st.session_state[chave_estado] = False
-                
-            c1, c2 = st.columns([1, 4])
-            with c1:
-                if st.button(f"Virar #{i}", key=f"btn_virar_pos_card_{st.session_state.chave_geracao}_{i}"):
-                    st.session_state[chave_estado] = not st.session_state[chave_estado]
-                    st.rerun()
-            with c2:
-                if st.session_state[chave_estado]:
-                    st.success(f"**Resposta:** {fc['resposta']}")
-                else:
-                    st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
-            st.markdown("---")
+        if not st.session_state.flashcards_pos_gerados:
+            st.info("As disciplinas registadas hoje não geram flashcards automáticos (ex: Educação Física, TIC, etc.). Podes avançar para o estudo normal!")
+        else:
+            for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
+                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+                chave_estado = f"mostrar_pos_{st.session_state.chave_geracao}_{i}"
+                if chave_estado not in st.session_state:
+                    st.session_state[chave_estado] = False
+                    
+                c1, c2 = st.columns([1, 4])
+                with c1:
+                    if st.button(f"Virar #{i}", key=f"btn_virar_pos_card_{st.session_state.chave_geracao}_{i}"):
+                        st.session_state[chave_estado] = not st.session_state[chave_estado]
+                        st.rerun()
+                with c2:
+                    if st.session_state[chave_estado]:
+                        st.success(f"**Resposta:** {fc['resposta']}")
+                    else:
+                        st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
+                st.markdown("---")
             
         if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
             st.session_state.step_estudar = "escolher_materia"
@@ -523,24 +531,29 @@ elif menu == "📖 Estudar":
         )
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
-            st.session_state.atividade_selecionada = atividade
-            st.session_state.chave_geracao += 1
-            if atividade == "Exercícios":
-                st.session_state.exercicios_gerados = gerar_30_exercicios(
-                    st.session_state.dificuldade_selecionada, 
-                    st.session_state.ano_escolar, 
-                    st.session_state.texto_estudo_livre
-                )
-            elif atividade == "Flashcards":
-                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
-                    20, 
-                    st.session_state.materia_escolhida_estudo, 
-                    st.session_state.dificuldade_selecionada, 
-                    st.session_state.ano_escolar,
-                    st.session_state.texto_estudo_livre
-                )
-            st.session_state.step_estudar = "executar_atividade"
-            st.rerun()
+            # Validação: se escolher flashcards numa matéria prática, avisa o utilizador
+            materias_sem_fc = ["educação física", "educação visual", "educação tecnológica", "tic"]
+            if atividade == "Flashcards" and any(m in st.session_state.materia_escolhida_estudo.lower() for m in materias_sem_fc):
+                st.warning(f"⚠️ A matéria '{st.session_state.materia_escolhida_estudo}' é prática e não utiliza flashcards teóricos. Escolhe outra atividade (como Exercícios ou Quizzes).")
+            else:
+                st.session_state.atividade_selecionada = atividade
+                st.session_state.chave_geracao += 1
+                if atividade == "Exercícios":
+                    st.session_state.exercicios_gerados = gerar_30_exercicios(
+                        st.session_state.dificuldade_selecionada, 
+                        st.session_state.ano_escolar, 
+                        st.session_state.texto_estudo_livre
+                    )
+                elif atividade == "Flashcards":
+                    st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                        20, 
+                        st.session_state.materia_escolhida_estudo, 
+                        st.session_state.dificuldade_selecionada, 
+                        st.session_state.ano_escolar,
+                        st.session_state.texto_estudo_livre
+                    )
+                st.session_state.step_estudar = "executar_atividade"
+                st.rerun()
 
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("⬅️ Voltar às Opções", key="btn_voltar_exec"):
