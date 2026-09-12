@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import random
+import calendar
 
 # Configuração da Página
 st.set_page_config(
@@ -105,6 +106,14 @@ if "dificuldade_selecionada" not in st.session_state:
 if "chave_geracao" not in st.session_state:
     st.session_state.chave_geracao = 0
 
+# Estado para navegação do calendário e detalhe do dia
+if "selected_date" not in st.session_state:
+    st.session_state.selected_date = None
+if "cal_year" not in st.session_state:
+    st.session_state.cal_year = datetime.date.today().year
+if "cal_month" not in st.session_state:
+    st.session_state.cal_month = datetime.date.today().month
+
 LISTA_MATERIAS = [
     "Matemática",
     "Português",
@@ -191,8 +200,6 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    # Restrição removida: agora gera flashcards para qualquer matéria sem excluir nada.
-
     banco_ingles = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
@@ -210,8 +217,8 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
         ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
-        ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
-        ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
+        ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\circ$."),
+        ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \pi r^2$)."),
         ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio.")
     ]
 
@@ -299,12 +306,13 @@ def obter_recomendacao_inteligente():
     sugestao_materia = aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
     return f"Com base no teu horário de hoje ({dia_nome}), sugerimos que pratiques {sugestao_materia}."
 
-# Barra Lateral de Navegação
+# Barra Lateral de Navegação (5 pontos ajustados)
 st.sidebar.markdown("# Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
     [
         "🏠 Início & Escola",
+        "📅 Calendário",
         "📅 Agenda & Horário",
         "📝 Registo Diário",
         "📖 Estudar"
@@ -343,7 +351,113 @@ if menu == "🏠 Início & Escola":
     if st.button("Guardar alterações das configurações do aluno"):
         st.success("Configurações do aluno guardadas com sucesso!")
 
-# 2. Agenda & Horário
+# 2. Calendário
+elif menu == "📅 Calendário":
+    st.title("📅 Calendário")
+    
+    # Se um dia foi selecionado, exibe os detalhes desse dia
+    if st.session_state.selected_date is not None:
+        d_str = st.session_state.selected_date.strftime("%d/%m/%Y")
+        st.subheader(f"Detalhes do dia {d_str}")
+        
+        # Procurar registos para esta data
+        registo_encontrado = None
+        for log in st.session_state.logs:
+            if log.get("data") == str(st.session_state.selected_date):
+                registo_encontrado = log
+                break
+                
+        if registo_encontrado:
+            st.markdown("### 📚 Matéria Estudada / Resumos:")
+            for disc, res in registo_encontrado.get("resumos", {}).items():
+                if res:
+                    st.markdown(f"- **{disc}**: {res}")
+                else:
+                    st.markdown(f"- **{disc}**: *(Sem apontamentos escritos)*")
+        else:
+            st.info("Não existem registos de estudo guardados para este dia.")
+            
+        st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
+        st.write("Ficheiros carregados ou gerados e métodos de estudo aplicados neste dia estarão visíveis aqui consoante a atividade registada.")
+        
+        if st.button("⬅️ Voltar ao Calendário Mensal"):
+            st.session_state.selected_date = None
+            st.rerun()
+            
+    else:
+        # Controlo de Mês e Ano
+        col_m1, col_m2, col_m3 = st.columns([1, 2, 1])
+        with col_m1:
+            if st.button("◀ Mês Anterior"):
+                if st.session_state.cal_month == 1:
+                    st.session_state.cal_month = 12
+                    st.session_state.cal_year -= 1
+                else:
+                    st.session_state.cal_month -= 1
+                st.rerun()
+        with col_m2:
+            meses_nomes = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+            st.markdown(f"<h3 style='text-align: center;'>{meses_nomes[st.session_state.cal_month]} {st.session_state.cal_year}</h3>", unsafe_allow_html=True)
+        with col_m3:
+            if st.button("Mês Seguinte ▶"):
+                if st.session_state.cal_month == 12:
+                    st.session_state.cal_month = 1
+                    st.session_state.cal_year += 1
+                else:
+                    st.session_state.cal_month += 1
+                st.rerun()
+
+        st.markdown("---")
+        
+        # Obter matriz do mês (começando à segunda-feira)
+        cal = calendar.Calendar(firstweekday=0)
+        mes_dias = cal.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
+        
+        # Cabeçalhos dos dias da semana
+        dias_semana_cabecalho = ["s", "t", "q", "q", "s", "s", "d"]
+        cols_cab = st.columns(7)
+        for idx, d_nome in enumerate(dias_semana_cabecalho):
+            with cols_cab[idx]:
+                st.markdown(f"<p style='text-align: center; font-weight: bold; color: gray;'>{d_nome}</p>", unsafe_allow_html=True)
+                
+        # Mapear logs por data string para consulta rápida
+        logs_por_data = {}
+        for log in st.session_state.logs:
+            logs_por_data[log.get("data")] = log
+
+        # Renderizar grelha do calendário
+        for semana in mes_dias:
+            cols = st.columns(7)
+            for idx_col, dia in enumerate(semana):
+                with cols[idx_col]:
+                    if dia == 0:
+                        st.markdown("<p style='text-align: center; color: #d3d3d3;'>-</p>", unsafe_allow_html=True)
+                    else:
+                        data_atual_loop = datetime.date(st.session_state.cal_year, st.session_state.cal_month, dia)
+                        data_str = str(data_atual_loop)
+                        
+                        # Descobrir o que foi estudado para mostrar em baixo do número
+                        resumo_resumido = ""
+                        if data_str in logs_por_data:
+                            resumos_dict = logs_por_data[data_str].get("resumos", {})
+                            materias_estudadas = [k for k, v in resumos_dict.items() if v.strip()]
+                            if materias_estudadas:
+                                resumo_resumido = ", ".join(materias_estudadas)
+                            else:
+                                resumo_resumido = "Estudado"
+                        
+                        # Número a cinza como solicitado
+                        st.markdown(f"<p style='text-align: center; color: gray; margin-bottom: 0px;'><b>{dia}</b></p>", unsafe_allow_html=True)
+                        if resumo_resumido:
+                            st.markdown(f"<p style='text-align: center; font-size: 11px; color: #4b6584; margin-top: 0px;'>{resumo_resumido}</p>", unsafe_allow_html=True)
+                        else:
+                            st.markdown("<p style='text-align: center; font-size: 11px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
+                            
+                        if st.button("Ver", key=f"btn_dia_{st.session_state.cal_year}_{st.session_state.cal_month}_{dia}"):
+                            st.session_state.selected_date = data_atual_loop
+                            st.rerun()
+
+# 3. Agenda & Horário
 elif menu == "📅 Agenda & Horário":
     st.title("📅 Gestão de Horário e Agenda")
     
@@ -377,7 +491,7 @@ elif menu == "📅 Agenda & Horário":
         st.session_state.horario[dia_escolhido] = novo_dia
         st.success(f"Horário de {dia_escolhido} guardado com sucesso!")
 
-# 3. Registo Diário
+# 4. Registo Diário
 elif menu == "📝 Registo Diário":
     if st.session_state.step_registo == "formulario":
         st.title("📝 Registo de Estudo Diário")
@@ -457,7 +571,7 @@ elif menu == "📝 Registo Diário":
             st.session_state.step_registo = "formulario"
             st.rerun()
 
-# 4. Alínea: Estudar
+# 5. Alínea: Estudar
 elif menu == "📖 Estudar":
     
     if st.session_state.step_estudar == "escolher_materia":
@@ -530,7 +644,6 @@ elif menu == "📖 Estudar":
         )
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
-            # Validação restritiva removida completamente para permitir flashcards em qualquer matéria
             st.session_state.atividade_selecionada = atividade
             st.session_state.chave_geracao += 1
             if atividade == "Exercícios":
