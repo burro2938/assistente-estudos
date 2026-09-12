@@ -127,7 +127,7 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Função para gerar 30 exercícios com equações compridas e estruturadas em ambos os membros
+# Função para gerar 30 exercícios com equações compridas em ambos os membros
 def gerar_30_exercicios(dificuldade, ano_aluno):
     exs = []
     
@@ -144,25 +144,20 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         fator = 5
 
     for i in range(1, 31):
-        # Gerar uma solução inteira aleatória para a equação
         sol = random.randint(-6 * fator, 10 * fator)
         
-        # Coeficientes para o primeiro membro: a1*x + b1 + c1*x = ...
-        a1 = random.randint(1, 3 * fator)
-        b1 = random.randint(-5 * fator, 8 * fator)
-        c1 = random.randint(-2 * fator, 3 * fator)
+        # Coeficientes para o 1.º membro: a1*x + b1 + c1*x
+        a1 = random.randint(1, 4 * fator)
+        b1 = random.randint(-6 * fator, 8 * fator)
+        c1 = random.randint(-3 * fator, 4 * fator)
         
-        # Coeficientes para o segundo membro: a2*x + b2 + c2*x = ...
-        a2 = random.randint(-2 * fator, 2 * fator)
-        # Garantir que os coeficientes de x não se anulem totalmente para termos sempre incógnita
+        # Coeficientes para o 2.º membro: a2*x + b2 + d2 (termo independente ajustado)
+        a2 = random.randint(-3 * fator, 3 * fator)
         if a1 + c1 == a2:
             a2 += 1
             
-        b2 = random.randint(-5 * fator, 8 * fator)
+        b2 = random.randint(-6 * fator, 8 * fator)
         
-        # Calcular o termo independente restante para que a igualdade seja matematicamente válida para a 'sol'
-        # L1 = (a1+c1)*sol + b1
-        # L2 = a2*sol + b2 + d2 (onde d2 é o número livre extra que vamos calcular)
         soma_x_esq = a1 + c1
         termo_num_esq = b1
         soma_x_dir = a2
@@ -170,9 +165,8 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         
         valor_esq = soma_x_esq * sol + termo_num_esq
         valor_dir_sem_d2 = soma_x_dir * sol + termo_num_dir
-        d2 = valor_esq - valor_dir_sem_d2  # Ajuste exato para fechar a equação
+        d2 = valor_esq - valor_dir_sem_d2  # Ajuste rigoroso para manter a solução exata 'sol'
         
-        # Construir strings formatadas com sinaizinhos limpos
         def fmt_term(val, var=""):
             if val == 0 and var != "":
                 return ""
@@ -180,17 +174,14 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
             num = abs(val)
             return f"{s}{num}{var}" if num != 1 or var == "" else f"{s}{var}"
 
-        # Montar o lado esquerdo
         parte_esq_x1 = f"{a1}x" if a1 != 0 else ""
         parte_esq_b1 = f" {fmt_term(b1)}" if b1 != 0 else ""
         parte_esq_c1 = fmt_term(c1, "x")
         
-        # Montar o lado direito
         parte_dir_x2 = f"{a2}x" if a2 != 0 else ""
         parte_dir_b2 = f" {fmt_term(b2)}" if b2 != 0 else ""
         parte_dir_d2 = f" {fmt_term(d2)}" if d2 != 0 else ""
         
-        # Juntar tudo numa equação longa estilo 6x - 4 + x = 4 - 8x + 5
         str_esq = f"{parte_esq_x1}{parte_esq_b1}{parte_esq_c1}".strip()
         if str_esq.startswith("+ "):
             str_esq = str_esq[2:]
@@ -213,10 +204,8 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         })
     return exs
 
-# Função para gerar 20 Flashcards dinâmicos adaptados à matéria e ano
+# Função para gerar 20 Flashcards dinâmicos e completamente baralhados a cada chamada
 def gerar_20_flashcards(materia, dificuldade, ano_aluno):
-    flashcards = []
-    
     bancos_perguntas = {
         "Matemática": [
             ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
@@ -238,7 +227,9 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
             ("O que é uma simetria axial?", "Uma reflexão geométrica em relação a um eixo."),
             ("Qual é o valor de qualquer número (não nulo) elevado a zero?", "Sempre 1."),
             ("O que são ângulos suplementares?", "Dois ângulos cuja soma das amplitudes é exatamente $180^\\circ$."),
-            (f"Qual é a meta principal a atingir a Matemática no {ano_aluno}?", "Desenvolver o pensamento crítico e a agilidade de cálculo algébrico.")
+            (f"Qual é a meta principal a atingir a Matemática no {ano_aluno}?", "Desenvolver o pensamento crítico e a agilidade de cálculo algébrico."),
+            ("O que é um monómio?", "Uma expressão algébrica constituída apenas por um produto de números e letras."),
+            ("O que são termos semelhantes?", "Termos algébricos que possuem exatamente a mesma parte literal.")
         ],
         "Português": [
             ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
@@ -260,14 +251,20 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
             ("O que exprime o pretérito mais-que-perfeito?", "Uma ação passada que ocorreu antes de outra ação também passada."),
             ("O que é uma antítese?", "A aproximação de conceitos com sentidos opostos."),
             ("O que é um ditongo?", "A aglutinação de uma vogal e uma semivogal numa única sílaba."),
-            (f"Como evoluir na disciplina de Português no {ano_aluno}?", "Através da leitura atenta e rigor na expressão escrita.")
+            (f"Como evoluir na disciplina de Português no {ano_aluno}?", "Através da leitura atenta e rigor na expressão escrita."),
+            ("O que é o campo lexical?", "Um conjunto de palavras relacionadas com o mesmo tema ou conceito."),
+            ("O que é uma frase complexa?", "Uma frase constituída por duas ou mais orações.")
         ]
     }
     
     banco = bancos_perguntas.get(materia, bancos_perguntas["Matemática"])
     
+    # Baralhar completamente o banco de perguntas para obter ordem nova e selecionar 20
+    banco_embaralhado = random.sample(banco, len(banco))
+    
+    flashcards = []
     for i in range(1, 21):
-        pergunta, resposta = banco[(i - 1) % len(banco)]
+        pergunta, resposta = banco_embaralhado[(i - 1) % len(banco_embaralhado)]
         flashcards.append({
             "id": i,
             "pergunta": f"{pergunta} (Nível: {dificuldade} | {ano_aluno})",
