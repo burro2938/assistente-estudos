@@ -241,7 +241,8 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ]
     }
 
-    texto_analisar = (texto_apontamentos + " " + materia).lower()
+    # Análise global robusta combinando matéria e texto livre
+    texto_analisar = f"{materia} {texto_apontamentos}".lower()
     
     if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
         banco_base = banco_ingles_verb_to_be
@@ -393,10 +394,13 @@ elif menu == "📝 Registo Diário":
             }
             st.session_state.logs.append(registo_novo)
             
+            # Lê o que foi escrito em cada caixa de texto para gerar flashcards focados no que o utilizador inseriu
             flashcards_combinados = []
+            st.session_state.chave_geracao += 1
             for disc in disciplinas_dia:
+                texto_caixa = resumos_por_materia.get(disc, "")
                 fcs_disc = gerar_flashcards_personalizados(
-                    5, disc, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, resumos_por_materia.get(disc, "")
+                    5, disc, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, texto_caixa
                 )
                 flashcards_combinados.extend(fcs_disc)
             
@@ -415,13 +419,13 @@ elif menu == "📝 Registo Diário":
         
         for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
             st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-            chave_estado = f"mostrar_pos_{i}"
+            chave_estado = f"mostrar_pos_{st.session_state.chave_geracao}_{i}"
             if chave_estado not in st.session_state:
                 st.session_state[chave_estado] = False
                 
             c1, c2 = st.columns([1, 4])
             with c1:
-                if st.button(f"Virar #{i}", key=f"btn_virar_pos_card_{i}"):
+                if st.button(f"Virar #{i}", key=f"btn_virar_pos_card_{st.session_state.chave_geracao}_{i}"):
                     st.session_state[chave_estado] = not st.session_state[chave_estado]
                     st.rerun()
             with c2:
@@ -577,13 +581,13 @@ elif menu == "📖 Estudar":
 
             for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-                chave_fc = f"mostrar_fc_estudo_{i}"
+                chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
                 if chave_fc not in st.session_state:
                     st.session_state[chave_fc] = False
                     
                 col_b1, col_b2 = st.columns([1, 4])
                 with col_b1:
-                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{i}"):
+                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
                         st.session_state[chave_fc] = not st.session_state[chave_fc]
                         st.rerun()
                 with col_b2:
