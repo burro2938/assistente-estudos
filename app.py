@@ -212,7 +212,9 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
         ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
         ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
-        ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio.")
+        ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio."),
+        ("O que indica a inclinação numa função afim $y = mx + b$?", "O declive ($m$), que determina se a função é crescente, decrescente ou constante."),
+        ("Como se somam frações com denominadores diferentes?", "Reduzindo primeiramente as frações ao mesmo denominador através do cálculo do mínimo múltiplo comum (m.m.c.).")
     ]
 
     banco_portugues = [
