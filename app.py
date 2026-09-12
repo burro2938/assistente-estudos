@@ -200,33 +200,31 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         })
     return exs
 
-# Função para gerar 20 Flashcards dinâmicos baseados na matéria, dificuldade e nos apontamentos/texto inseridos
+# Função para gerar 20 Flashcards dinâmicos com classificação de equações incluída
 def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    # Banco especializado em equações e álgebra caso o utilizador mencione equações
     banco_equacoes = [
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
         ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
+        ("Como se classifica uma equação quanto ao conjunto solução?", "Pode classificar-se em: Possível Determinada, Possível Indeterminada ou Impossível."),
+        ("O que é uma equação possível e determinada?", "É aquela que tem um conjunto solução com um único elemento (ex: x = 3)."),
+        ("O que é uma equação possível e indeterminada?", "É aquela que tem infinitas soluções (quando chegamos a uma identidade verdadeira como 0 = 0)."),
+        ("O que é uma equação impossível?", "É aquela que não tem nenhuma solução no conjunto dos números reais (quando chegamos a um absurdo como 0 = 5)."),
         ("Como se resolve uma equação do tipo 6x - 4 + x = 4 - 8x + 5?", "Primeiro simplificam-se os termos semelhantes em cada membro da equação, isolando depois a incógnita $x$."),
         ("Qual é o objetivo principal ao resolver uma equação?", "Determinar o valor exato da incógnita $x$ que torna a igualdade verdadeira."),
-        ("O que significa quando uma equação resulta numa identidade universal (ex: 0 = 0)?", "Significa que a equação é possível e indeterminada, tendo infinitas soluções."),
-        ("O que significa quando uma equação resulta num absurdo (ex: 0 = 5)?", "Significa que a equação é impossível, não tendo nenhuma solução no conjunto dos números reais."),
         ("Como se eliminam denominadores numa equação?", "Multiplicando todos os termos de ambos os membros pelo denominador comum."),
-        ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada um dos parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
+        ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada uma das parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
         ("Como se trata um sinal de menos antecedido de parênteses, ex: -(2x - 3)?", "Inverte-se o sinal de todos os termos que estão dentro dos parênteses (-2x + 3)."),
         ("O que é uma equação algébrica equivalente?", "Equações que possuem exatamente o mesmo conjunto solução."),
         ("Como se isola a incógnita se ela estiver multiplicada por um coeficiente (ex: 5x = 20)?", "Dividindo ambos os membros da equação por esse coeficiente ($x = 20/5 = 4$)."),
         ("Qual é a diferença entre uma expressão algébrica e uma equação?", "A expressão algébrica é apenas um cálculo com letras e números, enquanto a equação é uma igualdade com uma incógnita a descobrir."),
-        ("Pode uma equação ter coeficientes frcionários?", "Sim, e resolve-se habitualmente reduzindo todos os termos ao mesmo denominador ou multiplicando por ele."),
+        ("Pode uma equação ter coeficientes fracionários?", "Sim, e resolve-se habitualmente reduzindo todos os termos ao mesmo denominador ou multiplicando por ele."),
         ("O que é o grau de uma equação?", "É o maior expoente a que está elevada a incógnita após a equação estar simplificada."),
         ("Se tivermos termos com $x$ em ambos os membros, qual deve ser o primeiro passo prático?", "Reunir todos os termos com $x$ no primeiro membro (geralmente à esquerda) e os termos numéricos no segundo."),
-        ("O que representa a solução de uma equação graficamente numa função afim?", "Representa o ponto de interseção da reta com o eixo das abcissas (zeros da função)."),
         ("Qual é o cuidado a ter com as operações inversas?", "A adição desfaz-se com subtração, e a multiplicação desfaz-se com divisão."),
-        ("Como se verifica se o valor obtido para $x$ está correto?", "Substituindo o valor encontrado na equação inicial e confirmando se ambos os membros dão o mesmo resultado."),
-        ("Por que razão devemos simplificar antes de transpor termos?", "Para evitar erros de cálculo e tornar a equação mais curta e direta de resolver.")
+        ("Como se verifica se o valor obtido para $x$ está correto?", "Substituindo o valor encontrado na equação inicial e confirmando se ambos os membros dão o mesmo resultado.")
     ]
 
-    # Banco genérico por matéria caso não seja focado em equações
     bancos_gerais = {
         "Matemática": [
             ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
@@ -254,18 +252,15 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
         ]
     }
 
-    # Verificar se o utilizador escreveu algo nos apontamentos ou se a matéria é matemática e fala de equações
     texto_analisar = (texto_apontamentos + " " + materia).lower()
     if "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "algeb" in texto_analisar:
         banco_base = banco_equacoes
     else:
         banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
 
-    # Selecionar aleatoriamente 20 flashcards baralhados do banco escolhido (garantindo variedade a cada clique)
     quantidade_a_selecionar = min(len(banco_base), 20)
     cartoes_escolhidos = random.sample(banco_base, quantidade_a_selecionar)
     
-    # Se por acaso o banco tiver menos de 20, preenchemos o resto repetindo de forma variada
     while len(cartoes_escolhidos) < 20:
         cartoes_escolhidos.append(random.choice(banco_base))
 
@@ -593,7 +588,6 @@ elif menu == "📖 Estudar":
             st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
             st.write("Clica no botão respetivo de cada cartão para revelares a resposta e testares os teus conhecimentos:")
             
-            # Botão extra para baralhar/gerar novas perguntas instantaneamente nos flashcards se o utilizador quiser
             if st.button("🔄 Gerar novas perguntas de flashcards"):
                 st.session_state.flashcards_gerados = gerar_20_flashcards(
                     st.session_state.materia_escolhida_estudo, 
