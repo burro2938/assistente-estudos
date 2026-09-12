@@ -398,11 +398,6 @@ elif menu == "📝 Registo Diário":
             if disc and disc not in disciplinas_dia:
                 disciplinas_dia.append(disc)
                 
-        materias_obrigatorias = ["Matemática", "Português", "Inglês", "História", "Ciências Naturais"]
-        for mat in materias_obrigatorias:
-            if mat not in disciplinas_dia:
-                disciplinas_dia.append(mat)
-                
         resumos_por_materia = {}
         for disc in disciplinas_dia:
             resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
