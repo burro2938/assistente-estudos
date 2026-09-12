@@ -127,10 +127,9 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Função para gerar 30 exercícios com equações compridas em ambos os membros
+# Função para gerar 30 exercícios com equações compridas e estruturadas em ambos os membros
 def gerar_30_exercicios(dificuldade, ano_aluno):
     exs = []
-    
     fator = 1
     if "Fácil" in dificuldade:
         fator = 1
@@ -145,18 +144,15 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
 
     for i in range(1, 31):
         sol = random.randint(-6 * fator, 10 * fator)
+        a1 = random.randint(1, 3 * fator)
+        b1 = random.randint(-5 * fator, 8 * fator)
+        c1 = random.randint(-2 * fator, 3 * fator)
         
-        # Coeficientes para o 1.º membro: a1*x + b1 + c1*x
-        a1 = random.randint(1, 4 * fator)
-        b1 = random.randint(-6 * fator, 8 * fator)
-        c1 = random.randint(-3 * fator, 4 * fator)
-        
-        # Coeficientes para o 2.º membro: a2*x + b2 + d2 (termo independente ajustado)
-        a2 = random.randint(-3 * fator, 3 * fator)
+        a2 = random.randint(-2 * fator, 2 * fator)
         if a1 + c1 == a2:
             a2 += 1
             
-        b2 = random.randint(-6 * fator, 8 * fator)
+        b2 = random.randint(-5 * fator, 8 * fator)
         
         soma_x_esq = a1 + c1
         termo_num_esq = b1
@@ -165,7 +161,7 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         
         valor_esq = soma_x_esq * sol + termo_num_esq
         valor_dir_sem_d2 = soma_x_dir * sol + termo_num_dir
-        d2 = valor_esq - valor_dir_sem_d2  # Ajuste rigoroso para manter a solução exata 'sol'
+        d2 = valor_esq - valor_dir_sem_d2
         
         def fmt_term(val, var=""):
             if val == 0 and var != "":
@@ -204,67 +200,77 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         })
     return exs
 
-# Função para gerar 20 Flashcards dinâmicos e completamente baralhados a cada chamada
-def gerar_20_flashcards(materia, dificuldade, ano_aluno):
-    bancos_perguntas = {
+# Função para gerar 20 Flashcards dinâmicos baseados na matéria, dificuldade e nos apontamentos/texto inseridos
+def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    # Banco especializado em equações e álgebra caso o utilizador mencione equações
+    banco_equacoes = [
+        ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
+        ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
+        ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
+        ("Como se resolve uma equação do tipo 6x - 4 + x = 4 - 8x + 5?", "Primeiro simplificam-se os termos semelhantes em cada membro da equação, isolando depois a incógnita $x$."),
+        ("Qual é o objetivo principal ao resolver uma equação?", "Determinar o valor exato da incógnita $x$ que torna a igualdade verdadeira."),
+        ("O que significa quando uma equação resulta numa identidade universal (ex: 0 = 0)?", "Significa que a equação é possível e indeterminada, tendo infinitas soluções."),
+        ("O que significa quando uma equação resulta num absurdo (ex: 0 = 5)?", "Significa que a equação é impossível, não tendo nenhuma solução no conjunto dos números reais."),
+        ("Como se eliminam denominadores numa equação?", "Multiplicando todos os termos de ambos os membros pelo denominador comum."),
+        ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada um dos parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
+        ("Como se trata um sinal de menos antecedido de parênteses, ex: -(2x - 3)?", "Inverte-se o sinal de todos os termos que estão dentro dos parênteses (-2x + 3)."),
+        ("O que é uma equação algébrica equivalente?", "Equações que possuem exatamente o mesmo conjunto solução."),
+        ("Como se isola a incógnita se ela estiver multiplicada por um coeficiente (ex: 5x = 20)?", "Dividindo ambos os membros da equação por esse coeficiente ($x = 20/5 = 4$)."),
+        ("Qual é a diferença entre uma expressão algébrica e uma equação?", "A expressão algébrica é apenas um cálculo com letras e números, enquanto a equação é uma igualdade com uma incógnita a descobrir."),
+        ("Pode uma equação ter coeficientes frcionários?", "Sim, e resolve-se habitualmente reduzindo todos os termos ao mesmo denominador ou multiplicando por ele."),
+        ("O que é o grau de uma equação?", "É o maior expoente a que está elevada a incógnita após a equação estar simplificada."),
+        ("Se tivermos termos com $x$ em ambos os membros, qual deve ser o primeiro passo prático?", "Reunir todos os termos com $x$ no primeiro membro (geralmente à esquerda) e os termos numéricos no segundo."),
+        ("O que representa a solução de uma equação graficamente numa função afim?", "Representa o ponto de interseção da reta com o eixo das abcissas (zeros da função)."),
+        ("Qual é o cuidado a ter com as operações inversas?", "A adição desfaz-se com subtração, e a multiplicação desfaz-se com divisão."),
+        ("Como se verifica se o valor obtido para $x$ está correto?", "Substituindo o valor encontrado na equação inicial e confirmando se ambos os membros dão o mesmo resultado."),
+        ("Por que razão devemos simplificar antes de transpor termos?", "Para evitar erros de cálculo e tornar a equação mais curta e direta de resolver.")
+    ]
+
+    # Banco genérico por matéria caso não seja focado em equações
+    bancos_gerais = {
         "Matemática": [
-            ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
-            ("Como se agrupam os termos com incógnita?", "Passando todos os termos com $x$ para um dos membros da equação e os números para o outro, trocando o sinal aos que mudam de membro."),
-            ("Qual é o valor neutro da multiplicação?", "O número 1."),
-            ("O que representa o declive numa função afim?", "A taxa de variação constante da função."),
+            ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
             ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
             ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio."),
-            ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
             ("Como se converte uma fração em percentagem?", "Multiplicando a fração por 100 e adicionando o símbolo %."),
-            ("O que significa irredutível numa fração?", "Significa que o numerador e o denominador já não admitem divisores comuns além de 1."),
             ("Qual é a fórmula do perímetro de uma circunferência?", "P = 2 \\pi r."),
-            ("O que é uma proporção geométrica?", "Uma igualdade entre duas razões equivalentes."),
             ("Como se calcula a média aritmética de um conjunto?", "Somando todos os elementos e dividindo pelo número total de elementos."),
-            ("O que indica um expoente negativo?", "O inverso da base elevado ao expoente simétrico positivo."),
             ("Qual é a raiz quadrada de 196?", "14."),
             ("O que é um polígono regular?", "Um polígono com todos os lados e ângulos geometricamente iguais."),
             ("Como se calcula o volume de um cilindro?", "Multiplicando a área da base circular pela altura ($V = \\pi r^2 h$)."),
-            ("O que é uma simetria axial?", "Uma reflexão geométrica em relação a um eixo."),
-            ("Qual é o valor de qualquer número (não nulo) elevado a zero?", "Sempre 1."),
-            ("O que são ângulos suplementares?", "Dois ângulos cuja soma das amplitudes é exatamente $180^\\circ$."),
-            (f"Qual é a meta principal a atingir a Matemática no {ano_aluno}?", "Desenvolver o pensamento crítico e a agilidade de cálculo algébrico."),
-            ("O que é um monómio?", "Uma expressão algébrica constituída apenas por um produto de números e letras."),
-            ("O que são termos semelhantes?", "Termos algébricos que possuem exatamente a mesma parte literal.")
+            ("O que são ângulos suplementares?", "Dois ângulos cuja soma das amplitudes é exatamente $180^\\circ$.")
         ],
         "Português": [
             ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
-            ("Diferencia predicado nominal de verbal:", "O nominal foca-se num atributo através de verbo copulativo; o verbal expressa uma ação."),
             ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
             ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
-            ("O que estuda a regência verbal?", "A forma como o verbo seleciona e rege os seus complementos."),
             ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
             ("O que são sinónimos?", "Termos com significados equivalentes."),
             ("O que são antónimos?", "Termos com significados opostos."),
             ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente da oração principal."),
             ("Qual é a classe de palavras invariáveis que modifica o verbo?", "O advérbio."),
-            ("O que define uma palavra grave (ou tónica na penúltima)?", "Aquelas cuja sílaba tónica é a penúltima."),
             ("O que é uma metáfora?", "Uma figura de estilo baseada numa transferência de significado por semelhança implícita."),
-            ("O que é a aliteração?", "A repetição sistemática de sons consonânticos num verso."),
-            ("O que é um neologismo?", "Uma palavra recém-criada na língua."),
-            ("Qual é a estrutura clássica de uma narrativa?", "Introdução, desenvolvimento e conclusão."),
-            ("O que substitui o nome na frase?", "O pronome."),
-            ("O que exprime o pretérito mais-que-perfeito?", "Uma ação passada que ocorreu antes de outra ação também passada."),
-            ("O que é uma antítese?", "A aproximação de conceitos com sentidos opostos."),
-            ("O que é um ditongo?", "A aglutinação de uma vogal e uma semivogal numa única sílaba."),
-            (f"Como evoluir na disciplina de Português no {ano_aluno}?", "Através da leitura atenta e rigor na expressão escrita."),
-            ("O que é o campo lexical?", "Um conjunto de palavras relacionadas com o mesmo tema ou conceito."),
-            ("O que é uma frase complexa?", "Uma frase constituída por duas ou mais orações.")
+            ("O que substitui o nome na frase?", "O pronome.")
         ]
     }
+
+    # Verificar se o utilizador escreveu algo nos apontamentos ou se a matéria é matemática e fala de equações
+    texto_analisar = (texto_apontamentos + " " + materia).lower()
+    if "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "algeb" in texto_analisar:
+        banco_base = banco_equacoes
+    else:
+        banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
+
+    # Selecionar aleatoriamente 20 flashcards baralhados do banco escolhido (garantindo variedade a cada clique)
+    quantidade_a_selecionar = min(len(banco_base), 20)
+    cartoes_escolhidos = random.sample(banco_base, quantidade_a_selecionar)
     
-    banco = bancos_perguntas.get(materia, bancos_perguntas["Matemática"])
-    
-    # Baralhar completamente o banco de perguntas para obter ordem nova e selecionar 20
-    banco_embaralhado = random.sample(banco, len(banco))
-    
+    # Se por acaso o banco tiver menos de 20, preenchemos o resto repetindo de forma variada
+    while len(cartoes_escolhidos) < 20:
+        cartoes_escolhidos.append(random.choice(banco_base))
+
     flashcards = []
-    for i in range(1, 21):
-        pergunta, resposta = banco_embaralhado[(i - 1) % len(banco_embaralhado)]
+    for i, (pergunta, resposta) in enumerate(cartoes_escolhidos, 1):
         flashcards.append({
             "id": i,
             "pergunta": f"{pergunta} (Nível: {dificuldade} | {ano_aluno})",
@@ -514,7 +520,12 @@ elif menu == "📖 Estudar":
             if atividade == "Exercícios":
                 st.session_state.exercicios_gerados = gerar_30_exercicios(st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
             elif atividade == "Flashcards":
-                st.session_state.flashcards_gerados = gerar_20_flashcards(st.session_state.materia_escolhida_estudo, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
+                st.session_state.flashcards_gerados = gerar_20_flashcards(
+                    st.session_state.materia_escolhida_estudo, 
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar,
+                    st.session_state.texto_estudo_livre
+                )
             st.session_state.step_estudar = "executar_atividade"
             st.rerun()
 
@@ -582,6 +593,16 @@ elif menu == "📖 Estudar":
             st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
             st.write("Clica no botão respetivo de cada cartão para revelares a resposta e testares os teus conhecimentos:")
             
+            # Botão extra para baralhar/gerar novas perguntas instantaneamente nos flashcards se o utilizador quiser
+            if st.button("🔄 Gerar novas perguntas de flashcards"):
+                st.session_state.flashcards_gerados = gerar_20_flashcards(
+                    st.session_state.materia_escolhida_estudo, 
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar,
+                    st.session_state.texto_estudo_livre
+                )
+                st.rerun()
+
             for fc in st.session_state.flashcards_gerados:
                 fid = fc["id"]
                 st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
