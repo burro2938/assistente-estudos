@@ -191,9 +191,7 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    materias_sem_flashcards = ["educação física", "educação visual", "educação tecnológica", "tic"]
-    if any(m in materia.lower() for m in materias_sem_flashcards):
-        return []
+    # Restrição removida: agora gera flashcards para qualquer matéria sem excluir nada.
 
     banco_ingles = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
@@ -434,7 +432,7 @@ elif menu == "📝 Registo Diário":
         st.title("🧠 Revisão Rápida Pós-Registo")
         
         if not st.session_state.flashcards_pos_gerados:
-            st.info("As disciplinas registadas hoje não geram flashcards teóricos. Podes avançar para o estudo normal!")
+            st.info("Não há flashcards gerados para as disciplinas registadas hoje.")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -532,28 +530,25 @@ elif menu == "📖 Estudar":
         )
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
-            materias_sem_fc = ["educação física", "educação visual", "educação tecnológica", "tic"]
-            if atividade == "Flashcards" and any(m in st.session_state.materia_escolhida_estudo.lower() for m in materias_sem_fc):
-                st.warning(f"⚠️ A matéria '{st.session_state.materia_escolhida_estudo}' é prática e não utiliza flashcards teóricos. Escolhe outra atividade (como Exercícios ou Quizzes).")
-            else:
-                st.session_state.atividade_selecionada = atividade
-                st.session_state.chave_geracao += 1
-                if atividade == "Exercícios":
-                    st.session_state.exercicios_gerados = gerar_30_exercicios(
-                        st.session_state.dificuldade_selecionada, 
-                        st.session_state.ano_escolar, 
-                        st.session_state.texto_estudo_livre
-                    )
-                elif atividade == "Flashcards":
-                    st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
-                        20, 
-                        st.session_state.materia_escolhida_estudo, 
-                        st.session_state.dificuldade_selecionada, 
-                        st.session_state.ano_escolar,
-                        st.session_state.texto_estudo_livre
-                    )
-                st.session_state.step_estudar = "executar_atividade"
-                st.rerun()
+            # Validação restritiva removida completamente para permitir flashcards em qualquer matéria
+            st.session_state.atividade_selecionada = atividade
+            st.session_state.chave_geracao += 1
+            if atividade == "Exercícios":
+                st.session_state.exercicios_gerados = gerar_30_exercicios(
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar, 
+                    st.session_state.texto_estudo_livre
+                )
+            elif atividade == "Flashcards":
+                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                    20, 
+                    st.session_state.materia_escolhida_estudo, 
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar,
+                    st.session_state.texto_estudo_livre
+                )
+            st.session_state.step_estudar = "executar_atividade"
+            st.rerun()
 
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("⬅️ Voltar às Opções", key="btn_voltar_exec"):
