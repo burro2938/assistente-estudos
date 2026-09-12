@@ -249,9 +249,9 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     
     if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
         banco_base = banco_ingles_verb_to_be
-    elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "matemática" in materia.lower():
-        banco_base = banco_equacoes if "equaç" in texto_analisar or "x" in texto_analisar else bancos_gerais.get("Matemática", banco_equacoes)
-    elif "português" in materia.lower():
+    elif "matemática" in materia.lower() or "matematica" in materia.lower():
+        banco_base = banco_equacoes if ("equaç" in texto_analisar or "x" in texto_analisar) else bancos_gerais.get("Matemática", banco_equacoes)
+    elif "português" in materia.lower() or "portugues" in materia.lower():
         banco_base = bancos_gerais.get("Português", [])
     else:
         if texto_apontamentos.strip():
