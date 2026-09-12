@@ -248,18 +248,16 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar:
         banco_base = banco_equacoes
     else:
-        # Gerador Universal Dinâmico: funciona perfeitamente para QUALQUER palavra, esporte, matéria ou conceito escrito!
         if texto_apontamentos.strip():
-            tema = texto_apontamentos.strip()
             banco_base = [
-                (f"Qual é a definição principal ou conceito fundamental associado a '{tema}'?", f"No contexto de {materia} ({ano_aluno}), refere-se aos princípios e regras fundamentais de {tema}."),
-                (f"Quais são os aspetos práticos mais importantes a reter sobre '{tema}'?", f"Compreender a execução correta, a técnica e a aplicação prática deste tópico."),
-                (f"Como se aplica a matéria de '{tema}' na prática de {materia}?", f"Através do domínio técnico, rigor de execução e compreensão teórica dos objetivos."),
-                (f"Explica com base nos teus apontamentos o tópico: '{tema}' (Dificuldade: {dificuldade}).", f"Trata-se de um conteúdo central de {materia} focado em {tema}, exigindo prática regular e atenção aos detalhes."),
-                (f"Quais são os erros mais comuns a evitar ao praticar ou estudar '{tema}'?", f"Erros de postura/técnica, falta de rigor ou descurar os fundamentos essenciais."),
-                (f"Como resumirias a importância de dominar '{tema}'?", f"Permite melhorar o desempenho global, consolidar conhecimentos e garantir total segurança na execução."),
-                (f"Identifica as regras ou características principais associadas a '{tema}'.", f"Envolve regulamentação específica, coordenação motora e aplicação rigorosa dos conceitos."),
-                (f"Qual é o procedimento correto para executar ou desenvolver '{tema}'?", f"Seguir as etapas metodológicas adequadas, mantendo a concentração e a prática constante.")
+                (f"Quais são os fundamentos técnicos essenciais estudados no programa do {ano_aluno}?", "Envolve a correta execução motora, postura corporal, regras oficiais e domínio técnico da modalidade."),
+                (f"Como se estruturam as regras e o regulamento principal aplicados a este conteúdo?", "Através do conhecimento das posições em campo, faltas, pontuação e organização geral."),
+                (f"Quais são os erros técnicos mais comuns a evitar durante a prática e estudo?", "Postura incorreta, falta de coordenação, mau posicionamento e desrespeito pelas normas básicas."),
+                (f"De que forma a matéria abordada contribui para o desenvolvimento prático no {ano_aluno}?", "Melhorando a agilidade, a capacidade de execução, o trabalho coletivo e a tomada de decisão rápida."),
+                (f"Quais são os exercícios práticos recomendados para consolidar o desempenho?", "Drills de repetição técnica, simulações reais e treino focado nos fundamentos específicos."),
+                (f"Qual é a importância da vertente teórica e prática ao estudar este tema?", "Permite uma melhor compreensão global, cooperação eficaz e execução rigorosa dos objetivos."),
+                (f"Descreve a importância do estudo e prática deste conteúdo no programa de {materia}.", "Consolida as competências exigidas para o respetivo nível de ensino e fomenta o progresso contínuo."),
+                (f"Quais são os aspetos de segurança e rigor fundamentais a aplicar?", "Respeito pelas normas estabelecidas, integridade e aplicação correta dos procedimentos.")
             ]
         else:
             banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
