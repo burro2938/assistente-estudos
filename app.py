@@ -71,7 +71,7 @@ if "horario" not in st.session_state:
             {"hora": "11:25 - 12:10", "disc": "Educação Física"}
         ],
         "Quinta-feira": [
-            {"hora": "08:30 - 09:15", "disc": "História/Geografia"},
+            {"hora": "08:30 - 09:15", "disc": "História"},
             {"hora": "09:25 - 10:10", "disc": "Ciências Naturais"},
             {"hora": "10:30 - 11:15", "disc": "Francês"},
             {"hora": "11:25 - 12:10", "disc": "Físico-Química"}
@@ -191,6 +191,19 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    banco_ingles_verb_to_be = [
+        ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
+        ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
+        ("Quais são os pronomes que utilizam 'are' no presente do verbo to be?", "You, We, They."),
+        ("Qual é a forma negativa do verbo to be para 'I'?", "I am not (ou a forma curta I'm not)."),
+        ("Como se diz 'Eles não são' utilizando a forma curta do verbo to be?", "They aren't."),
+        ("Qual é a forma interrogativa correta para 'You are happy'?", "Are you happy?"),
+        ("Qual é o passado do verbo to be para os pronomes I, He, She, It?", "Was (Ex: I was at school yesterday)."),
+        ("Qual é o passado do verbo to be para os pronomes You, We, They?", "Were (Ex: We were friends)."),
+        ("Como se forma a negativa do passado para 'He was'?", "He was not (ou wasn't)."),
+        ("Como se formula uma pergunta no passado com o verbo to be, ex: 'She was tired'?", "Was she tired?")
+    ]
+
     banco_equacoes = [
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
@@ -201,17 +214,7 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ("O que significa quando uma equação resulta num absurdo (ex: 0 = 5)?", "Significa que a equação é impossível, não tendo nenhuma solução no conjunto dos números reais."),
         ("Como se eliminam denominadores numa equação?", "Multiplicando todos os termos de ambos os membros pelo denominador comum."),
         ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada uma das parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
-        ("Como se trata um sinal de menos antecedido de parênteses, ex: -(2x - 3)?", "Inverte-se o sinal de todos os termos que estão dentro dos parênteses (-2x + 3)."),
-        ("O que é uma equação algébrica equivalente?", "Equações que possuem exatamente o mesmo conjunto solução."),
-        ("Como se isola a incógnita se ela estiver multiplicada por um coeficiente (ex: 5x = 20)?", "Dividindo ambos os membros da equação por esse coeficiente ($x = 20/5 = 4$)."),
-        ("Qual é a diferença entre uma expressão algébrica e uma equação?", "A expressão algébrica é apenas um cálculo com letras e números, enquanto a equação é uma igualdade com uma incógnita a descobrir."),
-        ("Pode uma equação ter coeficientes fracionários?", "Sim, e resolve-se habitualmente reduzindo todos os termos ao mesmo denominador ou multiplicando por ele."),
-        ("O que é o grau de uma equação?", "É o maior expoente a que está elevada a incógnita após a equação estar simplificada."),
-        ("Se tivermos termos com $x$ em ambos os membros, qual deve ser o primeiro passo prático?", "Reunir todos os termos com $x$ no primeiro membro e os termos numéricos no segundo."),
-        ("Como se classifica uma equação quanto ao conjunto solução?", "Pode ser possível determinada (uma solução), possível indeterminada (infinitas) ou impossível (sem solução)."),
-        ("Qual é o cuidado a ter com as operações inversas?", "A adição desfaz-se com subtração, e a multiplicação desfaz-se com divisão."),
-        ("Como se verifica se o valor obtido para $x$ está correto?", "Substituindo o valor encontrado na equação inicial e confirmando se ambos os membros dão o mesmo resultado."),
-        ("Por que razão devemos simplificar antes de transpor termos?", "Para evitar erros de cálculo e tornar a equação mais curta e direta de resolver.")
+        ("Como se trata um sinal de menos antecedido de parênteses, ex: -(2x - 3)?", "Inverte-se o sinal de todos os termos que estão dentro dos parênteses (-2x + 3).")
     ]
 
     bancos_gerais = {
@@ -220,29 +223,29 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
             ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
             ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio."),
             ("Como se converte uma fração em percentagem?", "Multiplicando a fração por 100 e adicionando o símbolo %."),
-            ("Qual é a fórmula do perímetro de uma circunferência?", "P = 2 \\pi r."),
-            ("Como se calcula a média aritmética de um conjunto?", "Somando todos os elementos e dividindo pelo número total de elementos."),
-            ("Qual é a raiz quadrada de 196?", "14."),
-            ("O que é um polígono regular?", "Um polígono com todos os lados e ângulos geometricamente iguais."),
-            ("Como se calcula o volume de um cilindro?", "Multiplicando a área da base circular pela altura ($V = \\pi r^2 h$)."),
-            ("O que são ângulos suplementares?", "Dois ângulos cuja soma das amplitudes é exatamente $180^\\circ$.")
+            ("Qual é a fórmula do perímetro de uma circunferência?", "P = 2 \\pi r.")
         ],
         "Português": [
             ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
             ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
             ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
             ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
-            ("O que são sinónimos?", "Termos com significados equivalentes."),
-            ("O que são antónimos?", "Termos com significados opostos."),
-            ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente da oração principal."),
-            ("Qual é a classe de palavras invariáveis que modifica o verbo?", "O advérbio."),
-            ("O que é uma metáfora?", "Uma figura de estilo baseada numa transferência de significado por semelhança implícita."),
-            ("O que substitui o nome na frase?", "O pronome.")
+            ("O que são sinónimos?", "Termos com significados equivalentes.")
+        ],
+        "Inglês": [
+            ("What is the present simple form of 'to be' for 'I'?", "I am."),
+            ("What is the past tense of 'is' and 'am'?", "Was."),
+            ("Translate to English: 'Nós somos amigos.'", "We are friends."),
+            ("What is the negative form of 'You are'?", "You are not (You aren't)."),
+            ("How do you form a question with the verb to be?", "By inverting the subject and the verb to be (Ex: Is he...?).")
         ]
     }
 
     texto_analisar = (texto_apontamentos + " " + materia).lower()
-    if "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "algeb" in texto_analisar:
+    
+    if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
+        banco_base = banco_ingles_verb_to_be
+    elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar:
         banco_base = banco_equacoes
     else:
         banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
@@ -260,7 +263,6 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         })
     return flashcards
 
-# Função para obter recomendação inteligente baseada no horário e no registo/estudo recente
 def obter_recomendacao_inteligente():
     hoje_obj = datetime.date.today()
     dias_pt = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
@@ -269,7 +271,6 @@ def obter_recomendacao_inteligente():
     
     aulas_hoje = st.session_state.horario.get(dia_nome, [])
     
-    # Verificar se há registos anteriores para cruzar com o horário
     if st.session_state.logs:
         ultimo_registo = st.session_state.logs[-1]
         resumos_recentes = list(ultimo_registo.get("resumos", {}).keys())
@@ -392,7 +393,6 @@ elif menu == "📝 Registo Diário":
             }
             st.session_state.logs.append(registo_novo)
             
-            # Gerar exatamente 5 flashcards para CADA disciplina do dia
             flashcards_combinados = []
             for disc in disciplinas_dia:
                 fcs_disc = gerar_flashcards_personalizados(
@@ -407,31 +407,31 @@ elif menu == "📝 Registo Diário":
             st.rerun()
 
     elif st.session_state.step_registo == "flashcards_pos":
-        if st.button("⬅️ Voltar"):
+        if st.button("⬅️ Voltar", key="btn_voltar_pos_reg"):
             st.session_state.step_registo = "formulario"
             st.rerun()
             
         st.title("🧠 Revisão Rápida Pós-Registo (5 Flashcards por Disciplina)")
         
-        for fc in st.session_state.flashcards_pos_gerados:
-            fid = fc["id"]
-            st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
-            if f"mostrar_pos_{fid}" not in st.session_state:
-                st.session_state[f"mostrar_pos_{fid}"] = False
+        for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
+            st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+            chave_estado = f"mostrar_pos_{i}"
+            if chave_estado not in st.session_state:
+                st.session_state[chave_estado] = False
                 
             c1, c2 = st.columns([1, 4])
             with c1:
-                if st.button(f"Virar #{fid}", key=f"btn_virar_pos_{fid}"):
-                    st.session_state[f"mostrar_pos_{fid}"] = not st.session_state[f"mostrar_pos_{fid}"]
+                if st.button(f"Virar #{i}", key=f"btn_virar_pos_card_{i}"):
+                    st.session_state[chave_estado] = not st.session_state[chave_estado]
                     st.rerun()
             with c2:
-                if st.session_state[f"mostrar_pos_{fid}"]:
+                if st.session_state[chave_estado]:
                     st.success(f"**Resposta:** {fc['resposta']}")
                 else:
                     st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
             st.markdown("---")
             
-        if st.button("Ir para o Estudo"):
+        if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
             st.session_state.step_estudar = "escolher_materia"
             st.session_state.step_registo = "formulario"
             st.rerun()
@@ -463,7 +463,7 @@ elif menu == "📖 Estudar":
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo} (Nível: {st.session_state.ano_escolar})")
         
         st.session_state.texto_estudo_livre = st.text_area(
-            "Insere os teus apontamentos exatos ou tópicos estudados na escola:", 
+            "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex: Verb to be, equações...):", 
             value=st.session_state.texto_estudo_livre, 
             key="txt_livre_estudo"
         )
@@ -537,7 +537,7 @@ elif menu == "📖 Estudar":
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
         
         if st.session_state.texto_estudo_livre:
-            st.info(f"💡 **Foco Personalizado:** Apontamentos considerados: *'{st.session_state.texto_estudo_livre}'* (As perguntas estão rigorosamente adaptadas a este tema!).")
+            st.info(f"💡 **Foco Personalizado:** Apontamentos considerados: *'{st.session_state.texto_estudo_livre}'* (Conteúdo detetado e adaptado com sucesso!).")
         
         st.markdown("---")
         
@@ -547,15 +547,15 @@ elif menu == "📖 Estudar":
             for ex in st.session_state.exercicios_gerados:
                 eid = ex["id"]
                 st.markdown(f"**Exercício {eid}:**  $${ex['enunciado']}$$")
-                respostas_utilizador[eid] = st.text_input(f"Valor de x para o exercício {eid} (ou 'não'):", key=f"resp_ex_{eid}")
+                respostas_utilizador[eid] = st.text_input(f"Resposta para o exercício {eid}:", key=f"resp_ex_{eid}")
                 st.markdown("---")
                 
             if st.button("Submeter e Corrigir Respostas", key="btn_submeter_30"):
                 acertos = 0
                 for ex in st.session_state.exercicios_gerados:
                     eid = ex["id"]
-                    val_str = respostas_utilizador.get(eid, "").strip().lower()
-                    if val_str not in ["não", "nao"]:
+                    val_str = str(respostas_utilizador.get(eid, "")).strip().lower()
+                    if val_str not in ["não", "nao", ""]:
                         try:
                             if abs(float(val_str) - ex["resposta_correta"]) < 1e-3:
                                 acertos += 1
@@ -564,8 +564,8 @@ elif menu == "📖 Estudar":
                 st.markdown(f"### Pontuação Final: **{acertos} / 30 corretas**")
                 
         elif st.session_state.atividade_selecionada == "Flashcards":
-            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização (Sem Repetições):")
-            if st.button("🔄 Gerar novas perguntas de flashcards"):
+            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
+            if st.button("🔄 Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
                 st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
                     20, 
                     st.session_state.materia_escolhida_estudo, 
@@ -575,20 +575,19 @@ elif menu == "📖 Estudar":
                 )
                 st.rerun()
 
-            for fc in st.session_state.flashcards_gerados:
-                fid = fc["id"]
-                st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
-                
-                if f"mostrar_fc_{fid}" not in st.session_state:
-                    st.session_state[f"mostrar_fc_{fid}"] = False
+            for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
+                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+                chave_fc = f"mostrar_fc_estudo_{i}"
+                if chave_fc not in st.session_state:
+                    st.session_state[chave_fc] = False
                     
                 col_b1, col_b2 = st.columns([1, 4])
                 with col_b1:
-                    if st.button(f"Virar #{fid}", key=f"btn_virar_{fid}"):
-                        st.session_state[f"mostrar_fc_{fid}"] = not st.session_state[f"mostrar_fc_{fid}"]
+                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{i}"):
+                        st.session_state[chave_fc] = not st.session_state[chave_fc]
                         st.rerun()
                 with col_b2:
-                    if st.session_state[f"mostrar_fc_{fid}"]:
+                    if st.session_state[chave_fc]:
                         st.success(f"**Resposta:** {fc['resposta']}")
                     else:
                         st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
