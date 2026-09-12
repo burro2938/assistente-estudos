@@ -194,14 +194,13 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
     return exs
 
 def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    # Banco focado em equações básicas e propriedades do 8º ano (com introdução opcional à classificação)
     banco_equacoes = [
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
         ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
         ("Como se resolve uma equação do tipo 6x - 4 + x = 4 - 8x + 5?", "Primeiro simplificam-se os termos semelhantes em cada membro da equação, isolando depois a incógnita $x$."),
         ("Qual é o objetivo principal ao resolver uma equação?", "Determinar o valor exato da incógnita $x$ que torna a igualdade verdadeira."),
-        ("O que significa quando uma equação resulta numa identidade universal (ex: 0 = 0)?", "Significa que a equação é possível e indeterminada, tendo infinitas soluções (conceito a aprofundar)."),
+        ("O que significa quando uma equação resulta numa identidade universal (ex: 0 = 0)?", "Significa que a equação é possível e indeterminada, tendo infinitas soluções."),
         ("O que significa quando uma equação resulta num absurdo (ex: 0 = 5)?", "Significa que a equação é impossível, não tendo nenhuma solução no conjunto dos números reais."),
         ("Como se eliminam denominadores numa equação?", "Multiplicando todos os termos de ambos os membros pelo denominador comum."),
         ("Qual é a regra da propriedade distributiva na multiplicação algébrica?", "O fator exterior multiplica cada uma das parcelas contidas dentro dos parênteses ($a(b+c) = ab + ac$)."),
@@ -245,14 +244,12 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
         ]
     }
 
-    # Analisar o texto inserido nos tópicos/apontamentos para filtrar exatamente o tema estudado
     texto_analisar = (texto_apontamentos + " " + materia).lower()
     if "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "algeb" in texto_analisar:
         banco_base = banco_equacoes
     else:
         banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
 
-    # Selecionar aleatoriamente 20 flashcards baralhados para garantir que mudam sempre
     quantidade_a_selecionar = min(len(banco_base), 20)
     cartoes_escolhidos = random.sample(banco_base, quantidade_a_selecionar)
     
@@ -268,7 +265,7 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno, texto_apontamentos=""):
         })
     return flashcards
 
-# Barra Lateral de Navegação
+# Barra Lateral de Navegação (Restaurado o "🏠 Início & Escola" corretamente)
 st.sidebar.markdown("# Menu Principal")
 menu = st.sidebar.radio(
     "Navegar para:",
