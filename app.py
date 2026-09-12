@@ -116,9 +116,7 @@ LISTA_MATERIAS = [
     "Geografia",
     "TIC (Tecnologias de Informação e Comunicação)",
     "Educação Física",
-    "Educação Visual",
-    "Educação Tecnológica",
-    "Cidadania e Desenvolvimento"
+    "Educação Visual"
 ]
 
 def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
