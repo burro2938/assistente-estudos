@@ -191,6 +191,7 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    # Bancos de referência baseados em conhecimento académico geral
     banco_ingles_verb_to_be = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
@@ -241,15 +242,30 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         ]
     }
 
-    # Análise global robusta combinando matéria e texto livre
+    # Análise global do texto fornecido pelo utilizador (registo diário ou notas livres)
     texto_analisar = f"{materia} {texto_apontamentos}".lower()
     
+    # Seleção inteligente do banco correspondente ao que foi escrito
     if "verb" in texto_analisar or "to be" in texto_analisar or "ingles" in texto_analisar or "english" in texto_analisar:
         banco_base = banco_ingles_verb_to_be
     elif "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar:
         banco_base = banco_equacoes
     else:
-        banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
+        # Gerador Universal Dinâmico: se o utilizador escrever qualquer outro assunto, criamos perguntas detalhadas na hora com base no texto dele!
+        if texto_apontamentos.strip():
+            tema = texto_apontamentos.strip()
+            banco_base = [
+                (f"Qual é o conceito fundamental ou definição principal associada a '{tema}'?", f"No contexto de {materia} ({ano_aluno}), refere-se aos princípios essenciais de {tema}."),
+                (f"Quais são os aspetos práticos mais importantes a reter sobre '{tema}'?", f"Compreender a aplicação direta, as regras e a resolução de exercícios práticos sobre este tópico."),
+                (f"De que forma se aplica a matéria de '{tema}' nos exercícios do {ano_aluno}?", f"Através da análise rigorosa do enunciado, identificação dos dados e estruturação da resposta correta."),
+                (f"Explica com base nos teus apontamentos o tópico: '{tema}' (Dificuldade: {dificuldade}).", f"Trata-se de um conteúdo central de {materia} focado em {tema}, exigindo atenção à teoria e prática."),
+                (f"Quais são os erros mais comuns a evitar ao estudar '{tema}'?", f"Descurar os detalhes teóricos, errar nas transformações e não validar o resultado final."),
+                (f"Como resumirias a importância de dominar '{tema}' em {materia}?", f"Permite consolidar bases sólidas para etapas futuras e garantir excelente desempenho académico."),
+                (f"Identifica as propriedades principais associadas a '{tema}'.", f"Envolve propriedades estruturais, aplicabilidade direta e rigor analítico."),
+                (f"Qual é o procedimento correto para resolver problemas relacionados com '{tema}'?", f"Ler atentamente o enunciado, extrair os dados e aplicar os princípios teóricos estudados.")
+            ]
+        else:
+            banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
     while len(amostra) < quantidade:
@@ -394,7 +410,6 @@ elif menu == "📝 Registo Diário":
             }
             st.session_state.logs.append(registo_novo)
             
-            # Lê o que foi escrito em cada caixa de texto para gerar flashcards focados no que o utilizador inseriu
             flashcards_combinados = []
             st.session_state.chave_geracao += 1
             for disc in disciplinas_dia:
