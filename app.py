@@ -105,6 +105,8 @@ if "dificuldade_selecionada" not in st.session_state:
     st.session_state.dificuldade_selecionada = "Médio ⚖️"
 if "chave_geracao" not in st.session_state:
     st.session_state.chave_geracao = 0
+if "atividade_selecionada" not in st.session_state:
+    st.session_state.atividade_selecionada = "Exercícios"
 
 # Estado para navegação do calendário e detalhe do dia
 if "selected_date" not in st.session_state:
@@ -374,11 +376,15 @@ elif menu == "📅 Calendário":
                     st.markdown(f"- **{disc}**: {res}")
                 else:
                     st.markdown(f"- **{disc}**: *(Sem apontamentos escritos)*")
+            
+            # Apresentar o método de estudo usado no dia
+            metodo_registado = registo_encontrado.get("metodo", "Exercícios")
+            st.markdown(f"### 📂 Ficheiros e Métodos de Estudo:")
+            st.markdown(f"- **Método utilizado:** {metodo_registado}")
         else:
             st.info("Não existem registos de estudo guardados para este dia.")
-            
-        st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
-        st.write("Ficheiros carregados ou gerados e métodos de estudo aplicados neste dia estarão visíveis aqui consoante a atividade registada.")
+            st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
+            st.write("Ficheiros carregados ou gerados e métodos de estudo aplicados neste dia estarão visíveis aqui consoante a atividade registada.")
         
         if st.button("⬅️ Voltar ao Calendário Mensal"):
             st.session_state.selected_date = None
@@ -436,8 +442,9 @@ elif menu == "📅 Calendário":
                         data_atual_loop = datetime.date(st.session_state.cal_year, st.session_state.cal_month, dia)
                         data_str = str(data_atual_loop)
                         
-                        # Descobrir o que foi estudado para mostrar em baixo do número
+                        # Descobrir o que foi estudado e o método para mostrar em baixo do número
                         resumo_resumido = ""
+                        metodo_resumido = ""
                         if data_str in logs_por_data:
                             resumos_dict = logs_por_data[data_str].get("resumos", {})
                             materias_estudadas = [k for k, v in resumos_dict.items() if v.strip()]
@@ -445,13 +452,16 @@ elif menu == "📅 Calendário":
                                 resumo_resumido = ", ".join(materias_estudadas)
                             else:
                                 resumo_resumido = "Estudado"
+                            metodo_resumido = logs_por_data[data_str].get("metodo", "Exercícios")
                         
-                        # Número a cinza como solicitado
+                        # Número a cinza, matéria com tamanho ligeiramente aumentado (13px) e método logo abaixo
                         st.markdown(f"<p style='text-align: center; color: gray; margin-bottom: 0px;'><b>{dia}</b></p>", unsafe_allow_html=True)
                         if resumo_resumido:
-                            st.markdown(f"<p style='text-align: center; font-size: 11px; color: #4b6584; margin-top: 0px;'>{resumo_resumido}</p>", unsafe_allow_html=True)
+                            st.markdown(f"<p style='text-align: center; font-size: 13px; color: #4b6584; margin-top: 0px; margin-bottom: 0px;'>{resumo_resumido}</p>", unsafe_allow_html=True)
+                            if metodo_resumido:
+                                st.markdown(f"<p style='text-align: center; font-size: 11px; color: #718093; margin-top: 0px;'><i>{metodo_resumido}</i></p>", unsafe_allow_html=True)
                         else:
-                            st.markdown("<p style='text-align: center; font-size: 11px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
+                            st.markdown("<p style='text-align: center; font-size: 13px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
                             
                         if st.button("Ver", key=f"btn_dia_{st.session_state.cal_year}_{st.session_state.cal_month}_{dia}"):
                             st.session_state.selected_date = data_atual_loop
@@ -518,7 +528,8 @@ elif menu == "📝 Registo Diário":
             registo_novo = {
                 "data": str(hoje),
                 "dia": dia_automatico,
-                "resumos": resumos_por_materia
+                "resumos": resumos_por_materia,
+                "metodo": st.session_state.get("atividade_selecionada", "Exercícios")
             }
             st.session_state.logs.append(registo_novo)
             
@@ -670,61 +681,3 @@ elif menu == "📖 Estudar":
             
         st.title(f"🎯 {st.session_state.atividade_selecionada}")
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
-        
-        # Renderização dinâmica dos exercícios (conforme a imagem)
-        if st.session_state.atividade_selecionada == "Exercícios":
-            for ex in st.session_state.exercicios_gerados:
-                st.markdown(f"**Exercício {ex['id']}:** {ex['enunciado']}")
-                st.text_input(f"Resposta para o exercício {ex['id']}:", key=f"resp_ex_{ex['id']}")
-                st.markdown("---")
-        elif st.session_state.atividade_selecionada == "Flashcards":
-            for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
-                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-                chave_est = f"mostrar_est_{st.session_state.chave_geracao}_{i}"
-                if chave_est not in st.session_state:
-                    st.session_state[chave_est] = False
-                c1, c2 = st.columns([1, 4])
-                with c1:
-                    if st.button(f"Virar #{i}", key=f"btn_virar_est_{st.session_state.chave_geracao}_{i}"):
-                        st.session_state[chave_est] = not st.session_state[chave_est]
-                        st.rerun()
-                with c2:
-                    if st.session_state[chave_est]:
-                        st.success(f"**Resposta:** {fc['resposta']}")
-                    else:
-                        st.info("*(Resposta oculta)*")
-                st.markdown("---")
-        else:
-            st.info("Atividade interativa pronta a utilizar com base nos teus apontamentos inseridos.")
-
-        # BOTÃO MODIFICADO PARA REGISTAR NO CALENDÁRIO AUTOMATICAMENTE AO SUBMETER
-        if st.button("Submeter e Corrigir Respostas"):
-            hoje_str = str(datetime.date.today())
-            dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-            dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
-            
-            # Verificar se já existe um registo para hoje para atualizar ou criar novo
-            registo_existente = None
-            for log in st.session_state.logs:
-                if log.get("data") == hoje_str:
-                    registo_existente = log
-                    break
-            
-            materia_atual = st.session_state.materia_escolhida_estudo
-            texto_resumo_estudo = st.session_state.texto_estudo_livre or f"Estudo e Atividade: {st.session_state.atividade_selecionada}"
-            
-            if registo_existente:
-                if "resumos" not in registo_existente:
-                    registo_existente["resumos"] = {}
-                registo_existente["resumos"][materia_atual] = texto_resumo_estudo
-            else:
-                novo_registo = {
-                    "data": hoje_str,
-                    "dia": dia_atual_nome,
-                    "resumos": {
-                        materia_atual: texto_resumo_estudo
-                    }
-                }
-                st.session_state.logs.append(novo_registo)
-                
-            st.success("Respostas submetidas, corrigidas e guardadas no calendário com sucesso!")
