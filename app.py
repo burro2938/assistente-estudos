@@ -80,7 +80,7 @@ if "horario" not in st.session_state:
             {"hora": "08:30 - 09:15", "disc": "Português"},
             {"hora": "09:25 - 10:10", "disc": "Matemática"},
             {"hora": "10:30 - 11:15", "disc": "Educação Visual"},
-            {"hora": "11:25 - 12:10", "disc": "Tecnologias"}
+            {"hora": "11:25 - 12:10", "disc": "TIC"}
         ]
     }
 
@@ -90,8 +90,6 @@ if "step_estudar" not in st.session_state:
     st.session_state.step_estudar = "escolher_materia"
 if "materia_escolhida_estudo" not in st.session_state:
     st.session_state.materia_escolhida_estudo = ""
-if "materiais_carregados" not in st.session_state:
-    st.session_state.materiais_carregados = []
 if "texto_estudo_livre" not in st.session_state:
     st.session_state.texto_estudo_livre = ""
 if "num_aulas_extra" not in st.session_state:
@@ -100,40 +98,30 @@ if "exercicios_gerados" not in st.session_state:
     st.session_state.exercicios_gerados = []
 if "flashcards_gerados" not in st.session_state:
     st.session_state.flashcards_gerados = []
+if "flashcards_pos_gerados" not in st.session_state:
+    st.session_state.flashcards_pos_gerados = []
 if "dificuldade_selecionada" not in st.session_state:
     st.session_state.dificuldade_selecionada = "Médio ⚖️"
 if "chave_geracao" not in st.session_state:
     st.session_state.chave_geracao = 0
 
 LISTA_MATERIAS = [
-    "E.F. (Educação Física)",
     "Matemática",
-    "Inglês",
     "Português",
+    "Inglês",
     "Físico-Química",
     "Francês",
-    "TIC (Tecnologias de Informação e Comunicação)",
-    "Geografia",
     "Ciências Naturais",
     "História",
-    "E.T. (Educação Tecnológica)",
-    "E.V. (Educação Visual)",
+    "Geografia",
+    "TIC (Tecnologias de Informação e Comunicação)",
+    "Educação Física",
+    "Educação Visual",
+    "Educação Tecnológica",
     "Cidadania e Desenvolvimento"
 ]
 
-def sugerir_materia_estudo():
-    hoje = datetime.date.today()
-    dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-    dia_idx = hoje.weekday()
-    dia_nome = "Segunda-feira" if dia_idx >= 5 else dias_portugal[dia_idx]
-    
-    aulas_hoje = st.session_state.horario.get(dia_nome, [])
-    if aulas_hoje:
-        disc_sugerida = aulas_hoje[0].get("disc", "Matemática")
-        return disc_sugerida, f"Com base no teu horário de hoje ({dia_nome}), sugerimos que pratiques **{disc_sugerida}**."
-    return "Matemática", "Sugerimos a revisão de **Matemática** para manteres o ritmo de estudo."
-
-def gerar_30_exercicios(dificuldade, ano_aluno):
+def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     exs = []
     fator = 1
     if "Fácil" in dificuldade:
@@ -147,67 +135,62 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
     elif "Extremamente" in dificuldade:
         fator = 5
 
-    for i in range(1, 31):
-        sol = random.randint(-6 * fator, 10 * fator)
-        a1 = random.randint(1, 3 * fator)
-        b1 = random.randint(-5 * fator, 8 * fator)
-        c1 = random.randint(-2 * fator, 3 * fator)
-        
-        a2 = random.randint(-2 * fator, 2 * fator)
-        if a1 + c1 == a2:
-            a2 += 1
-            
-        b2 = random.randint(-5 * fator, 8 * fator)
-        
-        soma_x_esq = a1 + c1
-        termo_num_esq = b1
-        soma_x_dir = a2
-        termo_num_dir = b2
-        
-        valor_esq = soma_x_esq * sol + termo_num_esq
-        valor_dir_sem_d2 = soma_x_dir * sol + termo_num_dir
-        d2 = valor_esq - valor_dir_sem_d2
-        
-        def fmt_term(val, var=""):
-            if val == 0 and var != "":
-                return ""
-            s = " + " if val > 0 else " - "
-            num = abs(val)
-            return f"{s}{num}{var}" if num != 1 or var == "" else f"{s}{var}"
+    texto_inf = texto_contexto.lower()
+    eh_equacoes = "equaç" in texto_inf or "x" in texto_inf or "álgebra" in texto_inf
 
-        parte_esq_x1 = f"{a1}x" if a1 != 0 else ""
-        parte_esq_b1 = f" {fmt_term(b1)}" if b1 != 0 else ""
-        parte_esq_c1 = fmt_term(c1, "x")
-        
-        parte_dir_x2 = f"{a2}x" if a2 != 0 else ""
-        parte_dir_b2 = f" {fmt_term(b2)}" if b2 != 0 else ""
-        parte_dir_d2 = fmt_term(d2)
-        
-        str_esq = f"{parte_esq_x1}{parte_esq_b1}{parte_esq_c1}".strip()
-        if str_esq.startswith("+ "):
-            str_esq = str_esq[2:]
+    for i in range(1, 31):
+        if eh_equacoes:
+            sol = random.randint(-8 * fator, 12 * fator)
+            a1 = random.randint(1, 4 * fator)
+            b1 = random.randint(-6 * fator, 9 * fator)
+            c1 = random.randint(-3 * fator, 4 * fator)
+            a2 = random.randint(-3 * fator, 3 * fator)
+            if a1 + c1 == a2:
+                a2 += 1
+            b2 = random.randint(-6 * fator, 9 * fator)
             
-        str_dir = f"{parte_dir_x2}{parte_dir_b2}{parte_dir_d2}".strip()
-        if str_dir.startswith("+ "):
-            str_dir = str_dir[2:]
+            valor_esq = (a1 + c1) * sol + b1
+            valor_dir_sem_d2 = a2 * sol + b2
+            d2 = valor_esq - valor_dir_sem_d2
             
-        if not str_esq:
-            str_esq = "0"
-        if not str_dir:
-            str_dir = "0"
+            def fmt_term(val, var=""):
+                if val == 0 and var != "":
+                    return ""
+                s = " + " if val > 0 else " - "
+                num = abs(val)
+                return f"{s}{num}{var}" if num != 1 or var == "" else f"{s}{var}"
+
+            p_esq = f"{a1}x" if a1 != 0 else ""
+            p_b1 = f" {fmt_term(b1)}" if b1 != 0 else ""
+            p_c1 = fmt_term(c1, "x")
+            p_esq_total = f"{p_esq}{p_b1}{p_c1}".strip()
+            if p_esq_total.startswith("+ "): p_esq_total = p_esq_total[2:]
             
-        enunciado = f"{str_esq} = {str_dir}"
+            p_dir_x2 = f"{a2}x" if a2 != 0 else ""
+            p_dir_b2 = f" {fmt_term(b2)}" if b2 != 0 else ""
+            p_dir_d2 = fmt_term(d2)
+            p_dir_total = f"{p_dir_x2}{p_dir_b2}{p_dir_d2}".strip()
+            if p_dir_total.startswith("+ "): p_dir_total = p_dir_total[2:]
+            
+            if not p_esq_total: p_esq_total = "0"
+            if not p_dir_total: p_dir_total = "0"
+            
+            enunciado = f"{p_esq_total} = {p_dir_total}"
+            resp = float(sol)
+        else:
+            n1 = random.randint(2 * fator, 15 * fator)
+            n2 = random.randint(2 * fator, 15 * fator)
+            enunciado = f"Calcule o valor de {n1} × {n2} + {i * 2}"
+            resp = float(n1 * n2 + i * 2)
 
         exs.append({
             "id": i,
             "enunciado": enunciado,
-            "resposta_correta": float(sol)
+            "resposta_correta": resp
         })
     return exs
 
-def gerar_flashcards_unicos(materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    texto_analisar = (texto_apontamentos + " " + materia).lower()
-    
+def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
     banco_equacoes = [
         ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
         ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
@@ -224,7 +207,7 @@ def gerar_flashcards_unicos(materia, dificuldade, ano_aluno, texto_apontamentos=
         ("Qual é a diferença entre uma expressão algébrica e uma equação?", "A expressão algébrica é apenas um cálculo com letras e números, enquanto a equação é uma igualdade com uma incógnita a descobrir."),
         ("Pode uma equação ter coeficientes fracionários?", "Sim, e resolve-se habitualmente reduzindo todos os termos ao mesmo denominador ou multiplicando por ele."),
         ("O que é o grau de uma equação?", "É o maior expoente a que está elevada a incógnita após a equação estar simplificada."),
-        ("Se tivermos termos com $x$ em ambos os membros, qual deve ser o primeiro passo prático?", "Reunir todos os termos com $x$ no primeiro membro (geralmente à esquerda) e os termos numéricos no segundo."),
+        ("Se tivermos termos com $x$ em ambos os membros, qual deve ser o primeiro passo prático?", "Reunir todos os termos com $x$ no primeiro membro e os termos numéricos no segundo."),
         ("Como se classifica uma equação quanto ao conjunto solução?", "Pode ser possível determinada (uma solução), possível indeterminada (infinitas) ou impossível (sem solução)."),
         ("Qual é o cuidado a ter com as operações inversas?", "A adição desfaz-se com subtração, e a multiplicação desfaz-se com divisão."),
         ("Como se verifica se o valor obtido para $x$ está correto?", "Substituindo o valor encontrado na equação inicial e confirmando se ambos os membros dão o mesmo resultado."),
@@ -258,23 +241,44 @@ def gerar_flashcards_unicos(materia, dificuldade, ano_aluno, texto_apontamentos=
         ]
     }
 
+    texto_analisar = (texto_apontamentos + " " + materia).lower()
     if "equaç" in texto_analisar or "x" in texto_analisar or "álgebra" in texto_analisar or "algeb" in texto_analisar:
         banco_base = banco_equacoes
     else:
         banco_base = bancos_gerais.get(materia, bancos_gerais.get("Matemática", banco_equacoes))
 
-    # Embaralhar rigorosamente para garantir que nunca sejam repetidos e sejam sempre novos
-    banco_embaralhado = random.sample(banco_base, len(banco_base))
-    cartoes_escolhidos = banco_embaralhado[:20]
+    amostra = random.sample(banco_base, min(len(banco_base), quantidade))
+    while len(amostra) < quantidade:
+        amostra.append(random.choice(banco_base))
 
     flashcards = []
-    for i, (pergunta, resposta) in enumerate(cartoes_escolhidos, 1):
+    for i, (pergunta, resposta) in enumerate(amostra, 1):
         flashcards.append({
             "id": i,
-            "pergunta": f"{pergunta} (Nível: {dificuldade} | {ano_aluno})",
+            "pergunta": f"{pergunta} (Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
             "resposta": resposta
         })
     return flashcards
+
+# Função para obter recomendação inteligente baseada no horário e no registo/estudo recente
+def obter_recomendacao_inteligente():
+    hoje_obj = datetime.date.today()
+    dias_pt = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+    dia_idx = hoje_obj.weekday()
+    dia_nome = "Segunda-feira" if dia_idx >= 5 else dias_pt[dia_idx]
+    
+    aulas_hoje = st.session_state.horario.get(dia_nome, [])
+    
+    # Verificar se há registos anteriores para cruzar com o horário
+    if st.session_state.logs:
+        ultimo_registo = st.session_state.logs[-1]
+        resumos_recentes = list(ultimo_registo.get("resumos", {}).keys())
+        if resumos_recentes:
+            materia_recente = resumos_recentes[0]
+            return f"Com base no teu horário de hoje ({dia_nome}) e no que estudaste recentemente ({materia_recente}), sugerimos que dês continuidade a essa matéria ou pratiques exercícios práticos relacionados."
+            
+    sugestao_materia = aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
+    return f"Com base no teu horário de hoje ({dia_nome}), sugerimos que pratiques {sugestao_materia}."
 
 # Barra Lateral de Navegação
 st.sidebar.markdown("# Menu Principal")
@@ -293,13 +297,8 @@ if menu == "🏠 Início & Escola":
     st.title("🎯 Meu Assistente de Estudos")
     st.write("Bem-vindo ao teu espaço centralizado de organização escolar e revisão!")
     
-    # Sugestão de Matéria em Destaque na Página Inicial
-    mat_sugerida, msg_sugerida = sugerir_materia_estudo()
-    st.info(f"💡 **Sugestão do Dia:** {msg_sugerida}")
-    if st.button("🚀 Ir estudar esta matéria agora"):
-        st.session_state.materia_escolhida_estudo = mat_sugerida
-        st.session_state.step_estudar = "upload_materiais"
-        st.rerun()
+    recomendacao_texto = obter_recomendacao_inteligente()
+    st.info(f"💡 **Sugestão de Estudo:** {recomendacao_texto}")
 
     st.markdown("---")
     st.subheader("⚙️ Configurações do Aluno")
@@ -392,6 +391,17 @@ elif menu == "📝 Registo Diário":
                 "resumos": resumos_por_materia
             }
             st.session_state.logs.append(registo_novo)
+            
+            # Gerar exatamente 5 flashcards para CADA disciplina do dia
+            flashcards_combinados = []
+            for disc in disciplinas_dia:
+                fcs_disc = gerar_flashcards_personalizados(
+                    5, disc, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, resumos_por_materia.get(disc, "")
+                )
+                flashcards_combinados.extend(fcs_disc)
+            
+            st.session_state.flashcards_pos_gerados = flashcards_combinados
+            
             st.success("Sessão registada com sucesso!")
             st.session_state.step_registo = "flashcards_pos"
             st.rerun()
@@ -401,14 +411,26 @@ elif menu == "📝 Registo Diário":
             st.session_state.step_registo = "formulario"
             st.rerun()
             
-        st.title("🧠 Revisão Rápida (15 Flashcards Pós-Registo)")
-        # Geradas exatamente 15 questões de revisão rápida para cumprir o pedido
-        for i in range(15):
-            st.markdown(f"**Questão {i+1}:** Qual é o conceito ou propriedade fundamental aplicada no estudo de hoje?")
-            st.radio(f"Opções Q{i+1}:", ["Propriedade Distributiva", "Isolamento da Incógnita", "Regra Geral", "Nenhuma"], key=f"q_pos_{i}")
+        st.title("🧠 Revisão Rápida Pós-Registo (5 Flashcards por Disciplina)")
+        
+        for fc in st.session_state.flashcards_pos_gerados:
+            fid = fc["id"]
+            st.markdown(f"**Cartão {fid}:** {fc['pergunta']}")
+            if f"mostrar_pos_{fid}" not in st.session_state:
+                st.session_state[f"mostrar_pos_{fid}"] = False
+                
+            c1, c2 = st.columns([1, 4])
+            with c1:
+                if st.button(f"Virar #{fid}", key=f"btn_virar_pos_{fid}"):
+                    st.session_state[f"mostrar_pos_{fid}"] = not st.session_state[f"mostrar_pos_{fid}"]
+                    st.rerun()
+            with c2:
+                if st.session_state[f"mostrar_pos_{fid}"]:
+                    st.success(f"**Resposta:** {fc['resposta']}")
+                else:
+                    st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
             st.markdown("---")
             
-        # Agora o botão redireciona corretamente para a seleção de matéria de estudo e nunca para o registo diário
         if st.button("Ir para o Estudo"):
             st.session_state.step_estudar = "escolher_materia"
             st.session_state.step_registo = "formulario"
@@ -420,11 +442,12 @@ elif menu == "📖 Estudar":
     if st.session_state.step_estudar == "escolher_materia":
         st.title("📚 Estudo")
         
-        # Sugestão de matéria para estudar também integrada aqui
-        mat_sug, msg_sug = sugerir_materia_estudo()
-        st.info(f"💡 **Recomendação:** {msg_sug}")
+        recomendacao_texto = obter_recomendacao_inteligente()
+        st.info(f"💡 **Recomendação:** {recomendacao_texto}")
+
+        st.subheader("O que queres estudar hoje?")
         
-        materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS, index=LISTA_MATERIAS.index(mat_sug) if mat_sug in LISTA_MATERIAS else 0, key="sb_estudar_mat")
+        materia_escolhida = st.selectbox("Escolhe a matéria que queres aprofundar:", LISTA_MATERIAS, key="sb_estudar_mat")
         
         if st.button("Avançar", key="btn_avancar_mat"):
             st.session_state.materia_escolhida_estudo = materia_escolhida
@@ -436,26 +459,27 @@ elif menu == "📖 Estudar":
             st.session_state.step_estudar = "escolher_materia"
             st.rerun()
             
-        st.title("📚 Estudo")
-        st.subheader("Materiais e Tópicos de Estudo")
+        st.title("📚 Estudo - Materiais e Apontamentos")
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo} (Nível: {st.session_state.ano_escolar})")
         
-        # Restaurados os uploads completos para Áudios, Vídeos, Imagens e Documentos
-        st.markdown("---")
-        st.markdown("### 📂 Envio de Multimédia e Documentos")
-        st.file_uploader("Carregar Documentos (PDF, TXT, Word):", type=["pdf", "txt", "docx"], accept_multiple_files=True, key="up_docs")
-        st.file_uploader("Carregar Imagens de Apontamentos ou Quadros:", type=["png", "jpg", "jpeg"], accept_multiple_files=True, key="up_imgs")
-        st.file_uploader("Carregar Áudios de Explicações ou Aulas:", type=["mp3", "wav", "m4a"], accept_multiple_files=True, key="up_audios")
-        st.file_uploader("Carregar Vídeos de Estudo:", type=["mp4", "mov"], accept_multiple_files=True, key="up_videos")
-        st.markdown("---")
-
         st.session_state.texto_estudo_livre = st.text_area(
-            "Insere os teus apontamentos ou tópicos exatos sobre o que já deste na escola:", 
+            "Insere os teus apontamentos exatos ou tópicos estudados na escola:", 
             value=st.session_state.texto_estudo_livre, 
             key="txt_livre_estudo"
         )
+        
+        st.markdown("---")
+        st.markdown("### 📂 Enviar Documentos, Áudios, Vídeos e Imagens:")
+        
+        col_up1, col_up2 = st.columns(2)
+        with col_up1:
+            st.file_uploader("Enviar Documentos / PDFs / Apontamentos", type=["pdf", "docx", "txt"], key="up_docs")
+            st.file_uploader("Enviar Gravações de Áudio", type=["mp3", "wav", "m4a"], key="up_audios")
+        with col_up2:
+            st.file_uploader("Enviar Vídeos de Aulas", type=["mp4", "mov"], key="up_videos")
+            st.file_uploader("Enviar Imagens ou Fotografias", type=["png", "jpg", "jpeg"], key="up_imagens")
                 
-        if st.button("Avançar", key="btn_avancar_up"):
+        if st.button("Avançar para Atividades", key="btn_avancar_up"):
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
 
@@ -464,7 +488,7 @@ elif menu == "📖 Estudar":
             st.session_state.step_estudar = "upload_materiais"
             st.rerun()
             
-        st.title("📚 Estudo")
+        st.title("📚 Estudo - Escolher Atividade")
         atividade = st.radio(
             "Seleciona a opção pretendida:",
             [
@@ -488,9 +512,14 @@ elif menu == "📖 Estudar":
             st.session_state.atividade_selecionada = atividade
             st.session_state.chave_geracao += 1
             if atividade == "Exercícios":
-                st.session_state.exercicios_gerados = gerar_30_exercicios(st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
+                st.session_state.exercicios_gerados = gerar_30_exercicios(
+                    st.session_state.dificuldade_selecionada, 
+                    st.session_state.ano_escolar, 
+                    st.session_state.texto_estudo_livre
+                )
             elif atividade == "Flashcards":
-                st.session_state.flashcards_gerados = gerar_flashcards_unicos(
+                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                    20, 
                     st.session_state.materia_escolhida_estudo, 
                     st.session_state.dificuldade_selecionada, 
                     st.session_state.ano_escolar,
@@ -507,7 +536,9 @@ elif menu == "📖 Estudar":
         st.title(f"🎯 {st.session_state.atividade_selecionada}")
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
         
-        st.info("💡 **Aviso:** Se aparecer alguma pergunta sobre matéria que ainda não deste, basta escrever **'não'** na resposta.")
+        if st.session_state.texto_estudo_livre:
+            st.info(f"💡 **Foco Personalizado:** Apontamentos considerados: *'{st.session_state.texto_estudo_livre}'* (As perguntas estão rigorosamente adaptadas a este tema!).")
+        
         st.markdown("---")
         
         if st.session_state.atividade_selecionada == "Exercícios":
@@ -533,9 +564,10 @@ elif menu == "📖 Estudar":
                 st.markdown(f"### Pontuação Final: **{acertos} / 30 corretas**")
                 
         elif st.session_state.atividade_selecionada == "Flashcards":
-            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
+            st.subheader("🃏 Conjunto de 20 Flashcards de Memorização (Sem Repetições):")
             if st.button("🔄 Gerar novas perguntas de flashcards"):
-                st.session_state.flashcards_gerados = gerar_flashcards_unicos(
+                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                    20, 
                     st.session_state.materia_escolhida_estudo, 
                     st.session_state.dificuldade_selecionada, 
                     st.session_state.ano_escolar,
