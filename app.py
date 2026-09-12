@@ -189,6 +189,12 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    texto_inf = texto_apontamentos.lower()
+    
+    # Palavra-chave para o utilizador recusar/desativar flashcards para esta matéria ("não")
+    if "não" in texto_inf or "nao" in texto_inf:
+        return []
+
     materias_sem_flashcards = ["educação física", "educação visual", "educação tecnológica", "tic"]
     if any(m in materia.lower() for m in materias_sem_flashcards):
         return []
@@ -400,7 +406,7 @@ elif menu == "📝 Registo Diário":
                 
         resumos_por_materia = {}
         for disc in disciplinas_dia:
-            resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
+            resumos_por_materia[disc] = st.text_area(f"Matéria: {disc} (Podes escrever 'não' para recusar flashcards)", key=f"res_{dia_automatico}_{disc}")
             
         if st.button("Registar Sessão"):
             registo_novo = {
@@ -434,7 +440,7 @@ elif menu == "📝 Registo Diário":
         st.title("🧠 Revisão Rápida Pós-Registo")
         
         if not st.session_state.flashcards_pos_gerados:
-            st.info("As disciplinas registadas hoje não geram flashcards teóricos. Podes avançar para o estudo normal!")
+            st.info("As disciplinas registadas hoje não geram flashcards teóricos ou incluíste a palavra 'não'. Podes avançar para o estudo normal!")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -486,7 +492,7 @@ elif menu == "📖 Estudar":
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo} (Nível: {st.session_state.ano_escolar})")
         
         st.session_state.texto_estudo_livre = st.text_area(
-            "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex: Verb to be, equações...):", 
+            "Insere os teus apontamentos exatos ou tópicos estudados na escola (escreve 'não' para ignorar flashcards):", 
             value=st.session_state.texto_estudo_livre, 
             key="txt_livre_estudo"
         )
@@ -533,8 +539,8 @@ elif menu == "📖 Estudar":
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
             materias_sem_fc = ["educação física", "educação visual", "educação tecnológica", "tic"]
-            if atividade == "Flashcards" and any(m in st.session_state.materia_escolhida_estudo.lower() for m in materias_sem_fc):
-                st.warning(f"⚠️ A matéria '{st.session_state.materia_escolhida_estudo}' é prática e não utiliza flashcards teóricos. Escolhe outra atividade (como Exercícios ou Quizzes).")
+            if atividade == "Flashcards" and (any(m in st.session_state.materia_escolhida_estudo.lower() for m in materias_sem_fc) or "não" in st.session_state.texto_estudo_livre.lower() or "nao" in st.session_state.texto_estudo_livre.lower()):
+                st.warning(f"⚠️ A matéria '{st.session_state.materia_escolhida_estudo}' não gera flashcards (ou usaste a palavra 'não' nos apontamentos). Escolhe outra atividade.")
             else:
                 st.session_state.atividade_selecionada = atividade
                 st.session_state.chave_geracao += 1
@@ -602,20 +608,23 @@ elif menu == "📖 Estudar":
                 )
                 st.rerun()
 
-            for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
-                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-                chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
-                if chave_fc not in st.session_state:
-                    st.session_state[chave_fc] = False
-                    
-                col_b1, col_b2 = st.columns([1, 4])
-                with col_b1:
-                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
-                        st.session_state[chave_fc] = not st.session_state[chave_fc]
-                        st.rerun()
-                with col_b2:
-                    if st.session_state[chave_fc]:
-                        st.success(f"**Resposta:** {fc['resposta']}")
-                    else:
-                        st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
-                st.markdown("---")
+            if not st.session_state.flashcards_gerados:
+                st.warning("Nenhum flashcard gerado (podes ter inserido a palavra 'não' nos apontamentos ou a matéria não suporta flashcards).")
+            else:
+                for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
+                    st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+                    chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
+                    if chave_fc not in st.session_state:
+                        st.session_state[chave_fc] = False
+                        
+                    col_b1, col_b2 = st.columns([1, 4])
+                    with col_b1:
+                        if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
+                            st.session_state[chave_fc] = not st.session_state[chave_fc]
+                            st.rerun()
+                    with col_b2:
+                        if st.session_state[chave_fc]:
+                            st.success(f"**Resposta:** {fc['resposta']}")
+                        else:
+                            st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
+                    st.markdown("---")
