@@ -108,6 +108,8 @@ if "flashcards_gerados" not in st.session_state:
     st.session_state.flashcards_gerados = []
 if "dificuldade_selecionada" not in st.session_state:
     st.session_state.dificuldade_selecionada = "Médio ⚖️"
+if "chave_geracao" not in st.session_state:
+    st.session_state.chave_geracao = 0
 
 LISTA_MATERIAS = [
     "E.F. (Educação Física)",
@@ -125,10 +127,9 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento"
 ]
 
-# Função para gerar 30 exercícios adaptados à dificuldade e ao ano escolar
+# Função para gerar 30 exercícios com equações compridas e estruturadas em ambos os membros
 def gerar_30_exercicios(dificuldade, ano_aluno):
     exs = []
-    random.seed(42)
     
     fator = 1
     if "Fácil" in dificuldade:
@@ -143,12 +144,68 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         fator = 5
 
     for i in range(1, 31):
-        a = random.randint(1 * fator, 5 * fator)
-        b = random.randint(2 * fator, 15 * fator)
-        sol = random.randint(1, 10 * fator)
-        c = a * sol + b
+        # Gerar uma solução inteira aleatória para a equação
+        sol = random.randint(-6 * fator, 10 * fator)
         
-        enunciado = f"{a}x + {b} = {c} (Ano base: {ano_aluno})"
+        # Coeficientes para o primeiro membro: a1*x + b1 + c1*x = ...
+        a1 = random.randint(1, 3 * fator)
+        b1 = random.randint(-5 * fator, 8 * fator)
+        c1 = random.randint(-2 * fator, 3 * fator)
+        
+        # Coeficientes para o segundo membro: a2*x + b2 + c2*x = ...
+        a2 = random.randint(-2 * fator, 2 * fator)
+        # Garantir que os coeficientes de x não se anulem totalmente para termos sempre incógnita
+        if a1 + c1 == a2:
+            a2 += 1
+            
+        b2 = random.randint(-5 * fator, 8 * fator)
+        
+        # Calcular o termo independente restante para que a igualdade seja matematicamente válida para a 'sol'
+        # L1 = (a1+c1)*sol + b1
+        # L2 = a2*sol + b2 + d2 (onde d2 é o número livre extra que vamos calcular)
+        soma_x_esq = a1 + c1
+        termo_num_esq = b1
+        soma_x_dir = a2
+        termo_num_dir = b2
+        
+        valor_esq = soma_x_esq * sol + termo_num_esq
+        valor_dir_sem_d2 = soma_x_dir * sol + termo_num_dir
+        d2 = valor_esq - valor_dir_sem_d2  # Ajuste exato para fechar a equação
+        
+        # Construir strings formatadas com sinaizinhos limpos
+        def fmt_term(val, var=""):
+            if val == 0 and var != "":
+                return ""
+            s = " + " if val > 0 else " - "
+            num = abs(val)
+            return f"{s}{num}{var}" if num != 1 or var == "" else f"{s}{var}"
+
+        # Montar o lado esquerdo
+        parte_esq_x1 = f"{a1}x" if a1 != 0 else ""
+        parte_esq_b1 = f" {fmt_term(b1)}" if b1 != 0 else ""
+        parte_esq_c1 = fmt_term(c1, "x")
+        
+        # Montar o lado direito
+        parte_dir_x2 = f"{a2}x" if a2 != 0 else ""
+        parte_dir_b2 = f" {fmt_term(b2)}" if b2 != 0 else ""
+        parte_dir_d2 = f" {fmt_term(d2)}" if d2 != 0 else ""
+        
+        # Juntar tudo numa equação longa estilo 6x - 4 + x = 4 - 8x + 5
+        str_esq = f"{parte_esq_x1}{parte_esq_b1}{parte_esq_c1}".strip()
+        if str_esq.startswith("+ "):
+            str_esq = str_esq[2:]
+            
+        str_dir = f"{parte_dir_x2}{parte_dir_b2}{parte_dir_d2}".strip()
+        if str_dir.startswith("+ "):
+            str_dir = str_dir[2:]
+            
+        if not str_esq:
+            str_esq = "0"
+        if not str_dir:
+            str_dir = "0"
+            
+        enunciado = f"{str_esq} = {str_dir}"
+
         exs.append({
             "id": i,
             "enunciado": enunciado,
@@ -156,55 +213,54 @@ def gerar_30_exercicios(dificuldade, ano_aluno):
         })
     return exs
 
-# Função para gerar 20 Flashcards normais de estudo
+# Função para gerar 20 Flashcards dinâmicos adaptados à matéria e ano
 def gerar_20_flashcards(materia, dificuldade, ano_aluno):
     flashcards = []
-    random.seed(100)
     
     bancos_perguntas = {
         "Matemática": [
-            ("O que é uma equação do 1.º grau?", "É uma igualdade com uma incógnita cujo expoente máximo é 1."),
-            ("Como se isola a incógnita x numa adição simples?", "Passando o termo numérico para o outro membro com o sinal trocado (subtração)."),
+            ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
+            ("Como se agrupam os termos com incógnita?", "Passando todos os termos com $x$ para um dos membros da equação e os números para o outro, trocando o sinal aos que mudam de membro."),
             ("Qual é o valor neutro da multiplicação?", "O número 1."),
-            ("O que representa o declive numa função afim?", "A taxa de variação da função."),
-            ("Como se calcula a área de um retângulo?", "Multiplicando o comprimento pela largura ($A = c \\times l$)."),
-            ("O que é um número primo?", "Um número natural maior do que 1 que tem apenas dois divisores: 1 e ele próprio."),
-            ("Qual é a soma dos ângulos internos de um triângulo?", "$180^\\circ$."),
-            ("Como se converte uma fração em percentagem?", "Multiplicando o numerador pelo denominador por 100 ou achando a fração equivalente com denominador 100."),
-            ("O que significa simplificar uma fração?", "Dividir o numerador e o denominador pelo mesmo número diferente de zero até obter uma fração irredutível."),
-            ("Qual é a fórmula do perímetro de uma circunferência?", "$P = 2 \\pi r$."),
-            ("O que é uma proporção?", "Uma igualdade entre duas razões."),
-            ("Como se calcula a média aritmética?", "Somando todos os valores e dividindo pelo número total de valores."),
-            ("O que indica um expoente negativo num número?", "Indica o inverso da base elevado ao expoente positivo ($a^{-n} = \\frac{1}{a^n}$)."),
-            ("Qual é a raiz quadrada de 144?", "12."),
-            ("O que é um polígono regular?", "Um polígono com todos os lados e ângulos internos iguais."),
-            ("Como se calcula o volume de um paralelepípedo?", "Multiplicando o comprimento, a largura e a altura ($V = c \\times l \\times a$)."),
-            ("O que é uma simetria axial?", "Uma reflexão em relação a uma reta chamada eixo de simetria."),
-            ("Qual é o valor de qualquer número (diferente de zero) elevado a zero?", "1."),
-            ("O que são ângulos opostos pelo vértice?", "São ângulos que partilham o mesmo vértice e cujos lados são semirretas opostas; são iguais."),
-            (f"Qual é o objetivo principal do estudo no {ano_aluno}?", "Consolidar bases matemáticas e aplicar raciocínio lógico avançado.")
+            ("O que representa o declive numa função afim?", "A taxa de variação constante da função."),
+            ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \\pi r^2$)."),
+            ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio."),
+            ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\\circ$."),
+            ("Como se converte uma fração em percentagem?", "Multiplicando a fração por 100 e adicionando o símbolo %."),
+            ("O que significa irredutível numa fração?", "Significa que o numerador e o denominador já não admitem divisores comuns além de 1."),
+            ("Qual é a fórmula do perímetro de uma circunferência?", "P = 2 \\pi r."),
+            ("O que é uma proporção geométrica?", "Uma igualdade entre duas razões equivalentes."),
+            ("Como se calcula a média aritmética de um conjunto?", "Somando todos os elementos e dividindo pelo número total de elementos."),
+            ("O que indica um expoente negativo?", "O inverso da base elevado ao expoente simétrico positivo."),
+            ("Qual é a raiz quadrada de 196?", "14."),
+            ("O que é um polígono regular?", "Um polígono com todos os lados e ângulos geometricamente iguais."),
+            ("Como se calcula o volume de um cilindro?", "Multiplicando a área da base circular pela altura ($V = \\pi r^2 h$)."),
+            ("O que é uma simetria axial?", "Uma reflexão geométrica em relação a um eixo."),
+            ("Qual é o valor de qualquer número (não nulo) elevado a zero?", "Sempre 1."),
+            ("O que são ângulos suplementares?", "Dois ângulos cuja soma das amplitudes é exatamente $180^\\circ$."),
+            (f"Qual é a meta principal a atingir a Matemática no {ano_aluno}?", "Desenvolver o pensamento crítico e a agilidade de cálculo algébrico.")
         ],
         "Português": [
-            ("O que é o sujeito numa frase?", "O ser ou objeto que pratica ou sofre a ação expressa pelo verbo."),
-            ("Diferencia predicado nominal de predicado verbal:", "O predicado verbal tem um verbo principal; o predicado nominal tem um verbo copulativo e um predicado."),
-            ("O que é uma palavra polissémica?", "Uma palavra que possui vários significados consoante o contexto."),
+            ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
+            ("Diferencia predicado nominal de verbal:", "O nominal foca-se num atributo através de verbo copulativo; o verbal expressa uma ação."),
+            ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
             ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
-            ("O que é a regência verbal?", "A relação de dependência entre um verbo e o seu complemento."),
-            ("O que caracteriza uma crónica literária?", "Um texto curto baseado num facto do quotidiano com uma visão crítica ou irónica."),
-            ("O que são sinónimos?", "Palavras com significados iguais ou semelhantes."),
-            ("O que são antónimos?", "Palavras com significados opostos."),
-            ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente de outra (oração principal)."),
-            ("Qual é a função de um advérbio?", "Modificar o sentido de um verbo, de um adjetivo ou de outro advérbio."),
-            ("O que é a acentuação grave (palavras graves)?", "Palavras cuja tonicidade recai na penúltima sílaba."),
-            ("O что é uma metáfora?", "Uma figura de estilo baseada numa comparação implícita."),
-            ("O que é a aliteração?", "A repetição de sons consonânticos semelhantes num verso ou frase."),
-            ("O que é um neologismo?", "A criação de uma palavra nova numa língua."),
-            ("Qual é a estrutura típica de uma narrativa?", "Introdução, desenvolvimento (complicação e clímax) e conclusão."),
-            ("O que é um pronome pessoal?", "Um pronome que substitui o nome e indica as pessoas do discurso (eu, tu, ele...)."),
-            ("O que é o pretérito mais-que-perfeito?", "Um tempo verbal que indica uma ação passada anterior a outra também passada."),
-            ("O que é uma antítese?", "A aproximação de palavras com sentidos opostos na mesma frase."),
-            ("O que é um ditongo?", "A sequência de uma vogal e uma semivogal (ou vice-versa) na mesma sílaba."),
-            (f"Como aplicar a ortografia correta no {ano_aluno}?", "Através da leitura regular e prática de escrita formal.")
+            ("O que estuda a regência verbal?", "A forma como o verbo seleciona e rege os seus complementos."),
+            ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
+            ("O que são sinónimos?", "Termos com significados equivalentes."),
+            ("O que são antónimos?", "Termos com significados opostos."),
+            ("O que é uma oração subordinada?", "Uma oração que depende sintaticamente da oração principal."),
+            ("Qual é a classe de palavras invariáveis que modifica o verbo?", "O advérbio."),
+            ("O que define uma palavra grave (ou tónica na penúltima)?", "Aquelas cuja sílaba tónica é a penúltima."),
+            ("O que é uma metáfora?", "Uma figura de estilo baseada numa transferência de significado por semelhança implícita."),
+            ("O que é a aliteração?", "A repetição sistemática de sons consonânticos num verso."),
+            ("O que é um neologismo?", "Uma palavra recém-criada na língua."),
+            ("Qual é a estrutura clássica de uma narrativa?", "Introdução, desenvolvimento e conclusão."),
+            ("O que substitui o nome na frase?", "O pronome."),
+            ("O que exprime o pretérito mais-que-perfeito?", "Uma ação passada que ocorreu antes de outra ação também passada."),
+            ("O que é uma antítese?", "A aproximação de conceitos com sentidos opostos."),
+            ("O que é um ditongo?", "A aglutinação de uma vogal e uma semivogal numa única sílaba."),
+            (f"Como evoluir na disciplina de Português no {ano_aluno}?", "Através da leitura atenta e rigor na expressão escrita.")
         ]
     }
     
@@ -214,7 +270,7 @@ def gerar_20_flashcards(materia, dificuldade, ano_aluno):
         pergunta, resposta = banco[(i - 1) % len(banco)]
         flashcards.append({
             "id": i,
-            "pergunta": f"{pergunta} (Nível: {dificuldade})",
+            "pergunta": f"{pergunta} (Nível: {dificuldade} | {ano_aluno})",
             "resposta": resposta
         })
     return flashcards
@@ -248,7 +304,12 @@ if menu == "🏠 Início & Escola":
     with col2:
         st.session_state.ano_letivo = st.text_input("Ano Letivo", value=st.session_state.ano_letivo)
     with col3:
-        st.session_state.ano_escolar = st.selectbox("Ano Escolar Atual", anos_disponiveis, index=idx_ano_atual)
+        st.session_state.ano_escolar = st.selectbox(
+            "Ano Escolar Atual", 
+            anos_disponiveis, 
+            index=idx_ano_atual,
+            key="sb_ano_escolar_global"
+        )
         
     st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
     
@@ -452,6 +513,7 @@ elif menu == "📖 Estudar":
         
         if st.button("Iniciar Atividade", key="btn_iniciar_ativ"):
             st.session_state.atividade_selecionada = atividade
+            st.session_state.chave_geracao += 1
             if atividade == "Exercícios":
                 st.session_state.exercicios_gerados = gerar_30_exercicios(st.session_state.dificuldade_selecionada, st.session_state.ano_escolar)
             elif atividade == "Flashcards":
