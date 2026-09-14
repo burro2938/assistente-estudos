@@ -205,29 +205,29 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
-    # Se a palavra "não" for escrita nos apontamentos/tópicos, não cria flashcards
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
 
-    # Se o utilizador escreveu apontamentos específicos, gera flashcards focados estritamente nesse tema/matéria para o ano escolar em Portugal
+    # Se o utilizador escreveu apontamentos ou o tópico específico, fazemos a simulação inteligente baseada estritamente nisso
     if texto_apontamentos.strip():
-        tema = texto_apontamentos.strip()
+        topico = texto_apontamentos.strip()
         flashcards = []
+        
+        # Criamos perguntas dinâmicas e inteligentes baseadas no texto exato introduzido pelo aluno
+        templates_perguntas = [
+            (f"Qual é o significado principal ou definição de '{topico}' no contexto de {materia} ({ano_aluno})?", f"No programa escolar de Portugal para o {ano_aluno}, '{topico}' refere-se a conceitos fundamentais que exigem rigor teórico e aplicação prática."),
+            (f"Quais são as regras ou propriedades fundamentais associadas a '{topico}'?", f"Para dominar '{topico}', deves aplicar corretamente as fórmulas e princípios normativos estudados nas aulas de {materia}."),
+            (f"Como se resolvem exercícios típicos de exames sobre '{topico}'?", f"Identificando os dados fornecidos no enunciado de '{topico}' e aplicando o método passo a passo aprendido no {ano_aluno}."),
+            (f"Quais são os erros mais frequentes dos alunos ao estudar '{topico}' em {materia}?", f"Confundir os conceitos base de '{topico}' e descurar a verificação dos resultados obtidos."),
+            (f"De que forma '{topico}' se relaciona com o resto da matéria de {materia}?", f"Serve de base estrutural para compreender os tópicos avançados previstos para o currículo do {ano_aluno} em Portugal.")
+        ]
+
         for i in range(1, quantidade + 1):
-            if i % 3 == 1:
-                p = f"O que é essencial reter sobre '{tema}' no programa de {materia} do {ano_aluno} em Portugal?"
-                r = f"No {ano_aluno}, estuda-se a aplicação prática e os conceitos fundamentais de {tema} em {materia}."
-            elif i % 3 == 2:
-                p = f"Como se aplica o conceito de '{tema}' nos exercícios práticos de {materia}?"
-                r = f"Através da interpretação rigorosa do enunciado relacionado com '{tema}' e aplicação correta da matéria."
-            else:
-                p = f"Qual é o principal objetivo de estudar '{tema}' em {materia} ({ano_aluno})?"
-                r = f"Dominar os princípios teóricos e práticos associados a '{tema}' para consolidar a aprendizagem escolar."
-            
+            tmpl_p, tmpl_r = templates_perguntas[(i - 1) % len(templates_perguntas)]
             flashcards.append({
                 "id": i,
-                "pergunta": f"{p} (Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
-                "resposta": r
+                "pergunta": f"{tmpl_p} (Matéria: {materia} | Tópico: {topico} | Nível: {dificuldade} | {ano_aluno})",
+                "resposta": f"{tmpl_r} (Contexto do tópico: {topico})"
             })
         return flashcards
 
@@ -278,7 +278,7 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     ]
 
     banco_fisico_quimica = [
-        ("O que é a matéria?", "Tudo o que has massa e ocupa espaço no universo."),
+        ("O que é a matéria?", "Tudo o que tem massa e ocupa espaço no universo."),
         ("Qual é a diferença entre uma transformação física e uma transformação química?", "Na transformação física não se formam novas substâncias; na química formam-se novas substâncias com propriedades diferentes."),
         ("O que indica o número atómico de um elemento químico?", "O número de protões presentes no núcleo do átomo desse elemento."),
         ("Como se define a velocidade de um corpo?", "A distância percorrida por unidade de tempo ($v = d/t$).")
@@ -300,10 +300,10 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         banco_base = banco_fisico_quimica
     else:
         banco_base = [
-            (f"O que se aprende sobre os temas de {materia} no programa do {ano_aluno} em Portugal?", f"No {ano_aluno}, estuda-se a aplicação prática, conceitos fundamentais e contextualização curricular de {materia}."),
-            (f"Quais são os pontos principais abordados em {materia}?", f"Análise detalhada das matérias oficiais lecionadas nas escolas portuguesas para o {ano_aluno}."),
-            (f"Como aplicar os conhecimentos de {materia} nos exercícios escolares?", f"Através da compreensão teórica e resolução passo a passo exigida no programa nacional."),
-            (f"Qual é a importância de dominar {materia}?", f"Permite consolidar bases essenciais para a progressão escolar no {ano_aluno}.")
+            (f"Quais são os conceitos fundamentais estudados em {materia} no {ano_aluno} em Portugal?", f"Envolve a compreensão teórica, princípios e aplicação correta da matéria de {materia}."),
+            (f"Como se estruturam as regras principais de {materia}?", f"Através da análise lógica e memorização dos conceitos essenciais abordados na escola."),
+            (f"Quais são os erros mais comuns a evitar nesta disciplina?", f"Falta de rigor conceptual e desatenção aos detalhes teóricos da matéria."),
+            (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos exigidos em {materia}.")
         ]
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
@@ -620,7 +620,6 @@ elif menu == "📝 Registo Diário":
             st.session_state.chave_geracao += 1
             for disc in disciplinas_dia:
                 texto_caixa = resumos_por_materia.get(disc, "")
-                # Passa estritamente o texto inserido pelo utilizador nesta disciplina
                 fcs_disc = gerar_flashcards_personalizados(
                     5, disc, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, texto_caixa
                 )
@@ -641,7 +640,7 @@ elif menu == "📝 Registo Diário":
         st.title("🧠 Revisão Rápida Pós-Registo")
         
         if not st.session_state.flashcards_pos_gerados:
-            st.info("Não há flashcards gerados (certifica-te de que preencheste as matérias e não utilizaste a palavra 'não').")
+            st.info("Não há flashcards gerados (certifica-te de que preencheste pelo menos uma matéria com texto válido e sem a palavra 'não').")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
