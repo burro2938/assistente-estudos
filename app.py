@@ -85,6 +85,9 @@ if "horario" not in st.session_state:
         ]
     }
 
+if "testes" not in st.session_state:
+    st.session_state.testes = []
+
 if "step_registo" not in st.session_state:
     st.session_state.step_registo = "formulario"
 if "step_estudar" not in st.session_state:
@@ -385,6 +388,13 @@ elif menu == "📅 Calendário":
             st.info("Não existem registos de estudo guardados para este dia.")
             st.markdown("### 📂 Ficheiros e Métodos de Estudo:")
             st.write("Ficheiros carregados ou gerados e métodos de estudo aplicados neste dia estarão visíveis aqui consoante a atividade registada.")
+
+        # Verificar se há testes marcados para este dia para mostrar nos detalhes
+        testes_dia = [t for t in st.session_state.testes if t.get("data") == str(st.session_state.selected_date)]
+        if testes_dia:
+            st.markdown("### 📝 Testes Agendados para este Dia:")
+            for t in testes_dia:
+                st.markdown(f"- <span style='font-size: 1.3em;'>**Teste de {t['materia']}**</span>", unsafe_allow_html=True)
         
         if st.button("⬅️ Voltar ao Calendário Mensal"):
             st.session_state.selected_date = None
@@ -431,6 +441,14 @@ elif menu == "📅 Calendário":
         for log in st.session_state.logs:
             logs_por_data[log.get("data")] = log
 
+        # Mapear testes por data
+        testes_por_data = {}
+        for t in st.session_state.testes:
+            d_t = t.get("data")
+            if d_t not in testes_por_data:
+                testes_por_data[d_t] = []
+            testes_por_data[d_t].append(t["materia"])
+
         # Renderizar grelha do calendário
         for semana in mes_dias:
             cols = st.columns(7)
@@ -454,13 +472,20 @@ elif menu == "📅 Calendário":
                                 resumo_resumido = "Estudado"
                             metodo_resumido = logs_por_data[data_str].get("metodo", "Exercícios")
                         
+                        testes_dia_str = ""
+                        if data_str in testes_por_data:
+                            testes_dia_str = "📝 Teste: " + ", ".join(testes_por_data[data_str])
+
                         # Número a cinza, matéria com tamanho aumentado e método logo abaixo
                         st.markdown(f"<p style='text-align: center; color: gray; margin-bottom: 0px;'><b>{dia}</b></p>", unsafe_allow_html=True)
                         if resumo_resumido:
                             st.markdown(f"<p style='text-align: center; font-size: 15px; color: #4b6584; margin-top: 0px; margin-bottom: 0px;'><b>{resumo_resumido}</b></p>", unsafe_allow_html=True)
                             if metodo_resumido:
                                 st.markdown(f"<p style='text-align: center; font-size: 13px; color: #718093; margin-top: 0px;'><i>Método utilizado: {metodo_resumido}</i></p>", unsafe_allow_html=True)
-                        else:
+                        if testes_dia_str:
+                            st.markdown(f"<p style='text-align: center; font-size: 12px; color: #d63031; margin-top: 0px;'><b>{testes_dia_str}</b></p>", unsafe_allow_html=True)
+                        
+                        if not resumo_resumido and not testes_dia_str:
                             st.markdown("<p style='text-align: center; font-size: 13px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
                             
                         if st.button("Ver", key=f"btn_dia_{st.session_state.cal_year}_{st.session_state.cal_month}_{dia}"):
@@ -500,6 +525,39 @@ elif menu == "📅 Agenda & Horário":
     if st.button("Guardar Alterações do Horário"):
         st.session_state.horario[dia_escolhido] = novo_dia
         st.success(f"Horário de {dia_escolhido} guardado com sucesso!")
+
+    st.markdown("---")
+    st.subheader("📝 Gestão de Testes e Provas")
+    
+    with st.form("form_adicionar_teste"):
+        col_t1, col_t2, col_t3 = st.columns(3)
+        with col_t1:
+            materia_teste = st.selectbox("Matéria do Teste", LISTA_MATERIAS, key="fb_mat_teste")
+        with col_t2:
+            data_teste = st.date_input("Data do Teste", value=datetime.date.today(), key="fb_data_teste")
+        with col_t3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            submit_teste = st.form_submit_button("➕ Adicionar Teste")
+            
+        if submit_teste:
+            st.session_state.testes.append({
+                "materia": materia_teste,
+                "data": str(data_teste)
+            })
+            st.success(f"Teste de {materia_teste} agendado para {data_teste.strftime('%d/%m/%Y')} com sucesso!")
+
+    if st.session_state.testes:
+        st.markdown("### Testes Atualmente Agendados:")
+        for idx, t in enumerate(st.session_state.testes):
+            col_info, col_del = st.columns([4, 1])
+            with col_info:
+                # Converter data yyyy-mm-dd para dd/mm/yyyy para exibição bonita
+                d_obj = datetime.datetime.strptime(t["data"], "%Y-%m-%d").date()
+                st.write(f"• **{t['materia']}** - Dia {d_obj.strftime('%d/%m/%Y')}")
+            with col_del:
+                if st.button("Remover", key=f"btn_del_teste_{idx}"):
+                    st.session_state.testes.pop(idx)
+                    st.rerun()
 
 # 4. Registo Diário
 elif menu == "📝 Registo Diário":
