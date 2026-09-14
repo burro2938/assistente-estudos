@@ -923,3 +923,4 @@ elif menu == "📖 Estudar":
                     st.session_state.logs.append(novo_registo)
                     
                 st.success("Guardado no calendário com sucesso!")
+
