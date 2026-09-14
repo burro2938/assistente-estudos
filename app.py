@@ -209,6 +209,28 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
 
+    # Se o utilizador escreveu apontamentos específicos, gera os flashcards baseados estritamente nesse texto exato
+    if texto_apontamentos.strip():
+        tema = texto_apontamentos.strip()
+        flashcards = []
+        for i in range(1, quantidade + 1):
+            if i % 3 == 1:
+                p = f"O que é essencial reter sobre o tópico '{tema}' em {materia} ({ano_aluno})?"
+                r = f"Refere-se ao estudo detalhado de: {tema}, aplicando os conceitos fundamentais da disciplina."
+            elif i % 3 == 2:
+                p = f"Como se aplica o conceito de '{tema}' nos exercícios práticos de {materia}?"
+                r = f"Através da interpretação rigorosa do enunciado relacionado com '{tema}' e aplicação correta da matéria."
+            else:
+                p = f"Qual é o principal objetivo de estudar '{tema}' no programa escolar de {materia} ({ano_aluno})?"
+                r = f"Dominar os princípios teóricos e práticos associados a '{tema}' para consolidar a aprendizagem."
+            
+            flashcards.append({
+                "id": i,
+                "pergunta": f"{p} (Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
+                "resposta": r
+            })
+        return flashcards
+
     banco_ingles = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
@@ -277,13 +299,11 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     elif "físico-química" in materia_inf or "fisico-quimica" in materia_inf:
         banco_base = banco_fisico_quimica
     else:
-        # Se preencheste qualquer coisa nos apontamentos, adapta a pesquisa e os flashcards ao programa escolar em Portugal para o ano do aluno
-        termo_pesquisa = texto_apontamentos.strip() if texto_apontamentos else materia
         banco_base = [
-            (f"O que se aprende sobre '{termo_pesquisa}' no programa de {materia} do {ano_aluno} em Portugal?", f"No {ano_aluno}, estuda-se a aplicação prática, conceitos fundamentais e contextualização curricular de {termo_pesquisa}."),
-            (f"Quais são os pontos principais abordados em '{termo_pesquisa}' em {materia}?", f"Análise detalhada das matérias oficiais lecionadas nas escolas portuguesas para o {ano_aluno}."),
-            (f"Como aplicar os conhecimentos de '{termo_pesquisa}' nos exercícios escolares?", f"Através da compreensão teórica e resolução passo a passo exigida no programa nacional."),
-            (f"Qual é a importância de dominar '{termo_pesquisa}' em {materia}?", f"Permite consolidar bases essenciais para a progressão escolar no {ano_aluno}.")
+            (f"Quais são os conceitos fundamentais estudados em {materia} no {ano_aluno}?", f"Envolve a compreensão teórica, princípios e aplicação correta da matéria de {materia}."),
+            (f"Como se estruturam as regras principais de {materia}?", f"Através da análise lógica e memorização dos conceitos essenciais abordados na escola."),
+            (f"Quais são os erros mais comuns a evitar nesta disciplina?", f"Falta de rigor conceptual e desatenção aos detalhes teóricos da matéria."),
+            (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos exigidos em {materia}.")
         ]
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
@@ -620,7 +640,7 @@ elif menu == "📝 Registo Diário":
         st.title("🧠 Revisão Rápida Pós-Registo")
         
         if not st.session_state.flashcards_pos_gerados:
-            st.info("Não há flashcards gerados para as disciplinas registadas hoje.")
+            st.info("Não há flashcards gerados para as disciplinas registadas hoje (ou foi inserida a palavra 'não' / o campo estava vazio).")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
