@@ -277,11 +277,13 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     elif "físico-química" in materia_inf or "fisico-quimica" in materia_inf:
         banco_base = banco_fisico_quimica
     else:
+        # Se preencheste qualquer coisa nos apontamentos, adapta a pesquisa e os flashcards ao programa escolar em Portugal para o ano do aluno
+        termo_pesquisa = texto_apontamentos.strip() if texto_apontamentos else materia
         banco_base = [
-            (f"Quais são os conceitos fundamentais estudados em {materia} no {ano_aluno}?", f"Envolve a compreensão teórica, princípios e aplicação correta da matéria de {materia}."),
-            (f"Como se estruturam as regras principais de {materia}?", f"Através da análise lógica e memorização dos conceitos essenciais abordados na escola."),
-            (f"Quais são os erros mais comuns a evitar nesta disciplina?", f"Falta de rigor conceptual e desatenção aos detalhes teóricos da matéria."),
-            (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos exigidos em {materia}.")
+            (f"O que se aprende sobre '{termo_pesquisa}' no programa de {materia} do {ano_aluno} em Portugal?", f"No {ano_aluno}, estuda-se a aplicação prática, conceitos fundamentais e contextualização curricular de {termo_pesquisa}."),
+            (f"Quais são os pontos principais abordados em '{termo_pesquisa}' em {materia}?", f"Análise detalhada das matérias oficiais lecionadas nas escolas portuguesas para o {ano_aluno}."),
+            (f"Como aplicar os conhecimentos de '{termo_pesquisa}' nos exercícios escolares?", f"Através da compreensão teórica e resolução passo a passo exigida no programa nacional."),
+            (f"Qual é a importância de dominar '{termo_pesquisa}' em {materia}?", f"Permite consolidar bases essenciais para a progressão escolar no {ano_aluno}.")
         ]
 
     amostra = random.sample(banco_base, min(len(banco_base), quantidade))
