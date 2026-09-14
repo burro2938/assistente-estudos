@@ -205,6 +205,10 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     return exs
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
+    # Se a palavra "não" for escrita nos apontamentos/tópicos, não cria flashcards
+    if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
+        return []
+
     banco_ingles = [
         ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
         ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
@@ -551,7 +555,6 @@ elif menu == "📅 Agenda & Horário":
         for idx, t in enumerate(st.session_state.testes):
             col_info, col_del = st.columns([4, 1])
             with col_info:
-                # Converter data yyyy-mm-dd para dd/mm/yyyy para exibição bonita
                 d_obj = datetime.datetime.strptime(t["data"], "%Y-%m-%d").date()
                 st.write(f"• **{t['materia']}** - Dia {d_obj.strftime('%d/%m/%Y')}")
             with col_del:
@@ -802,66 +805,69 @@ elif menu == "📖 Estudar":
 
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("🃏 Conjunto de 20 Flashcards de Memorização:")
-            if st.button("🔄 Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
-                st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
-                    20, 
-                    st.session_state.materia_escolhida_estudo, 
-                    st.session_state.dificuldade_selecionada, 
-                    st.session_state.ano_escolar,
-                    st.session_state.texto_estudo_livre
-                )
-                st.rerun()
+            if not st.session_state.flashcards_gerados:
+                st.warning("⚠️ Não foram gerados flashcards para esta matéria (verifique se introduziu a palavra 'não' nos apontamentos/tópicos).")
+            else:
+                if st.button("🔄 Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
+                    st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
+                        20, 
+                        st.session_state.materia_escolhida_estudo, 
+                        st.session_state.dificuldade_selecionada, 
+                        st.session_state.ano_escolar,
+                        st.session_state.texto_estudo_livre
+                    )
+                    st.rerun()
 
-            for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
-                st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
-                chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
-                if chave_fc not in st.session_state:
-                    st.session_state[chave_fc] = False
+                for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
+                    st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
+                    chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
+                    if chave_fc not in st.session_state:
+                        st.session_state[chave_fc] = False
+                        
+                    col_b1, col_b2 = st.columns([1, 4])
+                    with col_b1:
+                        if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
+                            st.session_state[chave_fc] = not st.session_state[chave_fc]
+                            st.rerun()
+                    with col_b2:
+                        if st.session_state[chave_fc]:
+                            st.success(f"**Resposta:** {fc['resposta']}")
+                        else:
+                            st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
+                    st.markdown("---")
                     
-                col_b1, col_b2 = st.columns([1, 4])
-                with col_b1:
-                    if st.button(f"Virar #{i}", key=f"btn_virar_estudo_{st.session_state.chave_geracao}_{i}"):
-                        st.session_state[chave_fc] = not st.session_state[chave_fc]
-                        st.rerun()
-                with col_b2:
-                    if st.session_state[chave_fc]:
-                        st.success(f"**Resposta:** {fc['resposta']}")
+                # Registar no calendário ao interagir/concluir flashcards
+                if st.button("Guardar Sessão de Flashcards no Calendário"):
+                    hoje_str = str(datetime.date.today())
+                    dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+                    dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                    
+                    registo_existente = None
+                    for log in st.session_state.logs:
+                        if log.get("data") == hoje_str:
+                            registo_existente = log
+                            break
+                    
+                    materia_atual = st.session_state.materia_escolhida_estudo
+                    texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
+                    
+                    if registo_existente:
+                        if "resumos" not in registo_existente:
+                            registo_existente["resumos"] = {}
+                        registo_existente["resumos"][materia_atual] = texto_resumo_estudo
+                        registo_existente["metodo"] = st.session_state.atividade_selecionada
                     else:
-                        st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
-                st.markdown("---")
-                
-            # Registar no calendário ao interagir/concluir flashcards
-            if st.button("Guardar Sessão de Flashcards no Calendário"):
-                hoje_str = str(datetime.date.today())
-                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
-                
-                registo_existente = None
-                for log in st.session_state.logs:
-                    if log.get("data") == hoje_str:
-                        registo_existente = log
-                        break
-                
-                materia_atual = st.session_state.materia_escolhida_estudo
-                texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
-                
-                if registo_existente:
-                    if "resumos" not in registo_existente:
-                        registo_existente["resumos"] = {}
-                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
-                    registo_existente["metodo"] = st.session_state.atividade_selecionada
-                else:
-                    novo_registo = {
-                        "data": hoje_str,
-                        "dia": dia_atual_nome,
-                        "resumos": {
-                            materia_atual: texto_resumo_estudo
-                        },
-                        "metodo": st.session_state.atividade_selecionada
-                    }
-                    st.session_state.logs.append(novo_registo)
-                    
-                st.success("Sessão de Flashcards guardada no calendário com sucesso!")
+                        novo_registo = {
+                            "data": hoje_str,
+                            "dia": dia_atual_nome,
+                            "resumos": {
+                                materia_atual: texto_resumo_estudo
+                            },
+                            "metodo": st.session_state.atividade_selecionada
+                        }
+                        st.session_state.logs.append(novo_registo)
+                        
+                    st.success("Sessão de Flashcards guardada no calendário com sucesso!")
         else:
             st.info("Atividade interativa pronta a utilizar.")
             if st.button("Concluir e Guardar no Calendário"):
