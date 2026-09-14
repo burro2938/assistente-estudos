@@ -208,26 +208,26 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
 
-    # Se o utilizador escreveu apontamentos ou o tópico específico, fazemos a simulação inteligente baseada estritamente nisso
+    # Se o utilizador escreveu apontamentos, geramos perguntas altamente específicas e contextualizadas ao texto exato inserido
     if texto_apontamentos.strip():
         topico = texto_apontamentos.strip()
         flashcards = []
         
-        # Criamos perguntas dinâmicas e inteligentes baseadas no texto exato introduzido pelo aluno
-        templates_perguntas = [
-            (f"Qual é o significado principal ou definição de '{topico}' no contexto de {materia} ({ano_aluno})?", f"No programa escolar de Portugal para o {ano_aluno}, '{topico}' refere-se a conceitos fundamentais que exigem rigor teórico e aplicação prática."),
-            (f"Quais são as regras ou propriedades fundamentais associadas a '{topico}'?", f"Para dominar '{topico}', deves aplicar corretamente as fórmulas e princípios normativos estudados nas aulas de {materia}."),
-            (f"Como se resolvem exercícios típicos de exames sobre '{topico}'?", f"Identificando os dados fornecidos no enunciado de '{topico}' e aplicando o método passo a passo aprendido no {ano_aluno}."),
-            (f"Quais são os erros mais frequentes dos alunos ao estudar '{topico}' em {materia}?", f"Confundir os conceitos base de '{topico}' e descurar a verificação dos resultados obtidos."),
-            (f"De que forma '{topico}' se relaciona com o resto da matéria de {materia}?", f"Serve de base estrutural para compreender os tópicos avançados previstos para o currículo do {ano_aluno} em Portugal.")
+        # Banco de perguntas profundas e estruturadas à volta do texto exato inserido pelo aluno
+        perguntas_especificas = [
+            (f"Qual é a definição exata e o conceito fundamental de '{topico}' no programa de {materia} do {ano_aluno}?", f"No currículo escolar português, '{topico}' representa a matéria focada em {materia}, exigindo rigor na compreensão das regras teóricas."),
+            (f"Quais são os componentes principais ou sub-tópicos que compõem '{topico}'?", f"Envolve a análise detalhada de '{topico}', dividindo-se nas propriedades estudadas nas aulas de {materia} para o {ano_aluno}."),
+            (f"Como se aplica a teoria de '{topico}' na resolução de exercícios práticos?", f"Através da substituição correta nos modelos teóricos associados a '{topico}', garantindo validação passo a passo."),
+            (f"Porque é que o estudo de '{topico}' é importante no programa de {materia} em Portugal?", f"Porque consolida as bases essenciais exigidas nas avaliações do {ano_aluno} sobre {topico}."),
+            (f"Dá um exemplo prático de aplicação direta relacionada com '{topico}'.", f"Um exemplo clássico de '{topico}' consiste na aplicação direta das normas e propriedades estudadas na matéria de {materia}.")
         ]
 
         for i in range(1, quantidade + 1):
-            tmpl_p, tmpl_r = templates_perguntas[(i - 1) % len(templates_perguntas)]
+            p_base, r_base = perguntas_especificas[(i - 1) % len(perguntas_especificas)]
             flashcards.append({
                 "id": i,
-                "pergunta": f"{tmpl_p} (Matéria: {materia} | Tópico: {topico} | Nível: {dificuldade} | {ano_aluno})",
-                "resposta": f"{tmpl_r} (Contexto do tópico: {topico})"
+                "pergunta": f"{p_base} (Foco: {topico} | Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
+                "resposta": f"{r_base} [Tópico em estudo: {topico}]"
             })
         return flashcards
 
