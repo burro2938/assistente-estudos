@@ -154,69 +154,100 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
             flashcards = []
             for i in range(1, quantidade + 1):
                 frase = frases[(i - 1) % len(frases)]
-                p = f"O que destaca o seguinte ponto dos teus apontamentos: '{frase[:40]}...'" if len(frase) > 40 else f"Explica o conceito registado: '{frase}'."
-                r = f"Regra essencial: {frase}. Guarda este apontamento para os testes de {materia}."
+                p = f"Explica o ponto principal registado: '{frase[:50]}...'" if len(frase) > 50 else f"O que deves reter sobre: '{frase}'."
+                r = f"Conceito essencial retirado dos teus apontamentos para {materia}."
                 flashcards.append({"id": i, "pergunta": p, "resposta": r})
             return flashcards
 
-    # Se colocou um tema curto ou o nome da matéria, gera perguntas altamente variadas e dinâmicas
     tema = texto_limpo if texto_limpo else materia
+    tema_lower = tema.lower()
     
-    templates_perguntas = [
+    # Bancos específicos para tópicos comuns
+    bancos_especificos = {
+        "frações": [
+            ("O que representam o numerador e o denominador numa fração?", "O numerador indica quantas partes são consideradas, e o denominador indica em quantas partes iguais o todo foi dividido."),
+            ("Como se somam frações com denominadores diferentes?", "Reduzem-se as frações ao mesmo denominador utilizando o Mínimo Múltiplo Comum (MMC) antes de efetuar a soma."),
+            ("Qual é a regra algébrica para multiplicar duas frações?", "Multiplica-se numerador com numerador e denominador com denominador diretamente."),
+            ("Como se efetua a divisão entre duas frações?", "Mantém-se a primeira fração inalterada e multiplica-se pelo inverso da segunda fração."),
+            ("O que são frações equivalentes?", "São frações que representam exatamente o mesmo valor numérico, obtidas multiplicando ou dividindo ambos os termos pelo mesmo número.")
+        ],
+        "equações": [
+            ("O que significa resolver uma equação do 1.º grau?", "Significa isolar a incógnita (como $x$) para encontrar o valor numérico que torna a igualdade verdadeira."),
+            ("Qual é a regra ao transpor um termo de um membro para outro?", "O termo muda de sinal: o que é positivo passa a negativo, o que é negativo passa a positivo, o que multiplica passa a dividir."),
+            ("Como se eliminam parênteses numa expressão algébrica?", "Aplicando a propriedade distributiva, multiplicando o fator exterior por cada termo dentro dos parênteses."),
+            ("O que caracteriza uma equação impossível?", "É uma equação que não tem solução no conjunto dos números reais (chega-se a uma contradição como $0 = 7$)."),
+            ("O que caracteriza uma equação indeterminada?", "É uma equação que possui infinitas soluções válidas (chega-se a uma identidade verdadeira como $5 = 5$).")
+        ]
+    }
+    
+    cartoes_base = []
+    for chave, lista_fcs in bancos_especificos.items():
+        if chave in tema_lower:
+            for p, r in lista_fcs:
+                cartoes_base.append({"pergunta": p, "resposta": r})
+            break
+            
+    # Estilos de perguntas totalmente variados para garantir diversidade gramatical e de raciocínio
+    estilos_perguntas = [
         (
-            f"O que caracteriza fundamentalmente o conceito de '{tema}'?",
-            f"'{tema}' representa um tópico central em {materia} ({ano_aluno}), cujas propriedades definem o comportamento da matéria em estudo."
+            lambda t, m: f"Define com rigor o conceito de **{t}** no âmbito da disciplina de {m}.",
+            lambda t, m: f"**{t}** representa um elemento central estudado no {ano_aluno}, cujas propriedades determinam a resolução de problemas na matéria."
         ),
         (
-            f"Quais são os componentes essenciais ou elementos intervenientes em '{tema}'?",
-            f"Os elementos principais incluem as definições teóricas, as variáveis envolvidas e as condições em que o fenómeno ou cálculo ocorre."
+            lambda t, m: f"Quais são os **passos práticos** que deves seguir para resolver uma questão sobre **{t}**?",
+            lambda t, m: f"1. Identificar os dados do problema. 2. Selecionar a fórmula ou regra aplicável a **{t}**. 3. Executar os cálculos e validar."
         ),
         (
-            f"Descreve o procedimento passo a passo para resolver um exercício prático sobre '{tema}'.",
-            f"1. Identificar os dados fornecidos. 2. Selecionar a regra ou fórmula aplicável a '{tema}'. 3. Executar o cálculo ou análise com rigor."
+            lambda t, m: f"Indica a **regra de ouro** ou princípio fundamental que nunca podes esquecer acerca de **{t}**.",
+            lambda t, m: f"Respeitar rigorosamente a ordem de operações e as propriedades operatórias específicas de {m}."
         ),
         (
-            f"Qual é a fórmula, lei ou regra de ouro que deves memorizar obrigatoriamente sobre '{tema}'?",
-            f"A relação principal de '{tema}' baseia-se na aplicação direta das propriedades fundamentais estudadas na disciplina de {materia}."
+            lambda t, m: f"Dá um **exemplo prático ou aplicação real** onde **{t}** surge no quotidiano.",
+            lambda t, m: f"Aparece frequentemente na resolução de problemas práticos, medições laboratoriais ou cálculos de proporções."
         ),
         (
-            f"Dá um exemplo prático ou contexto real onde '{tema}' se aplica diretamente.",
-            f"Aparece frequentemente na resolução de problemas escolares, análises de laboratório ou interpretação de situações do quotidiano."
+            lambda t, m: f"Qual é o **erro mais comum** ou rasteira que costuma acontecer ao estudar **{t}**?",
+            lambda t, m: f"A desatenção aos sinais, troca de unidades de medida ou omissão de passos essenciais na resolução."
         ),
         (
-            f"Qual é o erro mais comum ou rasteira que deves evitar ao responder a perguntas sobre '{tema}'?",
-            f"Confundir os sinais, trocar unidades de medida ou saltar passos lógicos essenciais na resolução."
+            lambda t, m: f"Como podes **verificar de forma autónoma** se o resultado obtido sobre **{t}** está correto?",
+            lambda t, m: f"Através da prova dos nove ou substituindo o valor encontrado de volta na condição inicial do exercício."
         ),
         (
-            f"Como podes verificar de forma autónoma se o resultado obtido em '{tema}' está correto?",
-            f"Substituindo os valores de volta na condição inicial ou cruzando com os critérios teóricos da matéria."
+            lambda t, m: f"Explica qual é a **importância de dominar {t}** para os testes do {ano_aluno}.",
+            lambda t, m: f"Garante uma base sólida e indispensável para a compreensão de tópicos mais avançados em {m}."
         ),
         (
-            f"Qual é a importância de dominar '{tema}' para o teu sucesso no {ano_aluno}?",
-            f"Serve de base sólida para compreender tópicos mais avançados que serão abordados nos próximos testes de {materia}."
-        ),
-        (
-            f"Explica por palavras tuas a diferença entre '{tema}' e outros conceitos semelhantes em {materia}.",
-            f"'{tema}' distingue-se pelos seus critérios específicos de classificação, comportamento e regras de resolução própria."
-        ),
-        (
-            f"Resume em três tópicos-chave tudo o que é essencial saber sobre '{tema}'.",
-            f"1. Definição rigorosa. 2. Aplicação prática correta. 3. Verificação dos resultados obtidos."
+            lambda t, m: f"De que forma **{t}** se relaciona com outros conteúdos já dados em {m}?",
+            lambda t, m: f"Conecta-se diretamente através de propriedades matemáticas e científicas comuns aplicadas ao longo do ano letivo."
         )
     ]
     
     flashcards = []
-    for i in range(1, quantidade + 1):
-        p, r = templates_perguntas[(i - 1) % len(templates_perguntas)]
-        if i > len(templates_perguntas):
-            p = f"Aspetto complementar {i} sobre '{tema}': Analisa detalhadamente as propriedades."
-            r = f"Contexto de estudo avançado para {materia} ({ano_aluno})."
+    for idx, fc in enumerate(cartoes_base):
         flashcards.append({
-            "id": i,
-            "pergunta": p,
-            "resposta": r
+            "id": idx + 1,
+            "pergunta": fc["pergunta"],
+            "resposta": fc["resposta"]
         })
-    return flashcards
+        
+    contador = len(flashcards) + 1
+    estilo_idx = 0
+    while len(flashcards) < quantidade:
+        gerador_p, gerador_r = estilos_perguntas[estilo_idx % len(estilos_perguntas)]
+        p = gerador_p(tema, materia)
+        r = gerador_r(tema, materia)
+        
+        if not any(f["pergunta"] == p for f in flashcards):
+            flashcards.append({
+                "id": contador,
+                "pergunta": p,
+                "resposta": r
+            })
+            contador += 1
+        estilo_idx += 1
+        
+    return flashcards[:quantidade]
 
 def obter_recomendacao_inteligente():
     hoje_obj = datetime.date.today()
