@@ -1,4 +1,3 @@
-from duckduckgo_search import DDGS
 import streamlit as st
 import datetime
 import random
@@ -148,41 +147,84 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
     
-    topico = texto_apontamentos.strip() if texto_apontamentos.strip() else materia
-    query = f"{materia} {topico} {ano_aluno} programa escolar Portugal"
-    
-    snippets = []
-    try:
-        with DDGS() as ddgs:
-            resultados = [r['body'] for r in ddgs.text(query, max_results=5)]
-            for r in resultados:
-                frases = [f.strip() for f in r.split('.') if len(f.strip()) > 15]
-                snippets.extend(frases)
-    except Exception:
-        pass
+    # Extrair frases reais do utilizador se ele escreveu apontamentos
+    frases_utilizador = []
+    if texto_apontamentos.strip():
+        # Separar por pontos ou vírgulas/linhas para criar cartões com o que o aluno escreveu
+        partes = [p.strip() for p in texto_apontamentos.replace('\n', '.').split('.') if len(p.strip()) > 3]
+        if partes:
+            frases_utilizador = partes
 
-    if not snippets:
-        snippets = [
-            f"Conceito essencial abordado na disciplina de {materia}.",
-            f"Matéria incluída no programa oficial do {ano_aluno} em Portugal.",
-            f"Aplicação prática e teórica relacionada com {topico}."
+    # Banco de conhecimentos escolares estruturados por disciplina para garantir rigor académico
+    banco_escolar = {
+        "Matemática": [
+            "Conjunto dos números racionais e respetivas operações fundamentais.",
+            "Resolução de equações do 1.º grau com uma incógnita e problemas associados.",
+            "Teorema de Pitágoras: relação entre os catetos e a hipotenusa num triângulo retângulo.",
+            "Funções afins e lineares: representação gráfica e taxa de variação.",
+            "Monómios e polinómios: adição, subtração e multiplicação algébrica."
+        ],
+        "Ciências Naturais": [
+            "A estrutura interna da Terra: crosta, manto e núcleo (dinâmica interna).",
+            "Sismos e vulcanismo: principais causas, epicentro, hipocentro e prevenção de riscos.",
+            "Reprodução humana: anatomia dos sistemas reprodutores e fecundação.",
+            "Ecossistemas: relações bióticas e abióticas, cadeias e teias tróficas.",
+            "Placas litosféricas e deriva continental (tectónica de placas)."
+        ],
+        "História": [
+            "A expansão marítima portuguesa e os descobrimentos dos séculos XV e XVI.",
+            "O Antigo Regime em Portugal e na Europa: sociedade de ordens e absolutismo.",
+            "As invasões francesas em Portugal e o impacto do liberalismo no século XIX.",
+            "A Revolução Industrial e as grandes transformações económicas e sociais.",
+            "A implantação da República em Portugal (5 de outubro de 1910)."
+        ],
+        "Físico-Química": [
+            "Forças e movimentos: leis de Newton, velocidade, aceleração e atrito.",
+            "Luz e som: propagação, reflexão, refração e espetro eletromagnético.",
+            "Estrutura atómica: protões, neutrões, eletrões e tabela periódica.",
+            "Reações químicas: reagentes, produtos da pitada e conservação da massa.",
+            "Energia: formas de energia, transferência e conservação da energia mecânica."
+        ],
+        "Português": [
+            "Análise sintática: sujeito, predicado, complementos diretos e indiretos.",
+            "Classes de palavras: nomes, adjetivos, verbos, pronomes e determinantes.",
+            "Tipos e formas de discurso: direto, indireto e indireto livre.",
+            "Figuras de estilo: metáfora, personificação, aliteração e comparação.",
+            "Análise de textos literários e poesia lírica tradicional e moderna."
+        ],
+        "Geografia": [
+            "Demografia e população mundial: taxas de natalidade, mortalidade e migrações.",
+            "Climas e biomas do planeta: fatores de modulação climática.",
+            "Atividades económicas: setor primário, secundário e terciário.",
+            "Globalização e redes de transportes e comunicações internacionais."
         ]
+    }
+
+    base_conteudos = frases_utilizador if frases_utilizador else banco_escolar.get(materia, [
+        f"Conceito fundamental e teórico da disciplina de {materia}.",
+        f"Aplicação prática e estudo aprofundado no programa de {ano_aluno}.",
+        f"Regra essencial a reter para a avaliação na disciplina de {materia}."
+    ])
 
     tipos_perguntas = [
-        ("O que define o conceito principal de {}?", "Definição: {}"),
-        ("Qual a importância de {} no programa de {}?", "Contexto escolar: {}"),
-        ("Como se aplica o tema {} na disciplina de {}?", "Aplicação prática: {}"),
-        ("Quais são os aspetos fundamentais associados a {}?", "Detalhes essenciais: {}"),
-        ("Explica de forma resumida o tópico: {}.", "Resumo técnico: {}")
+        ("O que define o conceito principal de {}?", "Definição teórica: {}"),
+        ("Qual é a principal aplicação ou importância de {}?", "Aplicação prática: {}"),
+        ("Explica sucintamente o seguinte tópico: {}.", "Explicação detalhada: {}"),
+        ("Quais são aspetos fundamentais a reter sobre {}?", "Pontos chave: {}")
     ]
 
     flashcards = []
     for i in range(1, quantidade + 1):
         template_p, template_r = tipos_perguntas[(i - 1) % len(tipos_perguntas)]
-        snippet_escolhido = snippets[(i - 1) % len(snippets)] if snippets else topico
+        conteudo_escolhido = base_conteudos[(i - 1) % len(base_conteudos)]
         
-        pergunta = template_p.format(topico, materia)
-        resposta = template_r.format(snippet_escolhido)
+        # Se usarmos o texto do utilizador, fazemos perguntas direcionadas
+        if frases_utilizador:
+            pergunta = f"Com base nos teus apontamentos, o que refere o ponto: '{conteudo_escolhido[:35]}...'" if len(conteudo_escolhido) > 35 else f"O que deves recordar sobre: '{conteudo_escolhido}'?"
+            resposta = f"Contexto guardado: {conteudo_escolhido}"
+        else:
+            pergunta = template_p.format(conteudo_escolhido[:40])
+            resposta = template_r.format(conteudo_escolhido)
         
         flashcards.append({
             "id": i,
