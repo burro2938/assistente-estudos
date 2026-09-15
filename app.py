@@ -11,21 +11,17 @@ st.set_page_config(
 )
 
 # Importar a fonte Comfortaa e aplicar corretamente mantendo os ícones intactos
-st.markdown(
-    """
-    <style>
-    @import url('https://fonts.googleapis.com/css?family=Comfortaa:wght@400;700&display=swap');
-    body, p, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6,
-    .stMarkdown, .stText, .stSelectbox, .stRadio, .stTextInput {
-        font-family: 'Comfortaa', cursive, sans-serif !important;
-    }
-    section[data-testid="stSidebar"] h1 {
-        font-size: 20px !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css?family=Comfortaa:wght@400;700&display=swap');
+body, p, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6, .stMarkdown, stText, stSelectbox, stRadio, .stTextInput {
+    font-family: 'Comfortaa', cursive, sans-serif !important;
+}
+section[data-testid="stSidebar"] h1 {
+    font-size: 20px !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Estado da Sessão para Dados e Configurações do Aluno
 if "logs" not in st.session_state:
@@ -35,7 +31,7 @@ if "escola" not in st.session_state:
 if "ano_letivo" not in st.session_state:
     st.session_state.ano_letivo = "2026/2027"
 if "ano_escolar" not in st.session_state:
-    st.session_state.ano_escolar = "8.° Ano"
+    st.session_state.ano_escolar = "8.º Ano"
 if "horario" not in st.session_state:
     st.session_state.horario = {
         "Segunda-feira": [
@@ -69,6 +65,7 @@ if "horario" not in st.session_state:
             {"hora": "11:25 - 12:10", "disc": "TIC"}
         ]
     }
+
 if "testes" not in st.session_state:
     st.session_state.testes = []
 if "step_registo" not in st.session_state:
@@ -131,6 +128,7 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
         fator = 4
     elif "Extremamente" in dificuldade:
         fator = 5
+        
     for i in range(1, 31):
         n1 = random.randint(2 * fator, 15 * fator)
         n2 = random.randint(2 * fator, 15 * fator)
@@ -146,131 +144,80 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
-    
+        
     texto_limpo = texto_apontamentos.strip()
     
-    # Se o utilizador colocou um tema curto (ex: "Frações", "Equações", etc.)
-    if texto_limpo and len(texto_limpo.split()) <= 4:
-        tema = texto_limpo
-        tema_lower = tema.lower()
-        
-        # Detetar se é sobre frações (independente de acentos ou plural/singular)
-        if any(k in tema_lower for k in ["frac", "fração", "fracao"]):
-            flashcards_base = [
-                ("O que indica o numerador numa fração?", "Indica o número de partes que estamos a considerar do todo."),
-                ("O que indica o denominador numa fração?", "Indica o número total de partes iguais em que o todo foi dividido."),
-                ("Como se somam ou subtraem frações com o mesmo denominador?", "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."),
-                ("O que é necessário para somar frações com denominadores diferentes?", "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."),
-                ("Como se multiplicam duas frações?", "Multiplicam-se os numeradores entre si e os denominadores entre si."),
-                ("Como se divide uma fração por outra?", "Multiplica-se a primeira fração pelo inverso da segunda."),
-                ("O que são frações equivalentes?", "São frações que representam exatamente a mesma quantidade ou proporção."),
-                ("Como se obtém uma fração equivalente por ampliação?", "Multiplicando o numerador e o denominador pelo mesmo número natural (diferente de zero)."),
-                ("Como se simplifica uma fração?", "Dividindo o numerador e o denominador pelo mesmo divisor comum."),
-                ("O que é uma fração irredutível?", "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1.")
-            ]
-        else:
-            # Gerador inteligente para qualquer outro tema curto introduzido pelo utilizador
-            flashcards_base = [
-                (f"Qual é o conceito fundamental de {tema}?", f"Refere-se ao estudo detalhado e às propriedades essenciais associadas a este tópico."),
-                (f"Quais são os elementos principais que compõem {tema}?", f"Os componentes centrais incluem a estrutura base, regras e funcionamento."),
-                (f"Como se aplica {tema} na prática ou em exercícios?", f"Exige rigor na identificação dos dados e na aplicação correta das regras teóricas."),
-                (f"Qual é a importância de dominar o tema de {tema}?", f"Permite consolidar bases sólidas para a disciplina e resolver problemas mais complexos."),
-                (f"Indica um contexto onde {tema} surge com frequência.", f"Aparece habitualmente em exercícios de aplicação direta e em situações de avaliação."),
-                (f"Quais são os erros mais comuns a evitar ao estudar {tema}?", f"Confundir definições básicas ou errar na aplicação prática dos passos intermédios."),
-                (f"O que deves memorizar obrigatoriamente sobre {tema}?", f"As definições-chave, as regras essenciais e os procedimentos fundamentais.")
-            ]
-        
-        flashcards = []
-        for i in range(1, quantidade + 1):
-            p, r = flashcards_base[(i - 1) % len(flashcards_base)]
-            flashcards.append({
-                "id": i,
-                "pergunta": p,
-                "resposta": r
-            })
-        return flashcards
+    # Se o utilizador escreveu frases detalhadas, transforma cada frase num flashcard específico
+    if texto_limpo and len(texto_limpo.split()) > 4:
+        frases = [p.strip() for p in texto_limpo.replace('\n', '.').split('.') if len(p.strip()) > 5]
+        if frases:
+            flashcards = []
+            for i in range(1, quantidade + 1):
+                frase = frases[(i - 1) % len(frases)]
+                p = f"O que deves recordar sobre o ponto: '{frase[:50]}...'" if len(frase) > 50 else f"O que refere o apontamento: '{frase}'?"
+                r = f"Conceito registado: {frase}. Guarda esta regra essencial para {materia}."
+                flashcards.append({"id": i, "pergunta": p, "resposta": r})
+            return flashcards
 
-    # Extrair frases reais do utilizador se ele escreveu apontamentos detalhados
-    frases_utilizador = []
-    if texto_limpo:
-        partes = [p.strip() for p in texto_limpo.replace('\n', '.').split('.') if len(p.strip()) > 3]
-        if partes:
-            frases_utilizador = partes
-
-    # Banco de conhecimentos escolares estruturados por disciplina
-    banco_escolar = {
-        "Matemática": [
-            "Conjunto dos números racionais e respetivas operações fundamentais.",
-            "Resolução de equações do 1.º grau com uma incógnita e problemas associados.",
-            "Teorema de Pitágoras: relação entre os catetos e a hipotenusa num triângulo retângulo.",
-            "Funções afins e lineares: representação gráfica e taxa de variação.",
-            "Monómios e polinómios: adição, subtração e multiplicação algébrica."
-        ],
-        "Ciências Naturais": [
-            "A estrutura interna da Terra: crosta, manto e núcleo (dinâmica interna).",
-            "Sismos e vulcanismo: principais causas, epicentro, hipocentro e prevenção de riscos.",
-            "Reprodução humana: anatomia dos sistemas reprodutores e fecundação.",
-            "Ecossistemas: relações bióticas e abióticas, cadeias e teias tróficas.",
-            "Placas litosféricas e deriva continental (tectónica de placas)."
-        ],
-        "História": [
-            "A expansão marítima portuguesa e os descobrimentos dos séculos XV e XVI.",
-            "O Antigo Regime em Portugal e na Europa: sociedade de ordens e absolutismo.",
-            "As invasões francesas em Portugal e o impacto do liberalismo no século XIX.",
-            "A Revolução Industrial e as grandes transformações económicas e sociais.",
-            "A implantação da República em Portugal (5 de outubro de 1910)."
-        ],
-        "Físico-Química": [
-            "Forças e movimentos: leis de Newton, velocidade, aceleração e atrito.",
-            "Luz e som: propagação, reflexão, refração e espetro eletromagnético.",
-            "Estrutura atómica: protões, neutrões, eletrões e tabela periódica.",
-            "Reações químicas: reagentes, produtos e conservação da massa.",
-            "Energia: formas de energia, transferência e conservação da energia mecânica."
-        ],
-        "Português": [
-            "Análise sintática: sujeito, predicado, complementos diretos e indiretos.",
-            "Classes de palavras: nomes, adjetivos, verbos, pronomes e determinantes.",
-            "Tipos e formas de discurso: direto, indireto e indireto livre.",
-            "Figuras de estilo: metáfora, personificação, aliteração e comparação.",
-            "Análise de textos literários e poesia lírica tradicional e moderna."
-        ],
-        "Geografia": [
-            "Demografia e população mundial: taxas de natalidade, mortalidade e migrações.",
-            "Climas e biomas do planeta: fatores de modulação climática.",
-            "Atividades económicas: setor primário, secundário e terciário.",
-            "Globalização e redes de transportes e comunicações internacionais."
+    # Se colocou um tema curto, analisa por domínio científico/escolar para gerar perguntas altamente relevantes
+    tema = texto_limpo if texto_limpo else materia
+    tema_lower = tema.lower()
+    
+    if any(k in tema_lower for k in ["frac", "fração", "fracao"]):
+        flashcards_base = [
+            ("O que indica o numerador numa fração?", "Indica o número de partes que estamos a considerar do todo."),
+            ("O que indica o denominador numa fração?", "Indica o número total de partes iguais em que o todo foi dividido."),
+            ("Como se somam ou subtraem frações com o mesmo denominador?", "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."),
+            ("O que é necessário para somar frações com denominadores diferentes?", "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."),
+            ("Como se multiplicam duas frações?", "Multiplicam-se os numeradores entre si e os denominadores entre si."),
+            ("Como se divide uma fração por outra?", "Multiplica-se a primeira fração pelo inverso da segunda."),
+            ("O que são frações equivalentes?", "São frações que representam exatamente a mesma quantidade ou proporção."),
+            ("Como se obtém uma fração equivalente por ampliação?", "Multiplicando o numerador e o denominador pelo mesmo número natural (diferente de zero)."),
+            ("Como se simplifica uma fração?", "Dividindo o numerador e o denominador pelo mesmo divisor comum."),
+            ("O que é uma fração irredutível?", "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1.")
         ]
-    }
-
-    base_conteudos = frases_utilizador if frases_utilizador else banco_escolar.get(materia, [
-        f"Conceito fundamental e teórico da disciplina de {materia}.",
-        f"Aplicação prática e estudo aprofundado no programa.",
-        f"Regra essencial a reter para a avaliação na disciplina."
-    ])
-
-    tipos_perguntas = [
-        ("O que define o conceito principal de {}?", "Definição teórica: {}"),
-        ("Qual é a principal aplicação ou importância de {}?", "Aplicação prática: {}"),
-        ("Explica sucintamente o seguinte tópico: {}.", "Explicação detalhada: {}"),
-        ("Quais são aspetos fundamentais a reter sobre {}?", "Pontos chave: {}")
-    ]
+    elif any(k in tema_lower for k in ["pitágoras", "pitagoras", "triângulo", "angulo", "equação", "função", "polinómio", "álgebra", "geometria"]):
+        flashcards_base = [
+            (f"Qual é o princípio matemático ou regra fundamental associada a {tema}?", f"Aplica uma relação lógica estrita para calcular valores desconhecidos com base nas propriedades da matéria."),
+            (f"Quais são os passos essenciais para resolver um exercício de {tema}?", f"1. Identificar os dados conhecidos e a incógnita. 2. Aplicar a fórmula correta. 3. Calcular com rigor matemático."),
+            (f"Qual é o erro mais frequente cometido na resolução de problemas sobre {tema}?", f"Trocar os sinais nas operações ou aplicar incorretamente as regras fundamentais."),
+            (f"Em que contexto prático surge habitualmente {tema} na disciplina de {materia}?", f"Em problemas de cálculo direto, geometria ou modelação algébrica de situações reais."),
+            (f"Como podes verificar se o resultado obtido em {tema} está correto?", f"Substituindo o valor calculado na condição inicial para confirmar a validade da igualdade.")
+        ]
+    elif any(k in tema_lower for k in ["sismo", "vulcão", "terra", "placa", "célula", "ecossistema", "fotossíntese", "reprodução", "rocha"]):
+        flashcards_base = [
+            (f"Qual é o processo científico ou biológico principal em {tema}?", f"Envolve uma dinâmica natural específica que explica o funcionamento de sistemas vivos ou geológicos."),
+            (f"Quais são os principais elementos ou fatores intervenientes em {tema}?", f"Os componentes essenciais que tornam o fenómeno observável e estudado nas ciências."),
+            (f"Qual é a importância ecológica ou estrutural de {tema} para o planeta?", f"Garante o equilíbrio dos ecossistemas, a dinâmica interna da Terra ou a manutenção da vida."),
+            (f"Como é que {tema} se manifesta ou pode ser medido no meio ambiente?", f"Através de registos instrumentais, observação microscópica ou análise de efeitos visíveis."),
+            (f"Que medidas de estudo ou prevenção estão associadas a {tema}?", f"Monitorização científica rigorosa e adoção de práticas informadas de proteção ambiental.")
+        ]
+    elif any(k in tema_lower for k in ["história", "revolução", "expansão", "república", "guerra", "tratado", "idade média", "século"]):
+        flashcards_base = [
+            (f"Quais foram as causas principais que estiveram na origem de {tema}?", f"Factores políticos, sociais e económicos que criaram o enquadramento histórico do acontecimento."),
+            (f"Quais foram as consequências mais marcantes de {tema} para a sociedade?", f"Transformações profundas nas instituições, na economia ou na vida das populações."),
+            (f"Quem foram as figuras centrais ou grupos sociais intervenientes em {tema}?", f"Líderes, classes sociais ou movimentos que protagonizaram os factos históricos."),
+            (f"Em que período temporal ocorreu {tema} e qual o seu contexto?", f"Enquadra-se numa fase de mudança relevante para a história de Portugal ou mundial."),
+            (f"Qual é o principal legado histórico deixado por {tema}?", f"A herança duradoura nas leis, na cultura, nas mentalidades ou na organização do território.")
+        ]
+    else:
+        flashcards_base = [
+            (f"Qual é a definição central e o objetivo principal de {tema}?", f"Representa um conceito estruturante em {materia}, fundamental para compreender as regras da disciplina."),
+            (f"Quais são os componentes ou etapas fundamentais que integram {tema}?", f"Divide-se em partes lógicas que exigem atenção aos detalhes e cumprimento de procedimentos rigorosos."),
+            (f"Como se aplica {tema} na resolução de um exercício prático?", f"Através da análise cuidadosa dos dados, seleção da regra adequada e execução passo a passo."),
+            (f"Porque é importante dominar o tema de {tema} no {ano_aluno}?", f"Porque constitui a base necessária para compreender tópicos mais avançados e ter sucesso escolar."),
+            (f"Indica um exemplo típico de questão onde {tema} costuma ser avaliado.", f"Exercícios de aplicação direta de conceitos teóricos e resolução de problemas práticos."),
+            (f"Quais são os erros mais comuns que deves evitar ao estudar {tema}?", f"Confundir definições semelhantes ou saltar passos essenciais no raciocínio."),
+            (f"Que regra de ouro deves memorizar obrigatoriamente sobre {tema}?", f"As definições-chave e os critérios fundamentais de resolução.")
+        ]
 
     flashcards = []
     for i in range(1, quantidade + 1):
-        template_p, template_r = tipos_perguntas[(i - 1) % len(tipos_perguntas)]
-        conteudo_escolhido = base_conteudos[(i - 1) % len(base_conteudos)]
-        
-        if frases_utilizador:
-            pergunta = f"Com base nos teus apontamentos, o que refere o ponto: '{conteudo_escolhido[:35]}...'" if len(conteudo_escolhido) > 35 else f"O que deves recordar sobre: '{conteudo_escolhido}'?"
-            resposta = f"Contexto guardado: {conteudo_escolhido}"
-        else:
-            pergunta = template_p.format(conteudo_escolhido[:40])
-            resposta = template_r.format(conteudo_escolhido)
-        
+        p, r = flashcards_base[(i - 1) % len(flashcards_base)]
         flashcards.append({
             "id": i,
-            "pergunta": pergunta,
-            "resposta": resposta
+            "pergunta": p,
+            "resposta": r
         })
     return flashcards
 
@@ -280,12 +227,14 @@ def obter_recomendacao_inteligente():
     dia_idx = hoje_obj.weekday()
     dia_nome = "Segunda-feira" if dia_idx >= 5 else dias_pt[dia_idx]
     aulas_hoje = st.session_state.horario.get(dia_nome, [])
+    
     if st.session_state.logs:
         ultimo_registo = st.session_state.logs[-1]
         resumos_recentes = list(ultimo_registo.get("resumos", {}).keys())
         if resumos_recentes:
             materia_recente = resumos_recentes[0]
-            return f"Com base no teu horário de hoje ({dia_nome}) e no que estudaste recentemente ({materia_recente}), sugerimos que dês continuidade a essa matéria ou pratiques exercícios práticos relacionados."
+            return f"Com base no teu horário de hoje ({dia_nome}) e no que estudaste recentemente ({materia_recente}), sugerimos que dês continuidade a essa matéria."
+            
     sugestao_materia = aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
     return f"Com base no teu horário de hoje ({dia_nome}), sugerimos que pratiques {sugestao_materia}."
 
@@ -306,12 +255,15 @@ menu = st.sidebar.radio(
 if menu == "Início & Escola":
     st.title("Meu Assistente de Estudos")
     st.write("Bem-vindo ao teu espaço centralizado de organização escolar e revisão!")
+    
     recomendacao_texto = obter_recomendacao_inteligente()
     st.info(f"**Sugestão de Estudo:** {recomendacao_texto}")
     st.markdown("---")
+    
     st.subheader("Configurações do Aluno")
-    anos_disponiveis = ["5.° Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.° Ano", "11.° Ano", "12.º Ano"]
+    anos_disponiveis = ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"]
     idx_ano_atual = anos_disponiveis.index(st.session_state.ano_escolar) if st.session_state.ano_escolar in anos_disponiveis else 3
+    
     col1, col2, col3 = st.columns(3)
     with col1:
         st.session_state.escola = st.text_input("Escola Atual", value=st.session_state.escola)
@@ -324,6 +276,7 @@ if menu == "Início & Escola":
             index=idx_ano_atual,
             key="sb_ano_escolar_global"
         )
+        
     st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
     if st.button("Guardar alterações das configurações do aluno"):
         st.success("Configurações do aluno guardadas com sucesso!")
@@ -339,6 +292,7 @@ elif menu == "Calendário":
             if log.get("data") == str(st.session_state.selected_date):
                 registo_encontrado = log
                 break
+                
         if registo_encontrado:
             st.markdown("### Matéria Estudada / Resumos:")
             for disc, res in registo_encontrado.get("resumos", {}).items():
@@ -351,12 +305,13 @@ elif menu == "Calendário":
             st.markdown(f"- <span style='font-size: 1.3em;'>**Método utilizado:** {metodo_registado}</span>", unsafe_allow_html=True)
         else:
             st.info("Não existem registos de estudo guardados para este dia.")
-        
+            
         testes_dia = [t for t in st.session_state.testes if t.get("data") == str(st.session_state.selected_date)]
         if testes_dia:
             st.markdown("### Testes Agendados para este Dia:")
             for t in testes_dia:
                 st.markdown(f"- <span style='font-size: 1.3em;'>**Teste de {t['materia']}**</span>", unsafe_allow_html=True)
+                
         if st.button("Voltar ao Calendário Mensal"):
             st.session_state.selected_date = None
             st.rerun()
@@ -381,15 +336,16 @@ elif menu == "Calendário":
                 else:
                     st.session_state.cal_month += 1
                 st.rerun()
+                
         st.markdown("---")
         cal = calendar.Calendar(firstweekday=0)
         mes_dias = cal.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
-        dias_semana_cabecalho = ["s", "t", "q", "q", "s", "s", "d"]
+        dias_semana_cabecalho = ["S", "T", "Q", "Q", "S", "S", "D"]
         cols_cab = st.columns(7)
         for idx, d_nome in enumerate(dias_semana_cabecalho):
             with cols_cab[idx]:
                 st.markdown(f"<p style='text-align: center; font-weight: bold; color: gray;'>{d_nome}</p>", unsafe_allow_html=True)
-        
+                
         logs_por_data = {log.get("data"): log for log in st.session_state.logs}
         testes_por_data = {}
         for t in st.session_state.testes:
@@ -397,7 +353,7 @@ elif menu == "Calendário":
             if d_t not in testes_por_data:
                 testes_por_data[d_t] = []
             testes_por_data[d_t].append(t["materia"])
-        
+            
         for semana in mes_dias:
             cols = st.columns(7)
             for idx_col, dia in enumerate(semana):
@@ -417,11 +373,11 @@ elif menu == "Calendário":
                             else:
                                 resumo_resumido = "Estudado"
                             metodo_resumido = logs_por_data[data_str].get("metodo", "Exercícios")
-                        
+                            
                         testes_dia_str = ""
                         if data_str in testes_por_data:
                             testes_dia_str = "Teste: " + ", ".join(testes_por_data[data_str])
-                        
+                            
                         st.markdown(f"<p style='text-align: center; color: gray; margin-bottom: 0px;'><b>{dia}</b></p>", unsafe_allow_html=True)
                         if resumo_resumido:
                             st.markdown(f"<p style='text-align: center; font-size: 15px; color: #4b6584; margin-top: 0px; margin-bottom: 0px;'><b>{resumo_resumido}</b></p>", unsafe_allow_html=True)
@@ -431,7 +387,7 @@ elif menu == "Calendário":
                             st.markdown(f"<p style='text-align: center; font-size: 12px; color: #d63031; margin-top: 0px;'><b>{testes_dia_str}</b></p>", unsafe_allow_html=True)
                         if not resumo_resumido and not testes_dia_str:
                             st.markdown("<p style='text-align: center; font-size: 13px; color: #b2bec3; margin-top: 0px;'>-</p>", unsafe_allow_html=True)
-                        
+                            
                         if st.button("Ver", key=f"btn_dia_{st.session_state.cal_year}_{st.session_state.cal_month}_{dia}"):
                             st.session_state.selected_date = data_atual_loop
                             st.rerun()
@@ -444,7 +400,7 @@ elif menu == "Agenda & Horário":
     current_aulas = st.session_state.horario[dia_escolhido]
     if dia_escolhido not in st.session_state.num_aulas_extra:
         st.session_state.num_aulas_extra[dia_escolhido] = len(current_aulas)
-    
+        
     novo_dia = []
     for idx in range(st.session_state.num_aulas_extra[dia_escolhido]):
         item = current_aulas[idx] if idx < len(current_aulas) else {"hora": "", "disc": ""}
@@ -456,14 +412,14 @@ elif menu == "Agenda & Horário":
         with col2:
             nova_disc = st.text_input(f"Disciplina {idx+1}", value=item.get("disc", ""), key=f"d_{dia_escolhido}_{idx}")
         novo_dia.append({"hora": nova_hora, "disc": nova_disc})
-    
+        
     if st.button("Adicionar Aula"):
         st.session_state.num_aulas_extra[dia_escolhido] += 1
         st.rerun()
     if st.button("Guardar Alterações do Horário"):
         st.session_state.horario[dia_escolhido] = novo_dia
         st.success(f"Horário de {dia_escolhido} guardado com sucesso!")
-    
+        
     st.markdown("---")
     st.subheader("Gestão de Testes e Provas")
     with st.form("form_adicionar_teste"):
@@ -481,7 +437,7 @@ elif menu == "Agenda & Horário":
                 "data": str(data_teste)
             })
             st.success(f"Teste de {materia_teste} agendado para {data_teste.strftime('%d/%m/%Y')} com sucesso!")
-    
+            
     if st.session_state.testes:
         st.markdown("### Testes Atualmente Agendados:")
         for idx, t in enumerate(st.session_state.testes):
@@ -502,19 +458,19 @@ elif menu == "Registo Diário":
         dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
         dia_atual_idx = hoje.weekday()
         dia_automatico = "Segunda-feira" if dia_atual_idx >= 5 else dias_portugal[dia_atual_idx]
-        st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
         
+        st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
         aulas_do_dia = st.session_state.horario.get(dia_automatico, [])
         disciplinas_dia = []
         for aula in aulas_do_dia:
             disc = aula.get("disc", "") if isinstance(aula, dict) else str(aula)
             if disc and disc not in disciplinas_dia:
                 disciplinas_dia.append(disc)
-        
+                
         resumos_por_materia = {}
         for disc in disciplinas_dia:
             resumos_por_materia[disc] = st.text_area(f"Matéria: {disc}", key=f"res_{dia_automatico}_{disc}")
-        
+            
         if st.button("Registar Sessão"):
             registo_novo = {
                 "data": str(hoje),
@@ -523,6 +479,7 @@ elif menu == "Registo Diário":
                 "metodo": "Registo Diário"
             }
             st.session_state.logs.append(registo_novo)
+            
             flashcards_combinados = []
             st.session_state.chave_geracao += 1
             for disc in disciplinas_dia:
@@ -532,11 +489,12 @@ elif menu == "Registo Diário":
                 )
                 if fcs_disc:
                     flashcards_combinados.extend(fcs_disc)
+                    
             st.session_state.flashcards_pos_gerados = flashcards_combinados
             st.success("Sessão registada com sucesso!")
             st.session_state.step_registo = "flashcards_pos"
             st.rerun()
-    
+            
     elif st.session_state.step_registo == "flashcards_pos":
         if st.button("Voltar", key="btn_voltar_pos_reg"):
             st.session_state.step_registo = "formulario"
@@ -560,11 +518,11 @@ elif menu == "Registo Diário":
                         st.success(f"**Resposta:** {fc['resposta']}")
                     else:
                         st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
-        st.markdown("---")
-        if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
-            st.session_state.step_estudar = "escolher_materia"
-            st.session_state.step_registo = "formulario"
-            st.rerun()
+                st.markdown("---")
+            if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
+                st.session_state.step_estudar = "escolher_materia"
+                st.session_state.step_registo = "formulario"
+                st.rerun()
 
 # 5. Estudar
 elif menu == "Estudar":
@@ -578,7 +536,7 @@ elif menu == "Estudar":
             st.session_state.materia_escolhida_estudo = materia_escolhida
             st.session_state.step_estudar = "upload_materiais"
             st.rerun()
-    
+            
     elif st.session_state.step_estudar == "upload_materiais":
         if st.button("Voltar", key="btn_voltar_up"):
             st.session_state.step_estudar = "escolher_materia"
@@ -599,10 +557,11 @@ elif menu == "Estudar":
         with col_up2:
             st.file_uploader("Enviar Vídeos de Aulas", type=["mp4", "mov"], key="up_videos")
             st.file_uploader("Enviar Imagens ou Fotografias", type=["png", "jpg", "jpeg"], key="up_imagens")
+            
         if st.button("Avançar para Atividades", key="btn_avancar_up"):
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
-    
+            
     elif st.session_state.step_estudar == "escolher_atividade":
         if st.button("Voltar", key="btn_voltar_ativ"):
             st.session_state.step_estudar = "upload_materiais"
@@ -644,7 +603,7 @@ elif menu == "Estudar":
                 )
             st.session_state.step_estudar = "executar_atividade"
             st.rerun()
-    
+            
     elif st.session_state.step_estudar == "executar_atividade":
         if st.button("Voltar às Opções", key="btn_voltar_exec"):
             st.session_state.step_estudar = "escolher_atividade"
@@ -675,6 +634,7 @@ elif menu == "Estudar":
                         except ValueError:
                             pass
                 st.markdown(f"### Pontuação Final: **{acertos} / 30 corretas**")
+                
                 hoje_str = str(datetime.date.today())
                 dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
                 dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
@@ -684,6 +644,7 @@ elif menu == "Estudar":
                     if log.get("data") == hoje_str:
                         registo_existente = log
                         break
+                        
                 materia_atual = st.session_state.materia_escolhida_estudo
                 texto_resumo_estudo = st.session_state.texto_estudo_livre or f"Pontuação: {acertos}/30"
                 if registo_existente:
@@ -700,7 +661,7 @@ elif menu == "Estudar":
                     }
                     st.session_state.logs.append(novo_registo)
                 st.success("Respostas corrigidas e guardadas no calendário com sucesso!")
-        
+                
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("Conjunto de 20 Flashcards de Memorização:")
             if not st.session_state.flashcards_gerados:
@@ -708,12 +669,10 @@ elif menu == "Estudar":
             else:
                 if st.button("Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
                     st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
-                        20, st.session_state.materia_escolhida_estudo,
-                        st.session_state.dificuldade_selecionada,
-                        st.session_state.ano_escolar,
-                        st.session_state.texto_estudo_livre
+                        20, st.session_state.materia_escolhida_estudo, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, st.session_state.texto_estudo_livre
                     )
                     st.rerun()
+                    
                 for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
                     st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
                     chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
@@ -729,16 +688,19 @@ elif menu == "Estudar":
                             st.success(f"**Resposta:** {fc['resposta']}")
                         else:
                             st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
-            st.markdown("---")
+                    st.markdown("---")
+                    
             if st.button("Guardar Sessão de Flashcards no Calendário"):
                 hoje_str = str(datetime.date.today())
                 dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
                 dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                
                 registo_existente = None
                 for log in st.session_state.logs:
                     if log.get("data") == hoje_str:
                         registo_existente = log
                         break
+                        
                 materia_atual = st.session_state.materia_escolhida_estudo
                 texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
                 if registo_existente:
@@ -755,30 +717,3 @@ elif menu == "Estudar":
                     }
                     st.session_state.logs.append(novo_registo)
                 st.success("Sessão de Flashcards guardada no calendário com sucesso!")
-        else:
-            st.info("Atividade interativa pronta a utilizar.")
-            if st.button("Concluir e Guardar no Calendário"):
-                hoje_str = str(datetime.date.today())
-                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
-                registo_existente = None
-                for log in st.session_state.logs:
-                    if log.get("data") == hoje_str:
-                        registo_existente = log
-                        break
-                materia_atual = st.session_state.materia_escolhida_estudo
-                texto_resumo_estudo = st.session_state.texto_estudo_livre or "Estudo concluído"
-                if registo_existente:
-                    if "resumos" not in registo_existente:
-                        registo_existente["resumos"] = {}
-                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
-                    registo_existente["metodo"] = st.session_state.atividade_selecionada
-                else:
-                    novo_registo = {
-                        "data": hoje_str,
-                        "dia": dia_atual_nome,
-                        "resumos": {materia_atual: texto_resumo_estudo},
-                        "metodo": st.session_state.atividade_selecionada
-                    }
-                    st.session_state.logs.append(novo_registo)
-                st.success("Guardado no calendário com sucesso!")
