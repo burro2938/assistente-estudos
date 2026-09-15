@@ -116,142 +116,6 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento",
 ]
 
-# Banco de Perguntas e Respostas Normais (Fallback Escolar)
-BANCO_PERGUNTAS_OFFLINE = {
-    "Matemática": [
-        {
-            "p": (
-                "O que é uma função afim e qual é a sua expressão algébrica"
-                " geral?"
-            ),
-            "r": "É uma função definida por f(x) = mx + b, em que m representa o declive e b a ordenada na origem.",
-        },
-        {
-            "p": (
-                "Como se calcula o declive (m) de uma reta que passa por dois"
-                " pontos (x1, y1) e (x2, y2)?"
-            ),
-            "r": "Através da fórmula m = (y2 - y1) / (x2 - x1).",
-        },
-        {
-            "p": (
-                "O que estabelece o Teorema de Pitágoras num triângulo"
-                " retângulo?"
-            ),
-            "r": "O quadrado da hipotenusa é igual à soma dos quadrados dos catetos (a^2 + b^2 = c^2).",
-        },
-        {
-            "p": "Como se resolve uma equação do 1.º grau com uma incógnita?",
-            "r": "Isolando os termos com a incógnita num membro e os termos independentes no outro, aplicando as regras de equivalência.",
-        },
-        {
-            "p": "O que são números racionais?",
-            "r": "São todos os números que podem ser representados sob a forma de fração a/b, onde a e b são inteiros e b ≠ 0.",
-        },
-        {
-            "p": "Qual é a fórmula para calcular a área de um círculo de raio r?",
-            "r": "Área = π * r^2.",
-        },
-        {
-            "p": (
-                "O que significa dizer que duas grandezas são diretamente"
-                " proporcionais?"
-            ),
-            "r": "Significa que o quociente entre os seus valores correspondentes é sempre constante (y / x = k).",
-        },
-        {
-            "p": "Como se calcula a percentagem de um valor?",
-            "r": "Multiplicando o valor total pela taxa percentual (por exemplo, p% de V = (p / 100) * V).",
-        },
-    ],
-    "Português": [
-        {
-            "p": (
-                "O que caracteriza uma oração subordinada adjetiva relativa"
-                " restritiva?"
-            ),
-            "r": "Restringe o sentido do antecedente e é indispensável à frase, não aparecendo isolada por vírgulas.",
-        },
-        {
-            "p": (
-                "Qual é a diferença fundamental entre predicado verbal e"
-                " predicado nominal?"
-            ),
-            "r": "O predicado verbal tem como núcleo um verbo principal (ação); o predicado nominal tem um verbo copulativo seguido de um predicativo do sujeito.",
-        },
-        {
-            "p": "O que é uma metáfora?",
-            "r": "É uma figura de estilo que consiste numa comparação abreviada baseada numa relação de semelhança entre dois elementos.",
-        },
-        {
-            "p": (
-                "Quando se deve utilizar o tempo verbal do Pretérito"
-                " Mais-Que-Perfeito?"
-            ),
-            "r": "Utiliza-se para exprimir uma ação passada que ocorreu antes de outra ação também passada.",
-        },
-        {
-            "p": "O que são palavras sinónimas?",
-            "r": "São palavras que possuem significados iguais ou muito semelhantes num determinado contexto.",
-        },
-    ],
-    "Ciências Naturais": [
-        {
-            "p": (
-                "O que é a célula e qual é a sua importância nos seres"
-                " vivos?"
-            ),
-            "r": "A célula é a unidade básica estrutural e funcional de todos os seres vivos.",
-        },
-        {
-            "p": (
-                "Qual é a principal diferença entre células procarióticas e"
-                " eucarióticas?"
-            ),
-            "r": "As procarióticas não possuem núcleo verdadeiro delimitado por membrana; as eucarióticas têm um núcleo organizado.",
-        },
-        {
-            "p": "O que é o processo de fotossíntese?",
-            "r": "É o processo através do qual as plantas produzem matéria orgânica e oxigénio utilizando luz solar, dióxido de carbono e água.",
-        },
-        {
-            "p": "Quais são os principais constituintes do Sistema Solar?",
-            "r": "O Sol, os planetas principais, os planetas anões, os asteroides, os cometas e os satélites naturais.",
-        },
-    ],
-    "História": [
-        {
-            "p": (
-                "Quais foram os principais fatores que impulsionaram a"
-                " Expansão Portuguesa no século XV?"
-            ),
-            "r": "Fatores económicos (procura de rotas e especiarias), geográficos (posição litoral), políticos e religiosos.",
-        },
-        {
-            "p": "O que estipulava o Tratado de Tordesilhas (1494)?",
-            "r": "Dividia o mundo descoberto e por descobrir entre Portugal e Espanha através de um meridiano a oeste de Cabo Verde.",
-        },
-        {
-            "p": "Como estava estruturada a sociedade no Antigo Regime?",
-            "r": "Estava dividida em ordens ou estamentos: Clero, Nobreza e Povo.",
-        },
-    ],
-    "Físico-Química": [
-        {
-            "p": "O que define a matéria?",
-            "r": "Matéria é tudo o que tem massa e ocupa espaço (tem volume).",
-        },
-        {
-            "p": "Qual é a diferença entre substância pura e mistura?",
-            "r": "Uma substância pura tem propriedades físicas e químicas constantes; uma mistura é formada por duas ou mais substâncias.",
-        },
-        {
-            "p": "O que indica a velocidade média de um corpo em movimento?",
-            "r": "Indica a distância percorrida por unidade de tempo (v = d / Δt).",
-        },
-    ],
-}
-
 
 def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
   exs = []
@@ -304,14 +168,20 @@ def gerar_flashcards_personalizados(
 ):
   api_key = st.session_state.get("groq_api_key", "").strip()
   flashcards = []
+  texto_inf = texto_apontamentos.lower().strip()
 
-  # Tentar ligar à API se houver chave inserida
+  # 1. Tentar ligar à API da Groq se houver chave inserida
   if api_key:
     try:
       client = Groq(api_key=api_key)
       prompt = f"""
-            Gera exatamente {quantidade} flashcards de estudo rigorosos e específicos sobre a disciplina de {materia} para o {ano_aluno}, nível '{dificuldade}'.
-            Contexto fornecido: "{texto_apontamentos}".
+            Gera exatamente {quantidade} flashcards de estudo rigorosos, técnicos e específicos baseados EXATAMENTE no tema e nos apontamentos fornecidos pelo aluno.
+            Disciplina: {materia}
+            Ano de escolaridade: {ano_aluno} (Programa escolar oficial em Portugal)
+            Nível de dificuldade: {dificuldade}
+            Apontamentos / Tema do aluno: "{texto_apontamentos}"
+            
+            IMPORTANTE: Os flashcards devem focar-se diretamente no tema específico escrito pelo aluno (por exemplo, se escreveu "equações", os flashcards têm de ser estritamente sobre equações, regras de resolução, termos, etc., e não sobre outros temas genéricos).
             Usa estritamente o seguinte formato para cada cartão:
             Pergunta: [pergunta]
             Resposta: [resposta]
@@ -344,37 +214,157 @@ def gerar_flashcards_personalizados(
     except Exception:
       flashcards = []
 
-  # Se a API falhou ou não tem chave, usar perguntas normais do banco offline
+  # 2. Se falhou ou não tem chave API, gerar flashcards inteligentes baseados no tema exato do utilizador
   if not flashcards:
-    base_perguntas = BANCO_PERGUNTAS_OFFLINE.get(
-        materia,
-        [
-            {
-                "p": f"Quais são os conceitos fundamentais de {materia}?",
-                "r": (
-                    f"Estudo aprofundado dos tópicos essenciais de {materia}"
-                    f" para o {ano_aluno}."
-                ),
-            },
-            {
-                "p": f"Como aplicar as regras práticas em {materia}?",
-                "r": (
-                    "Rever os exercícios propostos no manual e aplicar os"
-                    " métodos corretos."
-                ),
-            },
-        ],
-    )
+    base_especifica = []
 
-    # Garantir a quantidade desejada repetindo ou adaptando com variedade se necessário
+    if "equaç" in texto_inf or "equacao" in texto_inf:
+      base_especifica = [
+          {
+              "p": (
+                  "O que é uma equação do 1.º grau com uma incógnita no"
+                  f" programa de {materia} ({ano_aluno})?"
+              ),
+              "r": (
+                  "É uma igualdade algébrica que contém pelo menos uma letra"
+                  " (incógnita) com expoente 1, cuja resolução determina o"
+                  " valor que torna a igualdade verdadeira."
+              ),
+          },
+          {
+              "p": (
+                  "Quais são as regras fundamentais de transposição de termos"
+                  " numa equação?"
+              ),
+              "r": (
+                  "Qualquer termo pode mudar de membro desde que se inverta a"
+                  " sua operação (o que soma passa a subtrair, o que subtrai"
+                  " passa a somar, o que multiplica passa a dividir e vice-versa)."
+              ),
+          },
+          {
+              "p": (
+                  "Como se eliminam os parênteses numa expressão ou equação"
+                  " antes de a resolver?"
+              ),
+              "r": (
+                  "Aplicando a propriedade distributiva da multiplicação em"
+                  " relação à adição/subtração e tendo em conta as regras dos"
+                  " sinais."
+              ),
+          },
+          {
+              "p": (
+                  "Qual é o procedimento para resolver uma equação que envolve"
+                  " denominadores (frações)?"
+              ),
+              "r": (
+                  "Reduzem-se os termos ao mesmo denominador utilizando o"
+                  " mínimo múltiplo comum (m.m.c.) e eliminam-se os"
+                  " denominadores multiplicando ambos os membros por esse"
+                  " valor."
+              ),
+          },
+          {
+              "p": (
+                  "O que significa o conjunto-solução (ou conjunto-verdade)"
+                  " de uma equação?"
+              ),
+              "r": (
+                  "É o conjunto constituído por todos os valores da"
+                  " incógnita que transformam a equação numa proposição"
+                  " verdadeira."
+              ),
+          },
+          {
+              "p": (
+                  "O que são equações equivalentes no contexto escolar"
+                  " português?"
+              ),
+              "r": (
+                  "São equações que possuem exatamente o mesmo"
+                  " conjunto-solução, obtidas através de transformações"
+                  " equivalentes."
+              ),
+          },
+      ]
+    elif "funç" in texto_inf or "funcao" in texto_inf:
+      base_especifica = [
+          {
+              "p": (
+                  "O que define uma função afim e qual é a sua expressão"
+                  " algébrica geral?"
+              ),
+              "r": (
+                  "É uma função definida por f(x) = m*x + b, em que m é o"
+                  " declive e b é a ordenada na origem, cujo gráfico é uma"
+                  " reta."
+              ),
+          },
+          {
+              "p": (
+                  "O que indica o declive (m) de uma reta no plano cartesiano?"
+                  " Como se calcula?"
+              ),
+              "r": (
+                  "Indica a inclinação da reta. Calcula-se pela fórmula m ="
+                  " (y2 - y1) / (x2 - x1)."
+              ),
+          },
+          {
+              "p": (
+                  "O que representa graficamente a ordenada na origem (b) de"
+                  " uma função afim?"
+              ),
+              "r": (
+                  "Representa o valor de y quando x = 0, correspondendo ao"
+                  " ponto de interseção do gráfico com o eixo vertical Oy."
+              ),
+          },
+      ]
+    elif texto_inf:
+      base_especifica = [
+          {
+              "p": (
+                  f"Quais são os conceitos centrais associados ao tema"
+                  f" '{texto_apontamentos}' em {materia} ({ano_aluno})?"
+              ),
+              "r": (
+                  f"Estudo aprofundado dos princípios e regras de"
+                  f" '{texto_apontamentos}' fundamentais para dominar a"
+                  f" matéria no {ano_aluno}."
+              ),
+          },
+          {
+              "p": (
+                  f"Como aplicar corretamente a matéria de"
+                  f" '{texto_apontamentos}' na resolução de exercícios práticos?"
+              ),
+              "r": (
+                  "Identificando os dados fornecidos, selecionando a fórmula"
+                  " ou regra teórica adequada e efetuando os cálculos com"
+                  " rigor."
+              ),
+          },
+      ]
+    else:
+      base_especifica = [
+          {
+              "p": f"Quais são os tópicos essenciais de {materia} para o {ano_aluno}?",
+              "r": (
+                  f"Revisão detalhada dos conteúdos programáticos de {materia}"
+                  f" previstos para o {ano_aluno}."
+              ),
+          }
+      ]
+
     contador = 1
     while len(flashcards) < quantidade:
-      for item in base_perguntas:
+      for item in base_especifica:
         if len(flashcards) >= quantidade:
           break
-        # Criar variações úteis se precisar de mais cartões
         sufixo = (
-            f" (Parte {contador})" if contador > len(base_perguntas) else ""
+            f" (Parte {contador})" if contador > len(base_especifica) else ""
         )
         flashcards.append({
             "id": contador,
@@ -410,9 +400,7 @@ def obter_recomendacao_inteligente():
           f" recentemente ({materia_recente}), sugerimos que dês continuidade a"
           " essa matéria."
       )
-  sugestao_materia = (
-      aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
-  )
+  sugestao_materia = aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
   return (
       f"Com base no teu horário de hoje ({dia_nome}), sugerimos que"
       f" pratiques {sugestao_materia}."
@@ -857,7 +845,8 @@ elif menu == "Estudar":
         f" (Nível: {st.session_state.ano_escolar})"
     )
     st.session_state.texto_estudo_livre = st.text_area(
-        "Insere os teus apontamentos exatos ou tópicos estudados na escola:",
+        "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex:"
+        " equações, frações, etc.):",
         value=st.session_state.texto_estudo_livre,
         key="txt_livre_estudo",
     )
@@ -1005,7 +994,7 @@ elif menu == "Estudar":
             "Respostas corrigidas e guardadas no calendário com sucesso!"
         )
     elif st.session_state.atividade_selecionada == "Flashcards":
-      st.subheader("Conjunto de 20 Flashcards de Memorização:")
+      st.subheader("Conjunto de Flashcards de Memorização:")
       if not st.session_state.flashcards_gerados:
         st.warning("Não foram gerados flashcards.")
       else:
