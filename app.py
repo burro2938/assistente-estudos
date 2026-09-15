@@ -147,15 +147,34 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
     
-    # Extrair frases reais do utilizador se ele escreveu apontamentos
+    texto_limpo = texto_apontamentos.strip()
+    
+    # Se o utilizador colocou um tema curto (ex: "Frações", "Equações", etc.)
+    if texto_limpo and len(texto_limpo.split()) <= 4:
+        tema = texto_limpo.lower()
+        if "frac" in tema or "fração" in tema or "fracao" in tema or ("matemática" in materia.lower() and "frac" in tema):
+            flashcards_fracoes = [
+                {"id": 1, "pergunta": "O que indica o numerador numa fração?", "resposta": "Indica o número de partes que estamos a considerar do todo."},
+                {"id": 2, "pergunta": "O que indica o denominador numa fração?", "resposta": "Indica o número total de partes iguais em que o todo foi dividido."},
+                {"id": 3, "pergunta": "Como se somam ou subtraem frações com o mesmo denominador?", "resposta": "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."},
+                {"id": 4, "pergunta": "O que é necessário fazer para somar frações com denominadores diferentes?", "resposta": "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."},
+                {"id": 5, "pergunta": "Como se multiplicam duas frações?", "resposta": "Multiplicam-se os numeradores entre si e os denominadores entre si."},
+                {"id": 6, "pergunta": "Como se divide uma fração por outra?", "resposta": "Multiplica-se a primeira fração pelo inverso da segunda (inverte-se a segunda fração)."},
+                {"id": 7, "pergunta": "O que são frações equivalentes?", "resposta": "São frações que representam exatamente a mesma quantidade ou proporção."},
+                {"id": 8, "pergunta": "Como se obtém uma fração equivalente por ampliação?", "resposta": "Multiplicando tanto o numerador como o denominador pelo mesmo número natural (diferente de zero)."},
+                {"id": 9, "pergunta": "Como se simplifica uma fração?", "resposta": "Dividindo o numerador e o denominador pelo mesmo divisor comum (idealmente pelo M.D.C.)."},
+                {"id": 10, "pergunta": "O que é uma fração irredutível?", "resposta": "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1 (não se consegue simplificar mais)."}
+            ]
+            return flashcards_fracoes[:quantidade]
+
+    # Extrair frases reais do utilizador se ele escreveu apontamentos detalhados
     frases_utilizador = []
-    if texto_apontamentos.strip():
-        # Separar por pontos ou vírgulas/linhas para criar cartões com o que o aluno escreveu
-        partes = [p.strip() for p in texto_apontamentos.replace('\n', '.').split('.') if len(p.strip()) > 3]
+    if texto_limpo:
+        partes = [p.strip() for p in texto_limpo.replace('\n', '.').split('.') if len(p.strip()) > 3]
         if partes:
             frases_utilizador = partes
 
-    # Banco de conhecimentos escolares estruturados por disciplina para garantir rigor académico
+    # Banco de conhecimentos escolares estruturados por disciplina
     banco_escolar = {
         "Matemática": [
             "Conjunto dos números racionais e respetivas operações fundamentais.",
@@ -182,7 +201,7 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
             "Forças e movimentos: leis de Newton, velocidade, aceleração e atrito.",
             "Luz e som: propagação, reflexão, refração e espetro eletromagnético.",
             "Estrutura atómica: protões, neutrões, eletrões e tabela periódica.",
-            "Reações químicas: reagentes, produtos da pitada e conservação da massa.",
+            "Reações químicas: reagentes, produtos e conservação da massa.",
             "Energia: formas de energia, transferência e conservação da energia mecânica."
         ],
         "Português": [
@@ -218,7 +237,6 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
         template_p, template_r = tipos_perguntas[(i - 1) % len(tipos_perguntas)]
         conteudo_escolhido = base_conteudos[(i - 1) % len(base_conteudos)]
         
-        # Se usarmos o texto do utilizador, fazemos perguntas direcionadas
         if frases_utilizador:
             pergunta = f"Com base nos teus apontamentos, o que refere o ponto: '{conteudo_escolhido[:35]}...'" if len(conteudo_escolhido) > 35 else f"O que deves recordar sobre: '{conteudo_escolhido}'?"
             resposta = f"Contexto guardado: {conteudo_escolhido}"
