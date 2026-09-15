@@ -168,24 +168,22 @@ def gerar_flashcards_personalizados(
   api_key = st.session_state.get("groq_api_key", "").strip()
   flashcards = []
   tema = texto_apontamentos.strip() if texto_apontamentos.strip() else materia
-
-  # Semente aleatória para obrigar a Groq a gerar perguntas sempre diferentes
   semente_unica = random.randint(1, 100000)
 
-  # 1. Tentar ligar à API da Groq se houver chave inserida
+  # 1. Tentar IA da Groq se houver chave
   if api_key:
     try:
       client = Groq(api_key=api_key)
       prompt = f"""
             Atua como um professor especialista no programa escolar oficial do {ano_aluno} em Portugal.
-            Com base estritamente no apontamento/texto fornecido pelo aluno: "{tema}", na disciplina de {materia}:
-            Investiga o que se aprende sobre este tema específico no {ano_aluno} em Portugal e gera exatamente {quantidade} perguntas e respostas técnicas e rigorosas.
-            IMPORTANTE: As perguntas têm de ser COMPLETAMENTE DIFERENTES de qualquer geração anterior (utiliza diferentes ângulos, como definições, exemplos práticos, regras ou propriedades).
-            Identificador de unicidade da ronda: {semente_unica}
+            Com base estritamente no tema/apontamento fornecido pelo aluno: "{tema}", na disciplina de {materia}:
+            Gera exatamente {quantidade} perguntas e respostas de estudo técnicas, diretas e reais (ex: conceitos, fórmulas, definições ou exemplos práticos da matéria). 
+            NÃO faças perguntas genéricas ou meta-perguntas sobre o tema. Faz perguntas concretas sobre o conteúdo científico/escolar.
+            Identificador de unicidade: {semente_unica}
             
             Usa estritamente o seguinte formato para cada cartão:
-            Pergunta: [pergunta]
-            Resposta: [resposta]
+            Pergunta: [pergunta concreta sobre a matéria]
+            Resposta: [resposta direta e correta]
             ---
             """
       texto_resp = chamar_api_groq_com_fallback(client, prompt)
@@ -215,78 +213,129 @@ def gerar_flashcards_personalizados(
     except Exception:
       flashcards = []
 
-  # 2. Fallback Dinâmico Inteligente (caso a API falhe)
+  # 2. Fallback Inteligente baseado no tema (se não houver API key ou falhar)
   if not flashcards:
-    templates_dinamicos = [
-        {
-            "p": (
-                f"No contexto do {ano_aluno} em Portugal, como se define"
-                f" cientificamente o conceito de '{tema}' na disciplina de"
-                f" {materia}?"
-            ),
-            "r": (
-                f"'{tema}' refere-se ao conjunto de princípios fundamentais"
-                f" abordados no programa de {materia} para o {ano_aluno}."
-            ),
-        },
-        {
-            "p": (
-                f"Qual é a principal regra ou procedimento a aplicar ao"
-                f" estudar '{tema}'?"
-            ),
-            "r": (
-                f"Exige a análise rigorosa dos dados, o seguimento dos passos"
-                f" teóricos e a validação do resultado final sobre '{tema}'."
-            ),
-        },
-        {
-            "p": (
-                f"Dá um exemplo prático de como '{tema}' se aplica num"
-                f" exercício de {materia}."
-            ),
-            "r": (
-                f"A aplicação faz-se identificando os elementos fornecidos no"
-                f" enunciado e aplicando a lei ou definição correspondente a"
-                f" '{tema}'."
-            ),
-        },
-        {
-            "p": (
-                f"Porque é que o estudo de '{tema}' é relevante no programa"
-                f" escolar do {ano_aluno}?"
-            ),
-            "r": (
-                f"Permite consolidar o raciocínio crítico e serve de base para"
-                f" conteúdos mais avançados em {materia}."
-            ),
-        },
-        {
-            "p": (
-                f"Quais são os erros mais frequentes que os alunos cometem ao"
-                f" resolver questões sobre '{tema}'?"
-            ),
-            "r": (
-                f"Confundir definições teóricas e aplicar incorretamente as"
-                f" propriedades associadas a '{tema}'."
-            ),
-        },
-    ]
+    tema_lower = tema.lower()
+
+    # Banco de perguntas específicas para Funções (Matemática)
+    if "funç" in tema_lower or "funcoes" in tema_lower:
+      banco_base = [
+          {
+              "p": (
+                  "O que é uma função no contexto do 8.° Ano de Matemática?"
+              ),
+              "r": (
+                  "É uma correspondência entre dois conjuntos em que a cada"
+                  " elemento do primeiro conjunto (domínio) corresponde um e"
+                  " um só elemento do segundo conjunto."
+              ),
+          },
+          {
+              "p": (
+                  "O que representa a variável independente ($x$) numa função?"
+              ),
+              "r": (
+                  "Representa os valores de entrada que são escolhidos"
+                  " livremente dentro do domínio da função."
+              ),
+          },
+          {
+              "p": (
+                  "O que representa a variável dependente ($y$ ou $f(x)$)?"
+              ),
+              "r": (
+                  "Representa o valor de saída, cujo resultado depende do"
+                  " valor atribuído à variável independente ($x$)."
+              ),
+          },
+          {
+              "p": (
+                  "Como se define analiticamente uma função de proporcionalidade"
+                  " direta?"
+              ),
+              "r": "Através de uma expressão da forma $y = mx$, em que $m \\neq 0$ é a constante de proporcionalidade.",
+          },
+          {
+              "p": (
+                  "Qual é a principal caraterística geométrica do gráfico de"
+                  " uma função de proporcionalidade direta?"
+              ),
+              "r": (
+                  "É uma reta que passa obrigatoriamente pela origem do"
+                  " referencial cartesiado $(0, 0)$."
+              ),
+          },
+          {
+              "p": (
+                  "O que indica o coeficiente $m$ (declive) na função afim"
+                  " $y = mx + b$?"
+              ),
+              "r": (
+                  "Indica a inclinação da reta e a taxa de variação da função"
+                  " (quanto varia $y$ quando $ aumenta uma unidade)."
+              ),
+          },
+          {
+              "p": "O que representa a ordenada na origem ($b$) na função afim?",
+              "r": (
+                  "Representa a ordenada do ponto onde o gráfico da reta"
+                  " interseta o eixo vertical ($y$), ou seja, o valor de $y$"
+                  " quando $x = 0$."
+              ),
+          },
+      ]
+    else:
+      # Banco geral e útil de estudo
+      banco_base = [
+          {
+              "p": f"Qual é o principal objetivo de estudar '{tema}' em {materia}?",
+              "r": (
+                  f"Compreender as leis fundamentais, dominar a resolução de"
+                  f" problemas práticos e aplicar os conceitos teóricos de"
+                  f" {tema}."
+              ),
+          },
+          {
+              "p": f"Quais são os elementos chave a identificar num exercício sobre '{tema}'?",
+              "r": (
+                  "Os dados iniciais fornecidos, as incógnitas a determinar e"
+                  " as fórmulas ou propriedades aplicáveis."
+              ),
+          },
+          {
+              "p": (
+                  f"De que forma prática se pode aplicar o conceito de '{tema}'"
+                  " no dia a dia?"
+              ),
+              "r": (
+                  "Através da resolução de situações problemáticas reais que"
+                  " envolvam cálculos, análise crítica ou interpretação de"
+                  " fenómenos."
+              ),
+          },
+          {
+              "p": (
+                  f"Qual é o erro mais comum ao resolver questões de '{tema}' e"
+                  " como evitá-lo?"
+              ),
+              "r": (
+                  "A desatenção aos sinais e a aplicação incorreta das regras"
+                  " teóricas. Evita-se verificando cada passo do cálculo."
+              ),
+          },
+      ]
 
     contador = 1
     while len(flashcards) < quantidade:
-      template_atual = templates_dinamicos[
-          (contador - 1) % len(templates_dinamicos)
-      ]
-      sufixo = (
+      template_atual = banco_base[(contador - 1) % len(banco_base)]
+      sufixo_var = (
           f" (Variação {semente_unica + contador})"
-          if contador > len(templates_dinamicos)
+          if contador > len(banco_base)
           else ""
       )
       flashcards.append({
           "id": contador,
-          "pergunta": template_atual["p"].replace(
-              f"'{tema}'", f"'{tema}'{sufixo}"
-          ),
+          "pergunta": template_atual["p"] + sufixo_var,
           "resposta": template_atual["r"],
       })
       contador += 1
@@ -343,7 +392,7 @@ st.session_state.groq_api_key = st.sidebar.text_input(
     "Chave API da Groq",
     value=st.session_state.groq_api_key,
     type="password",
-    help="Insere a tua chave API da Groq",
+    help="Insere a tua chave API da Groq para perguntas geradas por IA",
 )
 
 # 1. Início & Escola
@@ -781,8 +830,8 @@ elif menu == "Estudar":
         f" (Nível: {st.session_state.ano_escolar})"
     )
     st.session_state.texto_estudo_livre = st.text_area(
-        "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex:"
-        " células, revoluções, reações químicas, etc.):",
+        "Insere o tema ou os teus apontamentos exatos (ex: Funções, Células,"
+        " Revoluções, etc.):",
         value=st.session_state.texto_estudo_livre,
         key="txt_livre_estudo",
     )
@@ -873,8 +922,7 @@ elif menu == "Estudar":
     )
     if st.session_state.texto_estudo_livre:
       st.info(
-          "**Foco Personalizado:** Apontamentos considerados:"
-          f" **{st.session_state.texto_estudo_livre}**"
+          f"**Tema/Apontamento:** {st.session_state.texto_estudo_livre}"
       )
     st.markdown("---")
 
