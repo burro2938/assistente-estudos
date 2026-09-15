@@ -148,23 +148,46 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if "não" in texto_apontamentos.lower() or "nao" in texto_apontamentos.lower():
         return []
     
-    # Pesquisa automática DuckDuckGo para enriquecer com conteúdos escolares reais de Portugal
     topico = texto_apontamentos.strip() if texto_apontamentos.strip() else materia
     query = f"{materia} {topico} {ano_aluno} programa escolar Portugal"
-    contexto_web = ""
+    
+    snippets = []
     try:
         with DDGS() as ddgs:
-            resultados = [r['body'] for r in ddgs.text(query, max_results=3)]
-            contexto_web = " ".join(resultados)
+            resultados = [r['body'] for r in ddgs.text(query, max_results=5)]
+            for r in resultados:
+                frases = [f.strip() for f in r.split('.') if len(f.strip()) > 15]
+                snippets.extend(frases)
     except Exception:
-        contexto_web = f"Conteúdo oficial para {materia} no {ano_aluno} em Portugal."
+        pass
+
+    if not snippets:
+        snippets = [
+            f"Conceito essencial abordado na disciplina de {materia}.",
+            f"Matéria incluída no programa oficial do {ano_aluno} em Portugal.",
+            f"Aplicação prática e teórica relacionada com {topico}."
+        ]
+
+    tipos_perguntas = [
+        ("O que define o conceito principal de {}?", "Definição: {}"),
+        ("Qual a importância de {} no programa de {}?", "Contexto escolar: {}"),
+        ("Como se aplica o tema {} na disciplina de {}?", "Aplicação prática: {}"),
+        ("Quais são os aspetos fundamentais associados a {}?", "Detalhes essenciais: {}"),
+        ("Explica de forma resumida o tópico: {}.", "Resumo técnico: {}")
+    ]
 
     flashcards = []
     for i in range(1, quantidade + 1):
+        template_p, template_r = tipos_perguntas[(i - 1) % len(tipos_perguntas)]
+        snippet_escolhido = snippets[(i - 1) % len(snippets)] if snippets else topico
+        
+        pergunta = template_p.format(topico, materia)
+        resposta = template_r.format(snippet_escolhido)
+        
         flashcards.append({
             "id": i,
-            "pergunta": f"Questão {i}: Explica o conceito de '{topico}' em {materia} ({ano_aluno} - Nível {dificuldade})",
-            "resposta": f"Contexto escolar de Portugal: {contexto_web[:220]}... [Conceito fundamental de {materia}]."
+            "pergunta": pergunta,
+            "resposta": resposta
         })
     return flashcards
 
