@@ -159,13 +159,12 @@ def gerar_flashcards_personalizados(
   try:
     client = Groq(api_key=api_key)
     prompt = f"""
-        Gera exatamente {quantidade} flashcards de estudo rigorosos e altamente específicos sobre a disciplina de {materia} para o {ano_aluno}, com nível de dificuldade '{dificuldade}'.
-        Contexto ou apontamentos fornecidos pelo aluno: "{texto_apontamentos}".
-        IMPORTANTE: As perguntas NÃO podem ser genéricas nem usar moldes repetidos.
-        Devem focar-se em conceitos reais, propriedades, fórmulas, etapas de resolução ou factos concretos do tema.
-        Formata a resposta estritamente assim para cada cartão, separados por '---':
-        Pergunta: [pergunta técnica e específica]
-        Resposta: [resposta clara, rigorosa e completa]
+        Gera exatamente {quantidade} flashcards de estudo rigorosos e específicos sobre a disciplina de {materia} para o {ano_aluno}, nível '{dificuldade}'.
+        Contexto fornecido: "{texto_apontamentos}".
+        Usa estritamente o seguinte formato para cada cartão:
+        Pergunta: [pergunta]
+        Resposta: [resposta]
+        ---
         """
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -173,31 +172,49 @@ def gerar_flashcards_personalizados(
         temperature=0.7,
     )
     texto_resp = completion.choices[0].message.content
-    blocos = texto_resp.split("---")
+
+    # Parsing robusto que aceita múltiplos formatos de resposta da IA
+    blocos = (
+        texto_resp.split("---")
+        if "---" in texto_resp
+        else texto_resp.split("\n\n")
+    )
     flashcards = []
     contador = 1
     for bloco in blocos:
       linhas = [l.strip() for l in bloco.strip().split("\n") if l.strip()]
       p, r = "", ""
       for linha in linhas:
-        if linha.lower().startswith("pergunta:"):
+        if (
+            linha.lower().startswith("pergunta:")
+            or linha.lower().startswith("p:")
+        ):
           p = linha.split(":", 1)[1].strip()
-        elif linha.lower().startswith("resposta:"):
+        elif (
+            linha.lower().startswith("resposta:")
+            or linha.lower().startswith("r:")
+        ):
           r = linha.split(":", 1)[1].strip()
       if p and r:
         flashcards.append({"id": contador, "pergunta": p, "resposta": r})
         contador += 1
-    if flashcards:
-      return flashcards[:quantidade]
-    else:
-      st.error("A IA não retornou cartões no formato esperado.")
-      return []
+
+    # Fallback caso a IA responda sem o formato exato
+    if not flashcards and texto_resp.strip():
+      flashcards.append({
+          "id": 1,
+          "pergunta": f"Resumo / Conceito chave de {materia}:",
+          "resposta": texto_resp[:400],
+      })
+
+    return flashcards[:quantidade] if flashcards else []
   except Exception as e:
-    st.error(
-        "Erro ao ligar à API da Groq (Verifica se a chave está correta):"
-        f" {e}"
-    )
-    return []
+    st.error(f"Erro ao ligar à API da Groq: {e}")
+    return [{
+        "id": 1,
+        "pergunta": f"Erro na geração para {materia}",
+        "resposta": str(e),
+    }]
 
 
 def obter_recomendacao_inteligente():
