@@ -116,6 +116,142 @@ LISTA_MATERIAS = [
     "Cidadania e Desenvolvimento",
 ]
 
+# Banco de Perguntas e Respostas Normais (Fallback Escolar)
+BANCO_PERGUNTAS_OFFLINE = {
+    "Matemática": [
+        {
+            "p": (
+                "O que é uma função afim e qual é a sua expressão algébrica"
+                " geral?"
+            ),
+            "r": "É uma função definida por f(x) = mx + b, em que m representa o declive e b a ordenada na origem.",
+        },
+        {
+            "p": (
+                "Como se calcula o declive (m) de uma reta que passa por dois"
+                " pontos (x1, y1) e (x2, y2)?"
+            ),
+            "r": "Através da fórmula m = (y2 - y1) / (x2 - x1).",
+        },
+        {
+            "p": (
+                "O que estabelece o Teorema de Pitágoras num triângulo"
+                " retângulo?"
+            ),
+            "r": "O quadrado da hipotenusa é igual à soma dos quadrados dos catetos (a^2 + b^2 = c^2).",
+        },
+        {
+            "p": "Como se resolve uma equação do 1.º grau com uma incógnita?",
+            "r": "Isolando os termos com a incógnita num membro e os termos independentes no outro, aplicando as regras de equivalência.",
+        },
+        {
+            "p": "O que são números racionais?",
+            "r": "São todos os números que podem ser representados sob a forma de fração a/b, onde a e b são inteiros e b ≠ 0.",
+        },
+        {
+            "p": "Qual é a fórmula para calcular a área de um círculo de raio r?",
+            "r": "Área = π * r^2.",
+        },
+        {
+            "p": (
+                "O que significa dizer que duas grandezas são diretamente"
+                " proporcionais?"
+            ),
+            "r": "Significa que o quociente entre os seus valores correspondentes é sempre constante (y / x = k).",
+        },
+        {
+            "p": "Como se calcula a percentagem de um valor?",
+            "r": "Multiplicando o valor total pela taxa percentual (por exemplo, p% de V = (p / 100) * V).",
+        },
+    ],
+    "Português": [
+        {
+            "p": (
+                "O que caracteriza uma oração subordinada adjetiva relativa"
+                " restritiva?"
+            ),
+            "r": "Restringe o sentido do antecedente e é indispensável à frase, não aparecendo isolada por vírgulas.",
+        },
+        {
+            "p": (
+                "Qual é a diferença fundamental entre predicado verbal e"
+                " predicado nominal?"
+            ),
+            "r": "O predicado verbal tem como núcleo um verbo principal (ação); o predicado nominal tem um verbo copulativo seguido de um predicativo do sujeito.",
+        },
+        {
+            "p": "O que é uma metáfora?",
+            "r": "É uma figura de estilo que consiste numa comparação abreviada baseada numa relação de semelhança entre dois elementos.",
+        },
+        {
+            "p": (
+                "Quando se deve utilizar o tempo verbal do Pretérito"
+                " Mais-Que-Perfeito?"
+            ),
+            "r": "Utiliza-se para exprimir uma ação passada que ocorreu antes de outra ação também passada.",
+        },
+        {
+            "p": "O que são palavras sinónimas?",
+            "r": "São palavras que possuem significados iguais ou muito semelhantes num determinado contexto.",
+        },
+    ],
+    "Ciências Naturais": [
+        {
+            "p": (
+                "O que é a célula e qual é a sua importância nos seres"
+                " vivos?"
+            ),
+            "r": "A célula é a unidade básica estrutural e funcional de todos os seres vivos.",
+        },
+        {
+            "p": (
+                "Qual é a principal diferença entre células procarióticas e"
+                " eucarióticas?"
+            ),
+            "r": "As procarióticas não possuem núcleo verdadeiro delimitado por membrana; as eucarióticas têm um núcleo organizado.",
+        },
+        {
+            "p": "O que é o processo de fotossíntese?",
+            "r": "É o processo através do qual as plantas produzem matéria orgânica e oxigénio utilizando luz solar, dióxido de carbono e água.",
+        },
+        {
+            "p": "Quais são os principais constituintes do Sistema Solar?",
+            "r": "O Sol, os planetas principais, os planetas anões, os asteroides, os cometas e os satélites naturais.",
+        },
+    ],
+    "História": [
+        {
+            "p": (
+                "Quais foram os principais fatores que impulsionaram a"
+                " Expansão Portuguesa no século XV?"
+            ),
+            "r": "Fatores económicos (procura de rotas e especiarias), geográficos (posição litoral), políticos e religiosos.",
+        },
+        {
+            "p": "O que estipulava o Tratado de Tordesilhas (1494)?",
+            "r": "Dividia o mundo descoberto e por descobrir entre Portugal e Espanha através de um meridiano a oeste de Cabo Verde.",
+        },
+        {
+            "p": "Como estava estruturada a sociedade no Antigo Regime?",
+            "r": "Estava dividida em ordens ou estamentos: Clero, Nobreza e Povo.",
+        },
+    ],
+    "Físico-Química": [
+        {
+            "p": "O que define a matéria?",
+            "r": "Matéria é tudo o que tem massa e ocupa espaço (tem volume).",
+        },
+        {
+            "p": "Qual é a diferença entre substância pura e mistura?",
+            "r": "Uma substância pura tem propriedades físicas e químicas constantes; uma mistura é formada por duas ou mais substâncias.",
+        },
+        {
+            "p": "O que indica a velocidade média de um corpo em movimento?",
+            "r": "Indica a distância percorrida por unidade de tempo (v = d / Δt).",
+        },
+    ],
+}
+
 
 def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
   exs = []
@@ -208,23 +344,44 @@ def gerar_flashcards_personalizados(
     except Exception:
       flashcards = []
 
-  # Fallback automático local se a API não estiver configurada ou falhar
+  # Se a API falhou ou não tem chave, usar perguntas normais do banco offline
   if not flashcards:
-    for i in range(1, quantidade + 1):
-      base_texto = (
-          f"sobre {materia}" if not texto_apontamentos else f"referente a '{texto_apontamentos[:30]}...'"
-      )
-      flashcards.append({
-          "id": i,
-          "pergunta": (
-              f"Pergunta {i} de revisão de {materia} ({ano_aluno}, nível"
-              f" {dificuldade}) {base_texto}"
-          ),
-          "resposta": (
-              f"Conceito fundamental e explicação detalhada do ponto {i}"
-              f" para dominar a matéria de {materia} com sucesso."
-          ),
-      })
+    base_perguntas = BANCO_PERGUNTAS_OFFLINE.get(
+        materia,
+        [
+            {
+                "p": f"Quais são os conceitos fundamentais de {materia}?",
+                "r": (
+                    f"Estudo aprofundado dos tópicos essenciais de {materia}"
+                    f" para o {ano_aluno}."
+                ),
+            },
+            {
+                "p": f"Como aplicar as regras práticas em {materia}?",
+                "r": (
+                    "Rever os exercícios propostos no manual e aplicar os"
+                    " métodos corretos."
+                ),
+            },
+        ],
+    )
+
+    # Garantir a quantidade desejada repetindo ou adaptando com variedade se necessário
+    contador = 1
+    while len(flashcards) < quantidade:
+      for item in base_perguntas:
+        if len(flashcards) >= quantidade:
+          break
+        # Criar variações úteis se precisar de mais cartões
+        sufixo = (
+            f" (Parte {contador})" if contador > len(base_perguntas) else ""
+        )
+        flashcards.append({
+            "id": contador,
+            "pergunta": item["p"] + sufixo,
+            "resposta": item["r"],
+        })
+        contador += 1
 
   return flashcards[:quantidade]
 
