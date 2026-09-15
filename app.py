@@ -168,7 +168,7 @@ def gerar_flashcards_personalizados(
 ):
   api_key = st.session_state.get("groq_api_key", "").strip()
   flashcards = []
-  texto_inf = texto_apontamentos.lower().strip()
+  tema = texto_apontamentos.strip() if texto_apontamentos.strip() else materia
 
   # 1. Tentar ligar à API da Groq se houver chave inserida
   if api_key:
@@ -179,9 +179,9 @@ def gerar_flashcards_personalizados(
             Disciplina: {materia}
             Ano de escolaridade: {ano_aluno} (Programa escolar oficial em Portugal)
             Nível de dificuldade: {dificuldade}
-            Apontamentos / Tema do aluno: "{texto_apontamentos}"
+            Apontamentos / Tema do aluno: "{tema}"
             
-            IMPORTANTE: Os flashcards devem focar-se diretamente no tema específico escrito pelo aluno (por exemplo, se escreveu "equações", os flashcards têm de ser estritamente sobre equações, regras de resolução, termos, etc., e não sobre outros temas genéricos).
+            IMPORTANTE: Os flashcards devem focar-se estritamente no tema exato fornecido pelo aluno, adaptados ao programa escolar português.
             Usa estritamente o seguinte formato para cada cartão:
             Pergunta: [pergunta]
             Resposta: [resposta]
@@ -214,164 +214,80 @@ def gerar_flashcards_personalizados(
     except Exception:
       flashcards = []
 
-  # 2. Se falhou ou não tem chave API, gerar flashcards inteligentes baseados no tema exato do utilizador
+  # 2. Fallback Dinâmico Inteligente: Adapta-se automaticamente a QUALQUER tema inserido pelo utilizador
   if not flashcards:
-    base_especifica = []
-
-    if "equaç" in texto_inf or "equacao" in texto_inf:
-      base_especifica = [
-          {
-              "p": (
-                  "O que é uma equação do 1.º grau com uma incógnita no"
-                  f" programa de {materia} ({ano_aluno})?"
-              ),
-              "r": (
-                  "É uma igualdade algébrica que contém pelo menos uma letra"
-                  " (incógnita) com expoente 1, cuja resolução determina o"
-                  " valor que torna a igualdade verdadeira."
-              ),
-          },
-          {
-              "p": (
-                  "Quais são as regras fundamentais de transposição de termos"
-                  " numa equação?"
-              ),
-              "r": (
-                  "Qualquer termo pode mudar de membro desde que se inverta a"
-                  " sua operação (o que soma passa a subtrair, o que subtrai"
-                  " passa a somar, o que multiplica passa a dividir e vice-versa)."
-              ),
-          },
-          {
-              "p": (
-                  "Como se eliminam os parênteses numa expressão ou equação"
-                  " antes de a resolver?"
-              ),
-              "r": (
-                  "Aplicando a propriedade distributiva da multiplicação em"
-                  " relação à adição/subtração e tendo em conta as regras dos"
-                  " sinais."
-              ),
-          },
-          {
-              "p": (
-                  "Qual é o procedimento para resolver uma equação que envolve"
-                  " denominadores (frações)?"
-              ),
-              "r": (
-                  "Reduzem-se os termos ao mesmo denominador utilizando o"
-                  " mínimo múltiplo comum (m.m.c.) e eliminam-se os"
-                  " denominadores multiplicando ambos os membros por esse"
-                  " valor."
-              ),
-          },
-          {
-              "p": (
-                  "O que significa o conjunto-solução (ou conjunto-verdade)"
-                  " de uma equação?"
-              ),
-              "r": (
-                  "É o conjunto constituído por todos os valores da"
-                  " incógnita que transformam a equação numa proposição"
-                  " verdadeira."
-              ),
-          },
-          {
-              "p": (
-                  "O que são equações equivalentes no contexto escolar"
-                  " português?"
-              ),
-              "r": (
-                  "São equações que possuem exatamente o mesmo"
-                  " conjunto-solução, obtidas através de transformações"
-                  " equivalentes."
-              ),
-          },
-      ]
-    elif "funç" in texto_inf or "funcao" in texto_inf:
-      base_especifica = [
-          {
-              "p": (
-                  "O que define uma função afim e qual é a sua expressão"
-                  " algébrica geral?"
-              ),
-              "r": (
-                  "É uma função definida por f(x) = m*x + b, em que m é o"
-                  " declive e b é a ordenada na origem, cujo gráfico é uma"
-                  " reta."
-              ),
-          },
-          {
-              "p": (
-                  "O que indica o declive (m) de uma reta no plano cartesiano?"
-                  " Como se calcula?"
-              ),
-              "r": (
-                  "Indica a inclinação da reta. Calcula-se pela fórmula m ="
-                  " (y2 - y1) / (x2 - x1)."
-              ),
-          },
-          {
-              "p": (
-                  "O que representa graficamente a ordenada na origem (b) de"
-                  " uma função afim?"
-              ),
-              "r": (
-                  "Representa o valor de y quando x = 0, correspondendo ao"
-                  " ponto de interseção do gráfico com o eixo vertical Oy."
-              ),
-          },
-      ]
-    elif texto_inf:
-      base_especifica = [
-          {
-              "p": (
-                  f"Quais são os conceitos centrais associados ao tema"
-                  f" '{texto_apontamentos}' em {materia} ({ano_aluno})?"
-              ),
-              "r": (
-                  f"Estudo aprofundado dos princípios e regras de"
-                  f" '{texto_apontamentos}' fundamentais para dominar a"
-                  f" matéria no {ano_aluno}."
-              ),
-          },
-          {
-              "p": (
-                  f"Como aplicar corretamente a matéria de"
-                  f" '{texto_apontamentos}' na resolução de exercícios práticos?"
-              ),
-              "r": (
-                  "Identificando os dados fornecidos, selecionando a fórmula"
-                  " ou regra teórica adequada e efetuando os cálculos com"
-                  " rigor."
-              ),
-          },
-      ]
-    else:
-      base_especifica = [
-          {
-              "p": f"Quais são os tópicos essenciais de {materia} para o {ano_aluno}?",
-              "r": (
-                  f"Revisão detalhada dos conteúdos programáticos de {materia}"
-                  f" previstos para o {ano_aluno}."
-              ),
-          }
-      ]
+    templates_dinamicos = [
+        {
+            "p": (
+                f"O que define o conceito fundamental de '{tema}' no âmbito"
+                f" da disciplina de {materia} ({ano_aluno})?"
+            ),
+            "r": (
+                f" '{tema}' engloba o conjunto de princípios teóricos e"
+                f" práticos essenciais estudados no programa escolar para dominar"
+                f" esta matéria."
+            ),
+        },
+        {
+            "p": (
+                f"Quais são as principais propriedades, regras ou etapas a ter"
+                f" em conta ao trabalhar com '{tema}'?"
+            ),
+            "r": (
+                f"Exige a compreensão rigorosa das definições, a correta"
+                f" identificação dos termos e a aplicação estruturada dos"
+                f" procedimentos associados a '{tema}'."
+            ),
+        },
+        {
+            "p": (
+                f"Como se aplica a matéria de '{tema}' na resolução de um"
+                f" exercício prático ou questão de teste?"
+            ),
+            "r": (
+                f"Interpretando corretamente o enunciado, selecionando a regra"
+                f" ou fórmula aplicável a '{tema}' e efetuando os cálculos ou"
+                f" argumentação passo a passo."
+            ),
+        },
+        {
+            "p": (
+                f"Qual é o objetivo principal de estudar o tema '{tema}' no"
+                f" {ano_aluno}?"
+            ),
+            "r": (
+                f"Desenvolver o raciocínio crítico, consolidar as bases da"
+                f" disciplina de {materia} e preparar o aluno para conteúdos"
+                f" mais avançados."
+            ),
+        },
+        {
+            "p": (
+                f"Quais são os erros ou equívocos mais comuns a evitar ao"
+                f" estudar '{tema}'?"
+            ),
+            "r": (
+                f"Confundir definições teóricas, aplicar regras desadequadas"
+                f" aos dados fornecidos sobre '{tema}' e não validar o"
+                f" resultado final."
+            ),
+        },
+    ]
 
     contador = 1
     while len(flashcards) < quantidade:
-      for item in base_especifica:
-        if len(flashcards) >= quantidade:
-          break
-        sufixo = (
-            f" (Parte {contador})" if contador > len(base_especifica) else ""
-        )
-        flashcards.append({
-            "id": contador,
-            "pergunta": item["p"] + sufixo,
-            "resposta": item["r"],
-        })
-        contador += 1
+      template_atual = templates_dinamicos[(contador - 1) % len(templates_dinamicos)]
+      sufixo = (
+          f" (Parte {(contador - 1) // len(templates_dinamicos) + 1})"
+          if contador > len(templates_dinamicos)
+          else ""
+      )
+      flashcards.append({
+          "id": contador,
+          "pergunta": template_atual["p"].replace(f"'{tema}'", f"'{tema}'{sufixo}"),
+          "resposta": template_atual["r"],
+      })
+      contador += 1
 
   return flashcards[:quantidade]
 
@@ -846,7 +762,7 @@ elif menu == "Estudar":
     )
     st.session_state.texto_estudo_livre = st.text_area(
         "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex:"
-        " equações, frações, etc.):",
+        " células, revoluções, reações químicas, etc.):",
         value=st.session_state.texto_estudo_livre,
         key="txt_livre_estudo",
     )
