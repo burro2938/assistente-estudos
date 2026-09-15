@@ -150,7 +150,7 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
             {
                 "id": 1,
                 "pergunta": f"Insere a tua Chave API do Gemini na barra lateral para gerar perguntas automáticas sobre {materia}!",
-                "resposta": "Vai ao Google AI Studio (aistudio.google.com), cria uma chave que comece por 'AIza' e cola-a na barra lateral."
+                "resposta": "Cola a tua chave API na barra lateral à esquerda para desbloquear a inteligência artificial."
             }
         ]
     try:
@@ -187,7 +187,7 @@ Resposta: [resposta clara, rigorosa e completa]
             st.error("A IA não retornou cartões no formato esperado.")
             return []
     except Exception as e:
-        st.error(f"Erro ao ligar à API do Gemini (Verifica se a chave começa por 'AIza'): {e}")
+        st.error(f"Erro ao ligar à API do Gemini (Verifica se a chave está correta): {e}")
         return []
 
 def obter_recomendacao_inteligente():
@@ -224,7 +224,7 @@ st.session_state.gemini_api_key = st.sidebar.text_input(
     "Chave API do Gemini",
     value=st.session_state.gemini_api_key, 
     type="password",
-    help="Insere a tua chave API (deve começar por AIza...)"
+    help="Insere a tua chave API"
 )
 
 # 1. Início & Escola
@@ -469,7 +469,7 @@ elif menu == "Registo Diário":
             st.rerun()
         st.title("Revisão Rápida Pós-Registo")
         if not st.session_state.flashcards_pos_gerados:
-            st.info("Não há flashcards gerados (certifica-te de que inseriste uma chave Gemini válida que comece por 'AIza').")
+            st.info("Não há flashcards gerados (certifica-te de que inseriste uma chave Gemini válida na barra lateral).")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -631,7 +631,7 @@ elif menu == "Estudar":
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("Conjunto de 20 Flashcards de Memorização:")
             if not st.session_state.flashcards_gerados:
-                st.warning("Não foram gerados flashcards. Verifica se introduziste uma chave API do Gemini válida (começada por 'AIza') na barra lateral.")
+                st.warning("Não foram gerados flashcards. Verifica se introduziste a tua chave API na barra lateral.")
             else:
                 if st.button("Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
                     st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
