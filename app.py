@@ -140,6 +140,30 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
   return exs
 
 
+def chamar_api_groq_com_fallback(client, prompt):
+  """Testa vários modelos da Groq sequencialmente até encontrar um que funcione com a chave."""
+  modelos_disponiveis = [
+      "llama-3.1-8b-instant",
+      "llama3-8b-8192",
+      "mixtral-8x7b-32768",
+      "llama3-70b-8192",
+      "llama-3.3-70b-versatile",
+  ]
+  ultimo_erro = None
+  for modelo in modelos_disponiveis:
+    try:
+      completion = client.chat.completions.create(
+          model=modelo,
+          messages=[{"role": "user", "content": prompt}],
+          temperature=0.7,
+      )
+      return completion.choices[0].message.content
+    except Exception as e:
+      ultimo_erro = e
+      continue
+  raise Exception(f"Todos os modelos falharam. Erro final: {ultimo_erro}")
+
+
 def gerar_flashcards_personalizados(
     quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""
 ):
@@ -166,12 +190,7 @@ def gerar_flashcards_personalizados(
         Resposta: [resposta]
         ---
         """
-    completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-    texto_resp = completion.choices[0].message.content
+    texto_resp = chamar_api_groq_com_fallback(client, prompt)
 
     blocos = (
         texto_resp.split("---")
