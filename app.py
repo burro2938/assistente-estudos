@@ -15,7 +15,7 @@ st.set_page_config(
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css?family=Comfortaa:wght@400;700&display=swap');
-body, p, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6, .stMarkdown, stText, stSelectbox, stRadio, .stTextInput {
+body, p, label, input, textarea, button, select, h1, h2, h3, h4, h5, h6 {
     font-family: 'Comfortaa', cursive, sans-serif !important;
 }
 section[data-testid="stSidebar"] h1 {
@@ -35,6 +35,7 @@ if "ano_escolar" not in st.session_state:
     st.session_state.ano_escolar = "8.º Ano"
 if "gemini_api_key" not in st.session_state:
     st.session_state.gemini_api_key = ""
+
 if "horario" not in st.session_state:
     st.session_state.horario = {
         "Segunda-feira": [
@@ -93,7 +94,6 @@ if "chave_geracao" not in st.session_state:
     st.session_state.chave_geracao = 0
 if "atividade_selecionada" not in st.session_state:
     st.session_state.atividade_selecionada = "Exercícios"
-
 if "selected_date" not in st.session_state:
     st.session_state.selected_date = None
 if "cal_year" not in st.session_state:
@@ -145,92 +145,50 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
 
 def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""):
     api_key = st.session_state.get("gemini_api_key", "").strip()
-    
-    # Tenta usar a API apenas se a chave começar por AIza
-    if api_key.startswith("AIza"):
-        try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            prompt = f"""
-            Gera exatamente {quantidade} flashcards de estudo rigorosos e específicos sobre a disciplina de {materia} para o {ano_aluno}, com nível de dificuldade '{dificuldade}'.
-            Contexto ou apontamentos fornecidos: "{texto_apontamentos}".
-            Formata a resposta estritamente assim para cada cartão, separados por '---':
-            Pergunta: [pergunta técnica e específica]
-            Resposta: [resposta clara, rigorosa e completa]
-            """
-            resposta = model.generate_content(prompt)
-            texto_resp = resposta.text
-            
-            blocos = texto_resp.split('---')
-            flashcards = []
-            contador = 1
-            for bloco in blocos:
-                linhas = [l.strip() for l in bloco.strip().split('\n') if l.strip()]
-                p, r = "", ""
-                for linha in linhas:
-                    if linha.lower().startswith("pergunta:"):
-                        p = linha.split(":", 1)[1].strip()
-                    elif linha.lower().startswith("resposta:"):
-                        r = linha.split(":", 1)[1].strip()
-                if p and r:
-                    flashcards.append({"id": contador, "pergunta": p, "resposta": r})
-                    contador += 1
-            if flashcards:
-                return flashcards[:quantidade]
-        except Exception:
-            pass # Se houver qualquer falha na API, recorre ao gerador automático inteligente
-            
-    # Sistema inteligente de fallback local (funciona sempre, sem precisar de chaves)
-    banco_flashcards = {
-        "Matemática": [
-            ("Qual é a fórmula da área do círculo?", "A fórmula é $A = \\pi \\times r^2$, em que $r$ representa o raio."),
-            ("O que estabelece o Teorema de Pitágoras?", "Num triângulo retângulo, o quadrado da hipotenusa é igual à soma dos quadrados dos catetos ($a^2 = b^2 + c^2$)."),
-            ("Como se calcula o acréscimo de uma percentagem?", "Multiplica-se o valor inicial por $(1 + \\text{taxa decimal})$. Ex: 10% sobre 50 = $50 \\times 1,10 = 55$."),
-            ("O que são números primos?", "São números naturais maiores do que 1 que possuem apenas dois divisores distintos: o 1 e ele próprio."),
-            ("Qual é a soma dos ângulos internos de qualquer triângulo?", "A soma é sempre exatamente $180^\\circ$."),
-            ("Como se calcula o perímetro de um retângulo?", "É a soma do comprimento com a largura multiplicada por dois ($P = 2 \\times (c + l)$)."),
-            ("O que é uma fração irredutível?", "É uma fração cujo numerador e denominador são primos entre si, não podendo ser mais simplificada.")
-        ],
-        "Ciências Naturais": [
-            ("O que é a fotossíntese?", "Processo realizado por organismos clorofilianos que produzem matéria orgânica a partir de água, dióxido de carbono e luz solar."),
-            ("Quais são as principais camadas da Terra?", "A estrutura interna divide-se em crosta terrestre, manto e núcleo."),
-            ("O que distingue uma célula eucariótica de uma procariótica?", "A célula eucariótica possui um núcleo organizado delimitado por membrana; a procariótica não."),
-            ("O que é um ecossistema?", "É o conjunto formado pelos seres vivos (biocenose), pelo meio físico (biótopo) e pelas relações entre eles."),
-            ("Qual é a principal função dos glóbulos vermelhos (eritrócitos)?", "Transportar oxigénio dos pulmões para todas as células do corpo.")
-        ],
-        "Português": [
-            ("O que é uma metáfora?", "Figura de estilo que consiste numa comparação implícita entre dois elementos, sem palavras comparativas."),
-            ("O que caracteriza o predicado nominal?", "É constituído por um verbo de ligação seguido de um predicativo do sujeito."),
-            ("O que é um ditongo?", "Sequência de uma vogal e uma semivogal (ou vice-versa) pronunciadas numa única emissão de voz."),
-            ("Qual é a função do sujeito numa frase?", "Indica quem ou o que pratica ou sofre a ação expressa pelo verbo."),
-            ("O que é uma antítese?", "Figura de retórica que aproxima palavras ou ideias de sentido oposto.")
-        ],
-        "História": [
-            ("Em que ano foi assinado o Tratado de Zamora?", "Em 1143, marcando o reconhecimento formal do Reino de Portugal."),
-            ("Qual foi o marco inicial da Expansão Portuguesa?", "A conquista de Ceuta no ano de 1415."),
-            ("O que foi o Tratado de Tordesilhas?", "Acordo de 1494 entre Portugal e Espanha que dividiu as zonas de exploração do mundo."),
-            ("Quem foi o primeiro rei de Portugal?", "D. Afonso Henriques."),
-            ("Que acontecimento marcou o sismo de Lisboa de 1755?", "A reconstrução pombalina da Baixa de Lisboa liderada pelo Marquês de Pombal.")
+    if not api_key:
+        return [
+            {
+                "id": 1,
+                "pergunta": f"Insere a tua Chave API do Gemini na barra lateral para gerar perguntas automáticas sobre {materia}!",
+                "resposta": "Vai ao Google AI Studio (aistudio.google.com), cria uma chave que comece por 'AIza' e cola-a na barra lateral."
+            }
         ]
-    }
-    
-    cartoes_base = banco_flashcards.get(materia, [
-        ("O que é o estudo autónomo?", "Capacidade de planear, executar e avaliar o próprio processo de aprendizagem de forma independente."),
-        ("Qual a importância de fazer revisões espaçadas?", "Permite consolidar a informação na memória de longo prazo de forma muito mais eficaz."),
-        ("Como estruturar a resolução de um problema?", "Identificar os dados fornecidos, o que é pedido, planear a estratégia e verificar o resultado."),
-        ("Qual o papel da atenção na sala de aula?", "Facilita a retenção inicial dos conceitos, reduzindo o esforço necessário no estudo posterior."),
-        ("O que significa pensamento crítico?", "A capacidade de analisar criticamente informações e argumentos antes de tirar conclusões.")
-    ])
-    
-    flashcards = []
-    for i in range(1, quantidade + 1):
-        base = cartoes_base[(i - 1) % len(cartoes_base)]
-        flashcards.append({
-            "id": i,
-            "pergunta": f"{base[0]} [Tema: {materia} | {dificuldade}]",
-            "resposta": base[1]
-        })
-    return flashcards
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"""
+Gera exatamente {quantidade} flashcards de estudo rigorosos e altamente específicos sobre a disciplina de {materia} para o {ano_aluno}, com nível de dificuldade '{dificuldade}'.
+Contexto ou apontamentos fornecidos pelo aluno: "{texto_apontamentos}".
+IMPORTANTE: As perguntas NÃO podem ser genéricas nem usar moldes repetidos.
+Devem focar-se em conceitos reais, propriedades, fórmulas, etapas de resolução ou factos concretos do tema.
+Formata a resposta estritamente assim para cada cartão, separados por '---':
+Pergunta: [pergunta técnica e específica]
+Resposta: [resposta clara, rigorosa e completa]
+"""
+        resposta = model.generate_content(prompt)
+        texto_resp = resposta.text
+        blocos = texto_resp.split('---')
+        flashcards = []
+        contador = 1
+        for bloco in blocos:
+            linhas = [l.strip() for l in bloco.strip().split('\n') if l.strip()]
+            p, r = "", ""
+            for linha in linhas:
+                if linha.lower().startswith("pergunta:"):
+                    p = linha.split(":", 1)[1].strip()
+                elif linha.lower().startswith("resposta:"):
+                    r = linha.split(":", 1)[1].strip()
+            if p and r:
+                flashcards.append({"id": contador, "pergunta": p, "resposta": r})
+                contador += 1
+        if flashcards:
+            return flashcards[:quantidade]
+        else:
+            st.error("A IA não retornou cartões no formato esperado.")
+            return []
+    except Exception as e:
+        st.error(f"Erro ao ligar à API do Gemini (Verifica se a chave começa por 'AIza'): {e}")
+        return []
 
 def obter_recomendacao_inteligente():
     hoje_obj = datetime.date.today()
@@ -238,14 +196,12 @@ def obter_recomendacao_inteligente():
     dia_idx = hoje_obj.weekday()
     dia_nome = "Segunda-feira" if dia_idx >= 5 else dias_pt[dia_idx]
     aulas_hoje = st.session_state.horario.get(dia_nome, [])
-    
     if st.session_state.logs:
         ultimo_registo = st.session_state.logs[-1]
         resumos_recentes = list(ultimo_registo.get("resumos", {}).keys())
         if resumos_recentes:
             materia_recente = resumos_recentes[0]
             return f"Com base no teu horário de hoje ({dia_nome}) e no que estudaste recentemente ({materia_recente}), sugerimos que dês continuidade a essa matéria."
-            
     sugestao_materia = aulas_hoje[0]["disc"] if aulas_hoje else "Matemática"
     return f"Com base no teu horário de hoje ({dia_nome}), sugerimos que pratiques {sugestao_materia}."
 
@@ -263,23 +219,21 @@ menu = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### Configuração da API (Opcional)")
+st.sidebar.markdown("### Configuração da API")
 st.session_state.gemini_api_key = st.sidebar.text_input(
-    "Chave API do Gemini", 
+    "Chave API do Gemini",
     value=st.session_state.gemini_api_key, 
     type="password",
-    help="Podes deixar em branco (a aplicação gera os conteúdos localmente) ou inserir uma chave válida."
+    help="Insere a tua chave API (deve começar por AIza...)"
 )
 
 # 1. Início & Escola
 if menu == "Início & Escola":
     st.title("Meu Assistente de Estudos")
-    st.write("Bem-vindo ao teu espaço de organização escolar, testes e revisão!")
-    
+    st.write("Bem-vindo ao teu espaço centralizado de organização escolar e revisão!")
     recomendacao_texto = obter_recomendacao_inteligente()
     st.info(f"**Sugestão de Estudo:** {recomendacao_texto}")
     st.markdown("---")
-    
     st.subheader("Configurações do Aluno")
     anos_disponiveis = ["5.º Ano", "6.º Ano", "7.º Ano", "8.º Ano", "9.º Ano", "10.º Ano", "11.º Ano", "12.º Ano"]
     idx_ano_atual = anos_disponiveis.index(st.session_state.ano_escolar) if st.session_state.ano_escolar in anos_disponiveis else 3
@@ -296,7 +250,6 @@ if menu == "Início & Escola":
             index=idx_ano_atual,
             key="sb_ano_escolar_global"
         )
-        
     st.success(f"A frequentar o **{st.session_state.ano_escolar}** (ano letivo **{st.session_state.ano_letivo}**) em **{st.session_state.escola}**.")
     if st.button("Guardar alterações das configurações do aluno"):
         st.success("Configurações do aluno guardadas com sucesso!")
@@ -312,7 +265,6 @@ elif menu == "Calendário":
             if log.get("data") == str(st.session_state.selected_date):
                 registo_encontrado = log
                 break
-                
         if registo_encontrado:
             st.markdown("### Matéria Estudada / Resumos:")
             for disc, res in registo_encontrado.get("resumos", {}).items():
@@ -356,7 +308,6 @@ elif menu == "Calendário":
                 else:
                     st.session_state.cal_month += 1
                 st.rerun()
-                
         st.markdown("---")
         cal = calendar.Calendar(firstweekday=0)
         mes_dias = cal.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
@@ -393,7 +344,6 @@ elif menu == "Calendário":
                             else:
                                 resumo_resumido = "Estudado"
                             metodo_resumido = logs_por_data[data_str].get("metodo", "Exercícios")
-                            
                         testes_dia_str = ""
                         if data_str in testes_por_data:
                             testes_dia_str = "Teste: " + ", ".join(testes_por_data[data_str])
@@ -478,8 +428,8 @@ elif menu == "Registo Diário":
         dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
         dia_atual_idx = hoje.weekday()
         dia_automatico = "Segunda-feira" if dia_atual_idx >= 5 else dias_portugal[dia_atual_idx]
-        
         st.markdown(f"### Hoje é **{dia_automatico}** ({hoje.strftime('%d/%m/%Y')})")
+        
         aulas_do_dia = st.session_state.horario.get(dia_automatico, [])
         disciplinas_dia = []
         for aula in aulas_do_dia:
@@ -499,7 +449,6 @@ elif menu == "Registo Diário":
                 "metodo": "Registo Diário"
             }
             st.session_state.logs.append(registo_novo)
-            
             flashcards_combinados = []
             st.session_state.chave_geracao += 1
             for disc in disciplinas_dia:
@@ -509,7 +458,6 @@ elif menu == "Registo Diário":
                 )
                 if fcs_disc:
                     flashcards_combinados.extend(fcs_disc)
-                    
             st.session_state.flashcards_pos_gerados = flashcards_combinados
             st.success("Sessão registada com sucesso!")
             st.session_state.step_registo = "flashcards_pos"
@@ -521,7 +469,7 @@ elif menu == "Registo Diário":
             st.rerun()
         st.title("Revisão Rápida Pós-Registo")
         if not st.session_state.flashcards_pos_gerados:
-            st.info("Não há flashcards gerados.")
+            st.info("Não há flashcards gerados (certifica-te de que inseriste uma chave Gemini válida que comece por 'AIza').")
         else:
             for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
                 st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -539,10 +487,10 @@ elif menu == "Registo Diário":
                     else:
                         st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
                 st.markdown("---")
-            if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
-                st.session_state.step_estudar = "escolher_materia"
-                st.session_state.step_registo = "formulario"
-                st.rerun()
+        if st.button("Ir para o Estudo", key="btn_ir_estudo_pos"):
+            st.session_state.step_estudar = "escolher_materia"
+            st.session_state.step_registo = "formulario"
+            st.rerun()
 
 # 5. Estudar
 elif menu == "Estudar":
@@ -577,7 +525,6 @@ elif menu == "Estudar":
         with col_up2:
             st.file_uploader("Enviar Vídeos de Aulas", type=["mp4", "mov"], key="up_videos")
             st.file_uploader("Enviar Imagens ou Fotografias", type=["png", "jpg", "jpeg"], key="up_imagens")
-            
         if st.button("Avançar para Atividades", key="btn_avancar_up"):
             st.session_state.step_estudar = "escolher_atividade"
             st.rerun()
@@ -631,7 +578,7 @@ elif menu == "Estudar":
         st.title(f"{st.session_state.atividade_selecionada}")
         st.markdown(f"**Matéria:** {st.session_state.materia_escolhida_estudo} | **Dificuldade:** {st.session_state.dificuldade_selecionada} | **Ano:** {st.session_state.ano_escolar}")
         if st.session_state.texto_estudo_livre:
-            st.info(f"**Foco Personalizado:** Apontamentos considerados: **{st.session_state.texto_estudo_livre}**.")
+            st.info(f"**Foco Personalizado:** Apontamentos considerados: **{st.session_state.texto_estudo_livre}**")
         st.markdown("---")
         
         if st.session_state.atividade_selecionada == "Exercícios":
@@ -664,7 +611,6 @@ elif menu == "Estudar":
                     if log.get("data") == hoje_str:
                         registo_existente = log
                         break
-                        
                 materia_atual = st.session_state.materia_escolhida_estudo
                 texto_resumo_estudo = st.session_state.texto_estudo_livre or f"Pontuação: {acertos}/30"
                 if registo_existente:
@@ -685,14 +631,13 @@ elif menu == "Estudar":
         elif st.session_state.atividade_selecionada == "Flashcards":
             st.subheader("Conjunto de 20 Flashcards de Memorização:")
             if not st.session_state.flashcards_gerados:
-                st.warning("Não foram gerados flashcards.")
+                st.warning("Não foram gerados flashcards. Verifica se introduziste uma chave API do Gemini válida (começada por 'AIza') na barra lateral.")
             else:
                 if st.button("Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"):
                     st.session_state.flashcards_gerados = gerar_flashcards_personalizados(
                         20, st.session_state.materia_escolhida_estudo, st.session_state.dificuldade_selecionada, st.session_state.ano_escolar, st.session_state.texto_estudo_livre
                     )
                     st.rerun()
-                    
                 for i, fc in enumerate(st.session_state.flashcards_gerados, 1):
                     st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
                     chave_fc = f"mostrar_fc_estudo_{st.session_state.chave_geracao}_{i}"
@@ -709,31 +654,28 @@ elif menu == "Estudar":
                         else:
                             st.info("*(Resposta oculta - clica em 'Virar' para ver)*")
                     st.markdown("---")
-                    
-            if st.button("Guardar Sessão de Flashcards no Calendário"):
-                hoje_str = str(datetime.date.today())
-                dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-                dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
-                
-                registo_existente = None
-                for log in st.session_state.logs:
-                    if log.get("data") == hoje_str:
-                        registo_existente = log
-                        break
-                        
-                materia_atual = st.session_state.materia_escolhida_estudo
-                texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
-                if registo_existente:
-                    if "resumos" not in registo_existente:
-                        registo_existente["resumos"] = {}
-                    registo_existente["resumos"][materia_atual] = texto_resumo_estudo
-                    registo_existente["metodo"] = st.session_state.atividade_selecionada
-                else:
-                    novo_registo = {
-                        "data": hoje_str,
-                        "dia": dia_atual_nome,
-                        "resumos": {materia_atual: texto_resumo_estudo},
-                        "metodo": st.session_state.atividade_selecionada
-                    }
-                    st.session_state.logs.append(novo_registo)
-                st.success("Sessão de Flashcards guardada no calendário com sucesso!")
+                if st.button("Guardar Sessão de Flashcards no Calendário"):
+                    hoje_str = str(datetime.date.today())
+                    dias_portugal = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
+                    dia_atual_nome = dias_portugal[datetime.date.today().weekday()] if datetime.date.today().weekday() < 5 else "Segunda-feira"
+                    registo_existente = None
+                    for log in st.session_state.logs:
+                        if log.get("data") == hoje_str:
+                            registo_existente = log
+                            break
+                    materia_atual = st.session_state.materia_escolhida_estudo
+                    texto_resumo_estudo = st.session_state.texto_estudo_livre or "Revisão com Flashcards"
+                    if registo_existente:
+                        if "resumos" not in registo_existente:
+                            registo_existente["resumos"] = {}
+                        registo_existente["resumos"][materia_atual] = texto_resumo_estudo
+                        registo_existente["metodo"] = st.session_state.atividade_selecionada
+                    else:
+                        novo_registo = {
+                            "data": hoje_str,
+                            "dia": dia_atual_nome,
+                            "resumos": {materia_atual: texto_resumo_estudo},
+                            "metodo": st.session_state.atividade_selecionada
+                        }
+                        st.session_state.logs.append(novo_registo)
+                    st.success("Sessão de Flashcards guardada no calendário com sucesso!")
