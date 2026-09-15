@@ -154,66 +154,63 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
             flashcards = []
             for i in range(1, quantidade + 1):
                 frase = frases[(i - 1) % len(frases)]
-                p = f"O que deves recordar sobre o ponto: '{frase[:50]}...'" if len(frase) > 50 else f"O que refere o apontamento: '{frase}'?"
-                r = f"Conceito registado: {frase}. Guarda esta regra essencial para {materia}."
+                p = f"O que destaca o seguinte ponto dos teus apontamentos: '{frase[:40]}...'" if len(frase) > 40 else f"Explica o conceito registado: '{frase}'."
+                r = f"Regra essencial: {frase}. Guarda este apontamento para os testes de {materia}."
                 flashcards.append({"id": i, "pergunta": p, "resposta": r})
             return flashcards
 
-    # Se colocou um tema curto, analisa por domínio científico/escolar para gerar perguntas altamente relevantes
+    # Se colocou um tema curto ou o nome da matéria, gera perguntas altamente variadas e dinâmicas
     tema = texto_limpo if texto_limpo else materia
-    tema_lower = tema.lower()
     
-    if any(k in tema_lower for k in ["frac", "fração", "fracao"]):
-        flashcards_base = [
-            ("O que indica o numerador numa fração?", "Indica o número de partes que estamos a considerar do todo."),
-            ("O que indica o denominador numa fração?", "Indica o número total de partes iguais em que o todo foi dividido."),
-            ("Como se somam ou subtraem frações com o mesmo denominador?", "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."),
-            ("O que é necessário para somar frações com denominadores diferentes?", "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."),
-            ("Como se multiplicam duas frações?", "Multiplicam-se os numeradores entre si e os denominadores entre si."),
-            ("Como se divide uma fração por outra?", "Multiplica-se a primeira fração pelo inverso da segunda."),
-            ("O que são frações equivalentes?", "São frações que representam exatamente a mesma quantidade ou proporção."),
-            ("Como se obtém uma fração equivalente por ampliação?", "Multiplicando o numerador e o denominador pelo mesmo número natural (diferente de zero)."),
-            ("Como se simplifica uma fração?", "Dividindo o numerador e o denominador pelo mesmo divisor comum."),
-            ("O que é uma fração irredutível?", "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1.")
-        ]
-    elif any(k in tema_lower for k in ["pitágoras", "pitagoras", "triângulo", "angulo", "equação", "função", "polinómio", "álgebra", "geometria"]):
-        flashcards_base = [
-            (f"Qual é o princípio matemático ou regra fundamental associada a {tema}?", f"Aplica uma relação lógica estrita para calcular valores desconhecidos com base nas propriedades da matéria."),
-            (f"Quais são os passos essenciais para resolver um exercício de {tema}?", f"1. Identificar os dados conhecidos e a incógnita. 2. Aplicar a fórmula correta. 3. Calcular com rigor matemático."),
-            (f"Qual é o erro mais frequente cometido na resolução de problemas sobre {tema}?", f"Trocar os sinais nas operações ou aplicar incorretamente as regras fundamentais."),
-            (f"Em que contexto prático surge habitualmente {tema} na disciplina de {materia}?", f"Em problemas de cálculo direto, geometria ou modelação algébrica de situações reais."),
-            (f"Como podes verificar se o resultado obtido em {tema} está correto?", f"Substituindo o valor calculado na condição inicial para confirmar a validade da igualdade.")
-        ]
-    elif any(k in tema_lower for k in ["sismo", "vulcão", "terra", "placa", "célula", "ecossistema", "fotossíntese", "reprodução", "rocha"]):
-        flashcards_base = [
-            (f"Qual é o processo científico ou biológico principal em {tema}?", f"Envolve uma dinâmica natural específica que explica o funcionamento de sistemas vivos ou geológicos."),
-            (f"Quais são os principais elementos ou fatores intervenientes em {tema}?", f"Os componentes essenciais que tornam o fenómeno observável e estudado nas ciências."),
-            (f"Qual é a importância ecológica ou estrutural de {tema} para o planeta?", f"Garante o equilíbrio dos ecossistemas, a dinâmica interna da Terra ou a manutenção da vida."),
-            (f"Como é que {tema} se manifesta ou pode ser medido no meio ambiente?", f"Através de registos instrumentais, observação microscópica ou análise de efeitos visíveis."),
-            (f"Que medidas de estudo ou prevenção estão associadas a {tema}?", f"Monitorização científica rigorosa e adoção de práticas informadas de proteção ambiental.")
-        ]
-    elif any(k in tema_lower for k in ["história", "revolução", "expansão", "república", "guerra", "tratado", "idade média", "século"]):
-        flashcards_base = [
-            (f"Quais foram as causas principais que estiveram na origem de {tema}?", f"Factores políticos, sociais e económicos que criaram o enquadramento histórico do acontecimento."),
-            (f"Quais foram as consequências mais marcantes de {tema} para a sociedade?", f"Transformações profundas nas instituições, na economia ou na vida das populações."),
-            (f"Quem foram as figuras centrais ou grupos sociais intervenientes em {tema}?", f"Líderes, classes sociais ou movimentos que protagonizaram os factos históricos."),
-            (f"Em que período temporal ocorreu {tema} e qual o seu contexto?", f"Enquadra-se numa fase de mudança relevante para a história de Portugal ou mundial."),
-            (f"Qual é o principal legado histórico deixado por {tema}?", f"A herança duradoura nas leis, na cultura, nas mentalidades ou na organização do território.")
-        ]
-    else:
-        flashcards_base = [
-            (f"Qual é a definição central e o objetivo principal de {tema}?", f"Representa um conceito estruturante em {materia}, fundamental para compreender as regras da disciplina."),
-            (f"Quais são os componentes ou etapas fundamentais que integram {tema}?", f"Divide-se em partes lógicas que exigem atenção aos detalhes e cumprimento de procedimentos rigorosos."),
-            (f"Como se aplica {tema} na resolução de um exercício prático?", f"Através da análise cuidadosa dos dados, seleção da regra adequada e execução passo a passo."),
-            (f"Porque é importante dominar o tema de {tema} no {ano_aluno}?", f"Porque constitui a base necessária para compreender tópicos mais avançados e ter sucesso escolar."),
-            (f"Indica um exemplo típico de questão onde {tema} costuma ser avaliado.", f"Exercícios de aplicação direta de conceitos teóricos e resolução de problemas práticos."),
-            (f"Quais são os erros mais comuns que deves evitar ao estudar {tema}?", f"Confundir definições semelhantes ou saltar passos essenciais no raciocínio."),
-            (f"Que regra de ouro deves memorizar obrigatoriamente sobre {tema}?", f"As definições-chave e os critérios fundamentais de resolução.")
-        ]
-
+    templates_perguntas = [
+        (
+            f"O que caracteriza fundamentalmente o conceito de '{tema}'?",
+            f"'{tema}' representa um tópico central em {materia} ({ano_aluno}), cujas propriedades definem o comportamento da matéria em estudo."
+        ),
+        (
+            f"Quais são os componentes essenciais ou elementos intervenientes em '{tema}'?",
+            f"Os elementos principais incluem as definições teóricas, as variáveis envolvidas e as condições em que o fenómeno ou cálculo ocorre."
+        ),
+        (
+            f"Descreve o procedimento passo a passo para resolver um exercício prático sobre '{tema}'.",
+            f"1. Identificar os dados fornecidos. 2. Selecionar a regra ou fórmula aplicável a '{tema}'. 3. Executar o cálculo ou análise com rigor."
+        ),
+        (
+            f"Qual é a fórmula, lei ou regra de ouro que deves memorizar obrigatoriamente sobre '{tema}'?",
+            f"A relação principal de '{tema}' baseia-se na aplicação direta das propriedades fundamentais estudadas na disciplina de {materia}."
+        ),
+        (
+            f"Dá um exemplo prático ou contexto real onde '{tema}' se aplica diretamente.",
+            f"Aparece frequentemente na resolução de problemas escolares, análises de laboratório ou interpretação de situações do quotidiano."
+        ),
+        (
+            f"Qual é o erro mais comum ou rasteira que deves evitar ao responder a perguntas sobre '{tema}'?",
+            f"Confundir os sinais, trocar unidades de medida ou saltar passos lógicos essenciais na resolução."
+        ),
+        (
+            f"Como podes verificar de forma autónoma se o resultado obtido em '{tema}' está correto?",
+            f"Substituindo os valores de volta na condição inicial ou cruzando com os critérios teóricos da matéria."
+        ),
+        (
+            f"Qual é a importância de dominar '{tema}' para o teu sucesso no {ano_aluno}?",
+            f"Serve de base sólida para compreender tópicos mais avançados que serão abordados nos próximos testes de {materia}."
+        ),
+        (
+            f"Explica por palavras tuas a diferença entre '{tema}' e outros conceitos semelhantes em {materia}.",
+            f"'{tema}' distingue-se pelos seus critérios específicos de classificação, comportamento e regras de resolução própria."
+        ),
+        (
+            f"Resume em três tópicos-chave tudo o que é essencial saber sobre '{tema}'.",
+            f"1. Definição rigorosa. 2. Aplicação prática correta. 3. Verificação dos resultados obtidos."
+        )
+    ]
+    
     flashcards = []
     for i in range(1, quantidade + 1):
-        p, r = flashcards_base[(i - 1) % len(flashcards_base)]
+        p, r = templates_perguntas[(i - 1) % len(templates_perguntas)]
+        if i > len(templates_perguntas):
+            p = f"Aspetto complementar {i} sobre '{tema}': Analisa detalhadamente as propriedades."
+            r = f"Contexto de estudo avançado para {materia} ({ano_aluno})."
         flashcards.append({
             "id": i,
             "pergunta": p,
