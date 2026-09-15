@@ -167,13 +167,12 @@ def gerar_flashcards_personalizados(
         ---
         """
     completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
     )
     texto_resp = completion.choices[0].message.content
 
-    # Parsing robusto que aceita múltiplos formatos de resposta da IA
     blocos = (
         texto_resp.split("---")
         if "---" in texto_resp
@@ -199,7 +198,6 @@ def gerar_flashcards_personalizados(
         flashcards.append({"id": contador, "pergunta": p, "resposta": r})
         contador += 1
 
-    # Fallback caso a IA responda sem o formato exato
     if not flashcards and texto_resp.strip():
       flashcards.append({
           "id": 1,
