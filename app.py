@@ -151,21 +151,44 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     
     # Se o utilizador colocou um tema curto (ex: "Frações", "Equações", etc.)
     if texto_limpo and len(texto_limpo.split()) <= 4:
-        tema = texto_limpo.lower()
-        if "frac" in tema or "fração" in tema or "fracao" in tema or ("matemática" in materia.lower() and "frac" in tema):
-            flashcards_fracoes = [
-                {"id": 1, "pergunta": "O que indica o numerador numa fração?", "resposta": "Indica o número de partes que estamos a considerar do todo."},
-                {"id": 2, "pergunta": "O que indica o denominador numa fração?", "resposta": "Indica o número total de partes iguais em que o todo foi dividido."},
-                {"id": 3, "pergunta": "Como se somam ou subtraem frações com o mesmo denominador?", "resposta": "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."},
-                {"id": 4, "pergunta": "O que é necessário fazer para somar frações com denominadores diferentes?", "resposta": "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."},
-                {"id": 5, "pergunta": "Como se multiplicam duas frações?", "resposta": "Multiplicam-se os numeradores entre si e os denominadores entre si."},
-                {"id": 6, "pergunta": "Como se divide uma fração por outra?", "resposta": "Multiplica-se a primeira fração pelo inverso da segunda (inverte-se a segunda fração)."},
-                {"id": 7, "pergunta": "O que são frações equivalentes?", "resposta": "São frações que representam exatamente a mesma quantidade ou proporção."},
-                {"id": 8, "pergunta": "Como se obtém uma fração equivalente por ampliação?", "resposta": "Multiplicando tanto o numerador como o denominador pelo mesmo número natural (diferente de zero)."},
-                {"id": 9, "pergunta": "Como se simplifica uma fração?", "resposta": "Dividindo o numerador e o denominador pelo mesmo divisor comum (idealmente pelo M.D.C.)."},
-                {"id": 10, "pergunta": "O que é uma fração irredutível?", "resposta": "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1 (não se consegue simplificar mais)."}
+        tema = texto_limpo
+        tema_lower = tema.lower()
+        
+        # Detetar se é sobre frações (independente de acentos ou plural/singular)
+        if any(k in tema_lower for k in ["frac", "fração", "fracao"]):
+            flashcards_base = [
+                ("O que indica o numerador numa fração?", "Indica o número de partes que estamos a considerar do todo."),
+                ("O que indica o denominador numa fração?", "Indica o número total de partes iguais em que o todo foi dividido."),
+                ("Como se somam ou subtraem frações com o mesmo denominador?", "Mantém-se o denominador igual e somam-se ou subtraem-se apenas os numeradores."),
+                ("O que é necessário para somar frações com denominadores diferentes?", "É preciso reduzi-las ao mesmo denominador (utilizando o M.M.C.) antes de somar."),
+                ("Como se multiplicam duas frações?", "Multiplicam-se os numeradores entre si e os denominadores entre si."),
+                ("Como se divide uma fração por outra?", "Multiplica-se a primeira fração pelo inverso da segunda."),
+                ("O que são frações equivalentes?", "São frações que representam exatamente a mesma quantidade ou proporção."),
+                ("Como se obtém uma fração equivalente por ampliação?", "Multiplicando o numerador e o denominador pelo mesmo número natural (diferente de zero)."),
+                ("Como se simplifica uma fração?", "Dividindo o numerador e o denominador pelo mesmo divisor comum."),
+                ("O que é uma fração irredutível?", "É uma fração cujo numerador e denominador já não têm divisores comuns além de 1.")
             ]
-            return flashcards_fracoes[:quantidade]
+        else:
+            # Gerador inteligente para qualquer outro tema curto introduzido pelo utilizador
+            flashcards_base = [
+                (f"Qual é o conceito fundamental de {tema}?", f"Refere-se ao estudo detalhado e às propriedades essenciais associadas a este tópico."),
+                (f"Quais são os elementos principais que compõem {tema}?", f"Os componentes centrais incluem a estrutura base, regras e funcionamento."),
+                (f"Como se aplica {tema} na prática ou em exercícios?", f"Exige rigor na identificação dos dados e na aplicação correta das regras teóricas."),
+                (f"Qual é a importância de dominar o tema de {tema}?", f"Permite consolidar bases sólidas para a disciplina e resolver problemas mais complexos."),
+                (f"Indica um contexto onde {tema} surge com frequência.", f"Aparece habitualmente em exercícios de aplicação direta e em situações de avaliação."),
+                (f"Quais são os erros mais comuns a evitar ao estudar {tema}?", f"Confundir definições básicas ou errar na aplicação prática dos passos intermédios."),
+                (f"O que deves memorizar obrigatoriamente sobre {tema}?", f"As definições-chave, as regras essenciais e os procedimentos fundamentais.")
+            ]
+        
+        flashcards = []
+        for i in range(1, quantidade + 1):
+            p, r = flashcards_base[(i - 1) % len(flashcards_base)]
+            flashcards.append({
+                "id": i,
+                "pergunta": p,
+                "resposta": r
+            })
+        return flashcards
 
     # Extrair frases reais do utilizador se ele escreveu apontamentos detalhados
     frases_utilizador = []
@@ -221,8 +244,8 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
 
     base_conteudos = frases_utilizador if frases_utilizador else banco_escolar.get(materia, [
         f"Conceito fundamental e teórico da disciplina de {materia}.",
-        f"Aplicação prática e estudo aprofundado no programa de {ano_aluno}.",
-        f"Regra essencial a reter para a avaliação na disciplina de {materia}."
+        f"Aplicação prática e estudo aprofundado no programa.",
+        f"Regra essencial a reter para a avaliação na disciplina."
     ])
 
     tipos_perguntas = [
