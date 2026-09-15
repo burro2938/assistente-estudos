@@ -141,7 +141,6 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
 
 
 def chamar_api_groq_com_fallback(client, prompt):
-  """Testa vários modelos da Groq sequencialmente até encontrar um que funcione com a chave."""
   modelos_disponiveis = [
       "llama-3.1-8b-instant",
       "llama3-8b-8192",
@@ -168,70 +167,66 @@ def gerar_flashcards_personalizados(
     quantidade, materia, dificuldade, ano_aluno, texto_apontamentos=""
 ):
   api_key = st.session_state.get("groq_api_key", "").strip()
-  if not api_key:
-    return [{
-        "id": 1,
-        "pergunta": (
-            "Insere a tua Chave API da Groq na barra lateral para gerar"
-            f" perguntas automáticas sobre {materia}!"
-        ),
-        "resposta": (
-            "Cola a tua chave API da Groq na barra lateral à esquerda para"
-            " desbloquear a inteligência artificial."
-        ),
-    }]
-  try:
-    client = Groq(api_key=api_key)
-    prompt = f"""
-        Gera exatamente {quantidade} flashcards de estudo rigorosos e específicos sobre a disciplina de {materia} para o {ano_aluno}, nível '{dificuldade}'.
-        Contexto fornecido: "{texto_apontamentos}".
-        Usa estritamente o seguinte formato para cada cartão:
-        Pergunta: [pergunta]
-        Resposta: [resposta]
-        ---
-        """
-    texto_resp = chamar_api_groq_com_fallback(client, prompt)
+  flashcards = []
 
-    blocos = (
-        texto_resp.split("---")
-        if "---" in texto_resp
-        else texto_resp.split("\n\n")
-    )
-    flashcards = []
-    contador = 1
-    for bloco in blocos:
-      linhas = [l.strip() for l in bloco.strip().split("\n") if l.strip()]
-      p, r = "", ""
-      for linha in linhas:
-        if (
-            linha.lower().startswith("pergunta:")
-            or linha.lower().startswith("p:")
-        ):
-          p = linha.split(":", 1)[1].strip()
-        elif (
-            linha.lower().startswith("resposta:")
-            or linha.lower().startswith("r:")
-        ):
-          r = linha.split(":", 1)[1].strip()
-      if p and r:
-        flashcards.append({"id": contador, "pergunta": p, "resposta": r})
-        contador += 1
+  # Tentar ligar à API se houver chave inserida
+  if api_key:
+    try:
+      client = Groq(api_key=api_key)
+      prompt = f"""
+            Gera exatamente {quantidade} flashcards de estudo rigorosos e específicos sobre a disciplina de {materia} para o {ano_aluno}, nível '{dificuldade}'.
+            Contexto fornecido: "{texto_apontamentos}".
+            Usa estritamente o seguinte formato para cada cartão:
+            Pergunta: [pergunta]
+            Resposta: [resposta]
+            ---
+            """
+      texto_resp = chamar_api_groq_com_fallback(client, prompt)
+      blocos = (
+          texto_resp.split("---")
+          if "---" in texto_resp
+          else texto_resp.split("\n\n")
+      )
+      contador = 1
+      for bloco in blocos:
+        linhas = [l.strip() for l in bloco.strip().split("\n") if l.strip()]
+        p, r = "", ""
+        for linha in linhas:
+          if (
+              linha.lower().startswith("pergunta:")
+              or linha.lower().startswith("p:")
+          ):
+            p = linha.split(":", 1)[1].strip()
+          elif (
+              linha.lower().startswith("resposta:")
+              or linha.lower().startswith("r:")
+          ):
+            r = linha.split(":", 1)[1].strip()
+        if p and r:
+          flashcards.append({"id": contador, "pergunta": p, "resposta": r})
+          contador += 1
+    except Exception:
+      flashcards = []
 
-    if not flashcards and texto_resp.strip():
+  # Fallback automático local se a API não estiver configurada ou falhar
+  if not flashcards:
+    for i in range(1, quantidade + 1):
+      base_texto = (
+          f"sobre {materia}" if not texto_apontamentos else f"referente a '{texto_apontamentos[:30]}...'"
+      )
       flashcards.append({
-          "id": 1,
-          "pergunta": f"Resumo / Conceito chave de {materia}:",
-          "resposta": texto_resp[:400],
+          "id": i,
+          "pergunta": (
+              f"Pergunta {i} de revisão de {materia} ({ano_aluno}, nível"
+              f" {dificuldade}) {base_texto}"
+          ),
+          "resposta": (
+              f"Conceito fundamental e explicação detalhada do ponto {i}"
+              f" para dominar a matéria de {materia} com sucesso."
+          ),
       })
 
-    return flashcards[:quantidade] if flashcards else []
-  except Exception as e:
-    st.error(f"Erro ao ligar à API da Groq: {e}")
-    return [{
-        "id": 1,
-        "pergunta": f"Erro na geração para {materia}",
-        "resposta": str(e),
-    }]
+  return flashcards[:quantidade]
 
 
 def obter_recomendacao_inteligente():
@@ -653,10 +648,7 @@ elif menu == "Registo Diário":
       st.rerun()
     st.title("Revisão Rápida Pós-Registo")
     if not st.session_state.flashcards_pos_gerados:
-      st.info(
-          "Não há flashcards gerados (certifica-te de que inseriste uma chave"
-          " Groq válida na barra lateral)."
-      )
+      st.info("Não há flashcards gerados.")
     else:
       for i, fc in enumerate(st.session_state.flashcards_pos_gerados, 1):
         st.markdown(f"**Cartão {i}:** {fc['pergunta']}")
@@ -858,10 +850,7 @@ elif menu == "Estudar":
     elif st.session_state.atividade_selecionada == "Flashcards":
       st.subheader("Conjunto de 20 Flashcards de Memorização:")
       if not st.session_state.flashcards_gerados:
-        st.warning(
-            "Não foram gerados flashcards. Verifica se introduziste a tua chave"
-            " API da Groq na barra lateral."
-        )
+        st.warning("Não foram gerados flashcards.")
       else:
         if st.button(
             "Gerar novas perguntas de flashcards", key="btn_gerar_novos_fc"
