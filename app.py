@@ -143,56 +143,11 @@ def gerar_30_exercicios(dificuldade, ano_aluno, texto_contexto=""):
     elif "Extremamente" in dificuldade:
         fator = 5
         
-    texto_inf = texto_contexto.lower()
-    eh_equacoes = "equaç" in texto_inf or "x" in texto_inf or "álgebra" in texto_inf
-    
     for i in range(1, 31):
-        if eh_equacoes:
-            sol = random.randint(-8 * fator, 12 * fator)
-            a1 = random.randint(1, 4 * fator)
-            b1 = random.randint(-6 * fator, 9 * fator)
-            c1 = random.randint(-3 * fator, 4 * fator)
-            a2 = random.randint(-3 * fator, 3 * fator)
-            if a1 + c1 == a2:
-                a2 += 1
-            b2 = random.randint(-6 * fator, 9 * fator)
-            valor_esq = (a1 + c1) * sol + b1
-            valor_dir_sem_d2 = a2 * sol + b2
-            d2 = valor_esq - valor_dir_sem_d2
-            
-            def fmt_term(val, var=""):
-                if val == 0 and var != "":
-                    return ""
-                s = "+" if val > 0 else " -"
-                num = abs(val)
-                return f"{s}{num}{var}" if num != 1 or var == "" else f"{s}{var}"
-                
-            p_esq = f"{a1}x" if a1 != 0 else ""
-            p_b1 = f" {fmt_term(b1)}" if b1 != 0 else ""
-            p_c1 = fmt_term(c1, "x")
-            p_esq_total = f"{p_esq}{p_b1}{p_c1}".strip()
-            if p_esq_total.startswith("+ "): 
-                p_esq_total = p_esq_total[2:]
-                
-            p_dir_x2 = f"{a2}x" if a2 != 0 else ""
-            p_dir_b2 = f" {fmt_term(b2)}" if b2 != 0 else ""
-            p_dir_d2 = fmt_term(d2)
-            p_dir_total = f"{p_dir_x2}{p_dir_b2}{p_dir_d2}".strip()
-            if p_dir_total.startswith("+"): 
-                p_dir_total = p_dir_total[2:]
-                
-            if not p_esq_total: 
-                p_esq_total = "0"
-            if not p_dir_total: 
-                p_dir_total = "0"
-                
-            enunciado = f"{p_esq_total} = {p_dir_total}"
-            resp = float(sol)
-        else:
-            n1 = random.randint(2 * fator, 15 * fator)
-            n2 = random.randint(2 * fator, 15 * fator)
-            enunciado = f"Calcule o valor de {n1} \\times {n2} + {i * 2}"
-            resp = float(n1 * n2 + i * 2)
+        n1 = random.randint(2 * fator, 15 * fator)
+        n2 = random.randint(2 * fator, 15 * fator)
+        enunciado = f"Calcule o valor de {n1} \\times {n2} + {i * 2}"
+        resp = float(n1 * n2 + i * 2)
             
         exs.append({
             "id": i,
@@ -208,101 +163,20 @@ def gerar_flashcards_personalizados(quantidade, materia, dificuldade, ano_aluno,
     if texto_apontamentos.strip():
         topico = texto_apontamentos.strip()
         flashcards = []
-        perguntas_especificas = [
-            (f"Qual é a definição exata e o conceito fundamental de '{topico}' no programa de {materia}?", f"No currículo escolar português, '{topico}' representa a matéria focada em {materia}, exigindo rigor na compreensão das regras teóricas."),
-            (f"Quais são os componentes principais ou sub-tópicos que compõem '{topico}'?", f"Envolve a análise detalhada de '{topico}', dividindo-se nas propriedades estudadas nas aulas de {materia} para o {ano_aluno}."),
-            (f"Como se aplica a teoria de '{topico}' na resolução de exercícios práticos?", f"Através da substituição correta nos modelos teóricos associados a '{topico}', garantindo validação passo a passo."),
-            (f"Porque é que o estudo de '{topico}' é importante no programa de {materia} em Portugal?", f"Porque consolida as bases essenciais exigidas nas avaliações do {ano_aluno} sobre {topico}."),
-            (f"Dá um exemplo prático de aplicação direta relacionada com '{topico}'.", f"Um exemplo clássico de '{topico}' consiste na aplicação direta das normas e propriedades estudadas na matéria de {materia}.")
-        ]
         for i in range(1, quantidade + 1):
-            p_base, r_base = perguntas_especificas[(i - 1) % len(perguntas_especificas)]
             flashcards.append({
                 "id": i,
-                "pergunta": f"{p_base} (Foco: {topico} | Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
-                "resposta": f"{r_base} [Tópico em estudo: {topico}]"
+                "pergunta": f"Explica o conceito de '{topico}' (Matéria: {materia} | Nível: {dificuldade} | {ano_aluno}) - Cartão {i}",
+                "resposta": f"Conceito fundamental relacionado com '{topico}' no programa de {materia} para o {ano_aluno}."
             })
         return flashcards
 
-    banco_ingles = [
-        ("Qual é a forma correta do verbo to be para o pronome 'I' no presente?", "Am (Ex: I am a student)."),
-        ("Como se conjuga o verbo to be na afirmativa para 'He / She / It'?", "Is (Ex: He is 13 years old)."),
-        ("Quais são os pronomes que utilizam 'are' no presente do verbo to be?", "You, We, They."),
-        ("Qual é a forma negativa do verbo to be para 'I'?", "I am not (ou a forma curta I'm not)."),
-        ("Como se diz 'Eles não são' utilizando a forma curta do verbo to be?", "They aren't."),
-        ("Qual é a forma interrogativa correta para 'You are happy'?", "Are you happy?"),
-        ("Qual é o passado do verbo to be para os pronomes I, He, She, It?", "Was (Ex: I was at school yesterday)."),
-        ("Qual é o passado do verbo to be para os pronomes You, We, They?", "Were (Ex: We were friends)."),
-        ("Como se forma a negativa do passado para 'He was'?", "He was not (ou wasn't)."),
-        ("Como se formula uma pergunta no passado com o verbo to be, ex: 'She was tired'?", "Was she tired?")
-    ]
-    banco_matematica = [
-        ("O que caracteriza uma equação do 1.º grau com parênteses?", "É uma igualdade algébrica que requer a aplicação da propriedade distributiva antes de agrupar os termos semelhantes."),
-        ("Como se agrupam os termos com incógnita numa equação?", "Passando todos os termos com $x$ para um dos membros e os números para o outro, trocando o sinal aos que mudam de membro."),
-        ("O que acontece ao sinal de um número quando este muda de membro?", "O sinal inverte-se (o que é positivo fica negativo e vice-versa)."),
-        ("Qual é a soma dos ângulos internos de um triângulo?", "Sempre $180^\circ$."),
-        ("Como se calcula a área de um círculo?", "Multiplicando pi pelo quadrado do raio ($A = \pi r^2$)."),
-        ("O que é um número primo?", "Um número natural maior do que 1 divisível apenas por 1 e por si próprio.")
-    ]
-    banco_portugues = [
-        ("O que é o sujeito numa frase?", "O constituinte que concorda em número e pessoa com o verbo principal."),
-        ("O que é uma palavra polissémica?", "Uma palavra que possui múltiplos significados consoante o contexto de uso."),
-        ("Quais são os graus dos adjetivos?", "Grau normal, grau comparativo e grau superlativo."),
-        ("O que caracteriza uma crónica?", "Um texto de opinião com base num acontecimento do quotidiano."),
-        ("O que são sinónimos?", "Termos com significados equivalentes.")
-    ]
-    banco_historia = [
-        ("Quais foram os principais fatores que impulsionaram a Expansão Portuguesa nos séculos XV e XVI?", "A posição geográfica favorável, a estabilidade política, o desenvolvimento da ciência náutica (caravela, astrolábio) e o interesse comercial nas especiarias."),
-        ("O que marcou o início do Antigo Regime na Europa?", "O absolutismo régio, a sociedade de ordens (clero, nobreza e povo) e o mercantilismo económico."),
-        ("Qual foi a importância do Tratado de Tordesilhas (1494)?", "Dividiu as terras descobertas e por descobrir entre Portugal e Espanha através de um meridiano."),
-        ("O que foi a Revolução Francesa de 1789?", "Um marco histórico que acabou com o absolutismo em França, consagrando os direitos do homem e do cidadão."),
-        ("Qual foi o papel do Infante D. Henrique na expansão marítima?", "Foi o grande impulsionador e organizador das primeiras viagens de exploração da costa ocidental africana.")
-    ]
-    banco_ciencias = [
-        ("Qual é a unidade estrutural e funcional básica de todos os seres vivos?", "A célula."),
-        ("O que distingue uma célula procariótica de uma célula eucariótica?", "A célula eucariótica possui um núcleo organizado envolto por membrana, enquanto a procariótica não tem núcleo definido."),
-        ("Qual é o processo através do qual as plantas produzem a sua própria matéria orgânica?", "A fotossíntese, utilizando luz solar, dióxido de carbono e água."),
-        ("O que compõe o sistema solar?", "O Sol e todos os corpos celestes que orbitam à sua volta, incluindo os planetas, asteroides e cometas."),
-        ("Qual é a função principal do sistema circulatório no corpo humano?", "Transportar oxigénio, nutrientes e hormonas para as células e recolher produtos de excreção.")
-    ]
-    banco_fisico_quimica = [
-        ("O que é a matéria?", "Tudo o que tem massa e ocupa espaço no universo."),
-        ("Qual é a diferença entre uma transformação física e uma transformação química?", "Na transformação física não se formam novas substâncias; na química formam-se novas substâncias com propriedades diferentes."),
-        ("O que indica o número atómico de um elemento químico?", "O número de protões presentes no núcleo do átomo desse elemento."),
-        ("Como se define a velocidade de um corpo?", "A distância percorrida por unidade de tempo ($v=d/t$).")
-    ]
-
-    materia_inf = materia.lower()
-    if "matemática" in materia_inf or "matematica" in materia_inf:
-        banco_base = banco_matematica
-    elif "português" in materia_inf or "portugues" in materia_inf:
-        banco_base = banco_portugues
-    elif "inglês" in materia_inf or "ingles" in materia_inf or "english" in materia_inf:
-        banco_base = banco_ingles
-    elif "história" in materia_inf or "historia" in materia_inf:
-        banco_base = banco_historia
-    elif "ciências" in materia_inf or "ciencias" in materia_inf:
-        banco_base = banco_ciencias
-    elif "físico-química" in materia_inf or "fisico-quimica" in materia_inf:
-        banco_base = banco_fisico_quimica
-    else:
-        banco_base = [
-            (f"Quais são os conceitos fundamentais estudados em {materia} no {ano_aluno} em Portugal?", f"Envolve a compreensão teórica, princípios e aplicação correta da matéria de {materia}."),
-            (f"Como se estruturam as regras principais de {materia}?", f"Através da análise lógica e memorização dos conceitos essenciais abordados na escola."),
-            (f"Quais são os erros mais comuns a evitar nesta disciplina?", f"Falta de rigor conceptual e desatenção aos detalhes teóricos da matéria."),
-            (f"De que forma este tema se aplica no programa escolar do {ano_aluno}?", f"Consolidando a base de conhecimentos exigidos em {materia}.")
-        ]
-
-    amostra = random.sample(banco_base, min(len(banco_base), quantidade))
-    while len(amostra) < quantidade:
-        amostra.append(random.choice(banco_base))
-        
     flashcards = []
-    for i, (pergunta, resposta) in enumerate(amostra, 1):
+    for i in range(1, quantidade + 1):
         flashcards.append({
             "id": i,
-            "pergunta": f"{pergunta} (Matéria: {materia} | Nível: {dificuldade} | {ano_aluno})",
-            "resposta": resposta
+            "pergunta": f"Questão de revisão n.º {i} sobre os temas essenciais de {materia} ({ano_aluno}, nível {dificuldade}).",
+            "resposta": f"Resposta de consolidação para a matéria de {materia}."
         })
     return flashcards
 
@@ -649,7 +523,7 @@ elif menu == "Estudar":
         st.markdown(f"**Matéria selecionada:** {st.session_state.materia_escolhida_estudo} (Nível: {st.session_state.ano_escolar})")
         
         st.session_state.texto_estudo_livre = st.text_area(
-            "Insere os teus apontamentos exatos ou tópicos estudados na escola (ex: Verb to be, equações...):",
+            "Insere os teus apontamentos exatos ou tópicos estudados na escola:",
             value=st.session_state.texto_estudo_livre,
             key="txt_livre_estudo"
         )
