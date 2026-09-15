@@ -170,20 +170,19 @@ def gerar_flashcards_personalizados(
   tema = texto_apontamentos.strip() if texto_apontamentos.strip() else materia
   semente_unica = random.randint(1, 100000)
 
-  # 1. Tentar IA da Groq se houver chave
+  # 1. Tentar IA da Groq se houver chave inserida
   if api_key:
     try:
       client = Groq(api_key=api_key)
       prompt = f"""
             Atua como um professor especialista no programa escolar oficial do {ano_aluno} em Portugal.
-            Com base estritamente no tema/apontamento fornecido pelo aluno: "{tema}", na disciplina de {materia}:
-            Gera exatamente {quantidade} perguntas e respostas de estudo técnicas, diretas e reais (ex: conceitos, fórmulas, definições ou exemplos práticos da matéria). 
-            NÃO faças perguntas genéricas ou meta-perguntas sobre o tema. Faz perguntas concretas sobre o conteúdo científico/escolar.
+            Com base estritamente nos apontamentos/texto fornecidos pelo aluno: "{tema}", na disciplina de {materia}:
+            Gera exatamente {quantidade} perguntas e respostas de estudo técnicas, diretas e rigorosas baseadas unicamente no texto do aluno. 
             Identificador de unicidade: {semente_unica}
             
             Usa estritamente o seguinte formato para cada cartão:
-            Pergunta: [pergunta concreta sobre a matéria]
-            Resposta: [resposta direta e correta]
+            Pergunta: [pergunta baseada no texto do aluno]
+            Resposta: [resposta direta baseada no texto do aluno]
             ---
             """
       texto_resp = chamar_api_groq_com_fallback(client, prompt)
@@ -213,130 +212,29 @@ def gerar_flashcards_personalizados(
     except Exception:
       flashcards = []
 
-  # 2. Fallback Inteligente baseado no tema (se não houver API key ou falhar)
+  # 2. Fallback dinâmico puramente baseado no texto inserido pelo utilizador (sem atalhos fixos)
   if not flashcards:
-    tema_lower = tema.lower()
-
-    # Banco de perguntas específicas para Funções (Matemática)
-    if "funç" in tema_lower or "funcoes" in tema_lower:
-      banco_base = [
-          {
-              "p": (
-                  "O que é uma função no contexto do 8.° Ano de Matemática?"
-              ),
-              "r": (
-                  "É uma correspondência entre dois conjuntos em que a cada"
-                  " elemento do primeiro conjunto (domínio) corresponde um e"
-                  " um só elemento do segundo conjunto."
-              ),
-          },
-          {
-              "p": (
-                  "O que representa a variável independente ($x$) numa função?"
-              ),
-              "r": (
-                  "Representa os valores de entrada que são escolhidos"
-                  " livremente dentro do domínio da função."
-              ),
-          },
-          {
-              "p": (
-                  "O que representa a variável dependente ($y$ ou $f(x)$)?"
-              ),
-              "r": (
-                  "Representa o valor de saída, cujo resultado depende do"
-                  " valor atribuído à variável independente ($x$)."
-              ),
-          },
-          {
-              "p": (
-                  "Como se define analiticamente uma função de proporcionalidade"
-                  " direta?"
-              ),
-              "r": "Através de uma expressão da forma $y = mx$, em que $m \\neq 0$ é a constante de proporcionalidade.",
-          },
-          {
-              "p": (
-                  "Qual é a principal caraterística geométrica do gráfico de"
-                  " uma função de proporcionalidade direta?"
-              ),
-              "r": (
-                  "É uma reta que passa obrigatoriamente pela origem do"
-                  " referencial cartesiado $(0, 0)$."
-              ),
-          },
-          {
-              "p": (
-                  "O que indica o coeficiente $m$ (declive) na função afim"
-                  " $y = mx + b$?"
-              ),
-              "r": (
-                  "Indica a inclinação da reta e a taxa de variação da função"
-                  " (quanto varia $y$ quando $ aumenta uma unidade)."
-              ),
-          },
-          {
-              "p": "O que representa a ordenada na origem ($b$) na função afim?",
-              "r": (
-                  "Representa a ordenada do ponto onde o gráfico da reta"
-                  " interseta o eixo vertical ($y$), ou seja, o valor de $y$"
-                  " quando $x = 0$."
-              ),
-          },
-      ]
-    else:
-      # Banco geral e útil de estudo
-      banco_base = [
-          {
-              "p": f"Qual é o principal objetivo de estudar '{tema}' em {materia}?",
-              "r": (
-                  f"Compreender as leis fundamentais, dominar a resolução de"
-                  f" problemas práticos e aplicar os conceitos teóricos de"
-                  f" {tema}."
-              ),
-          },
-          {
-              "p": f"Quais são os elementos chave a identificar num exercício sobre '{tema}'?",
-              "r": (
-                  "Os dados iniciais fornecidos, as incógnitas a determinar e"
-                  " as fórmulas ou propriedades aplicáveis."
-              ),
-          },
-          {
-              "p": (
-                  f"De que forma prática se pode aplicar o conceito de '{tema}'"
-                  " no dia a dia?"
-              ),
-              "r": (
-                  "Através da resolução de situações problemáticas reais que"
-                  " envolvam cálculos, análise crítica ou interpretação de"
-                  " fenómenos."
-              ),
-          },
-          {
-              "p": (
-                  f"Qual é o erro mais comum ao resolver questões de '{tema}' e"
-                  " como evitá-lo?"
-              ),
-              "r": (
-                  "A desatenção aos sinais e a aplicação incorreta das regras"
-                  " teóricas. Evita-se verificando cada passo do cálculo."
-              ),
-          },
-      ]
+    # Divide o texto do utilizador por frases ou tópicos
+    frases_base = [f.strip() for f in tema.split(".") if f.strip()]
+    if not frases_base:
+      frases_base = [tema]
 
     contador = 1
     while len(flashcards) < quantidade:
-      template_atual = banco_base[(contador - 1) % len(banco_base)]
+      frase_atual = frases_base[(contador - 1) % len(frases_base)]
       sufixo_var = (
-          f" (Variação {semente_unica + contador})"
-          if contador > len(banco_base)
-          else ""
+          f" (Parte {contador})" if contador > len(frases_base) else ""
       )
       flashcards.append({
           "id": contador,
-          "pergunta": template_atual["p"] + sufixo_var,
-          "resposta": template_atual["r"],
+          "pergunta": (
+              f"Com base no teu apontamento '{frase_atual}', o que deves"
+              f" reter ou aplicar em {materia}?{sufixo_var}"
+          ),
+          "resposta": (
+              f"Deves considerar os princípios fundamentais indicados no teu"
+              f" texto: '{frase_atual}'."
+          ),
       })
       contador += 1
 
@@ -830,8 +728,8 @@ elif menu == "Estudar":
         f" (Nível: {st.session_state.ano_escolar})"
     )
     st.session_state.texto_estudo_livre = st.text_area(
-        "Insere o tema ou os teus apontamentos exatos (ex: Funções, Células,"
-        " Revoluções, etc.):",
+        "Insere os teus apontamentos exatos (o sistema vai gerar os flashcards"
+        " com base no que escreveres aqui):",
         value=st.session_state.texto_estudo_livre,
         key="txt_livre_estudo",
     )
@@ -922,7 +820,7 @@ elif menu == "Estudar":
     )
     if st.session_state.texto_estudo_livre:
       st.info(
-          f"**Tema/Apontamento:** {st.session_state.texto_estudo_livre}"
+          f"**Apontamentos inseridos:** {st.session_state.texto_estudo_livre}"
       )
     st.markdown("---")
 
